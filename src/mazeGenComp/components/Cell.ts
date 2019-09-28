@@ -1,9 +1,13 @@
 import { GRID_CELL_WIDTH } from "../../constants/gridConstants"
 import { CellWallPoints } from "./CellWallPoints"
 import { Point } from "./Point"
+import { Color } from "../../utils/colorUtils"
+import { logVisitedCell } from "../../utils/loggingUtils"
 
 export class Cell {
+    //TOP, RIGHT, BOTTOM, LEFT
     public walls: boolean[]
+    public visited = false
     constructor(public column: any, public row: any, private _p: p5) {
         //TODO Fix this
 
@@ -17,27 +21,31 @@ export class Cell {
         let rowToDraw = this.row * GRID_CELL_WIDTH
 
         this._p.stroke(255)
-        this._p.noFill()
+        if (this.visited) {
+            // let colorForVisited = new Color(255, 0, 255, 100)
+            // const { r, g, b, a } = colorForVisited
+            // this._p.fill(r, g, b, a)
+            this._p.fill(255, 0, 255, 100)
+        } else {
+            logVisitedCell(colToDraw, rowToDraw)
+            this._p.noFill()
+            this._p.rect(colToDraw, rowToDraw, GRID_CELL_WIDTH, GRID_CELL_WIDTH)
+        }
 
         //Initially just draw the square - Not useful for individual cell wall drawing 
         // this._p.rect(colToDraw, rowToDraw, GRID_CELL_WIDTH, GRID_CELL_WIDTH)
 
-        //TOP, RIGHT, BOTTOM, LEFT
-        //Create bools to determine whether to draw each wall
-
-
-        //Drawing lines between 4 points
+        //Create 4 points - create point objects
         //point 1 @ x,y
-        //point 2 @ x + width, y
-        //point 3 @ x + width, y + width
-        //point 4 @ x, y + width
-
-        //create point objects
         let point1 = new Point(rowToDraw, colToDraw)
+        //point 2 @ x + width, y
         let point2 = new Point(rowToDraw + GRID_CELL_WIDTH, colToDraw)
+        //point 3 @ x + width, y + width
         let point3 = new Point(rowToDraw + GRID_CELL_WIDTH, colToDraw + GRID_CELL_WIDTH)
+        //point 4 @ x, y + width
         let point4 = new Point(rowToDraw, colToDraw + GRID_CELL_WIDTH)
 
+        //Create bools to determine whether to draw each wall
         let drawTop = this.walls[0]
         let drawRight = this.walls[1]
         let drawBottom = this.walls[2]

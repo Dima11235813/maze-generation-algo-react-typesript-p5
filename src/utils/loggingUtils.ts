@@ -7,28 +7,35 @@ const logger = (message: string) => {
 }
 
 export const logRowDuringCreation = (row: number) => {
-    logger(`
-                Iterating over rows
-                Current row ${row}
-                `)
+    //     logger(`
+    //                 Iterating over rows
+    //                 Current row ${row}
+    //                 `)
 }
 export const logColumnDuringCreation = (column: number) => {
-    logger(`
-                Iterating over columns
-                Current column ${column}
-                `)
+    //     logger(`
+    //                 Iterating over columns
+    //                 Current column ${column}
+    //                 `)
 }
 export const logRowDuringDrawing = (row: number, index: number) => {
-    logger(`
-                Iterating over rows
-                Current row ${row}
-                Current row index ${index}
-                `)
+    // logger(`
+    //             Iterating over rows
+    //             Current row ${row}
+    //             Current row index ${index}
+    //             `)
 }
 export const logColumnDuringDrawing = (column: number, index: number) => {
-    logger(`
-                Iterating over columns
-                Current column ${column}
-                Current column index ${index}
-                `)
+    // logger(`
+    //             Iterating over columns
+    //             Current column ${column}
+    //             Current column index ${index}
+    //             `)
 }
+
+export const logVisitedCell = (col: number, row: number) =>
+    console.log(`
+VISITED
+Column ${col}
+Row ${row}
+`)

@@ -3,6 +3,7 @@ import { GRID_CELL_WIDTH } from "../constants/gridConstants"
 
 import { Cell } from "./components/Cell"
 import { logColumnDuringCreation, logRowDuringCreation } from "../utils/loggingUtils"
+import { CurrentCell } from "./components/CurrentCell"
 
 export class MazeGenerator {
 
@@ -17,6 +18,9 @@ export class MazeGenerator {
     //one dimensional array for the grid
     grid: Cell[] = []
 
+    //hold reference to current cell in iteration
+    currentCell?: CurrentCell
+
     constructor(p: p5) {
         p.setup = () => {
             p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT)
@@ -25,9 +29,7 @@ export class MazeGenerator {
             this.columns = p.floor(CANVAS_WIDTH / GRID_CELL_WIDTH)
             this.rows = p.floor(CANVAS_WIDTH / GRID_CELL_WIDTH)
 
-            //TODO Fix this everywhere
-            //j is rows
-            //i is columns
+            //set up the grid
             for (let row = 0; row < this.rows; row += 1) {
                 //log set of iteration
                 logRowDuringCreation(row)
@@ -44,11 +46,13 @@ export class MazeGenerator {
                 }
             }
 
-
+            //set current cell as first
+            this.grid[0].visited = true
         }
 
         p.draw = () => {
             p.background(51)
+            this.grid.map(cell => cell.show())
 
             // new Array(this.columns).forEach((column: number, index: number, array: number[]) => {
             //     //log set of iteration
@@ -65,9 +69,6 @@ export class MazeGenerator {
             //     //pass column so that both column and row are available on inner context aka scope
             // })
 
-            this.grid.map((cell: Cell, index: number, array: Cell[]) => {
-                cell.show()
-            })
 
         }
     }
