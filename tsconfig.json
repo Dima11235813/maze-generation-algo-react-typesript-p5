@@ -21,5 +21,14 @@
   },
   "include": [
     "src"
-  ]
+  ],
+  "typeRoots": [
+    "node_modules/@types",
+    "../../DefinitelyTyped/types"
+  ],
+  "paths": {
+    "*": [
+      "../../DefinitelyTyped/types/*"
+    ]
+  }
 }
