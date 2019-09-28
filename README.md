@@ -12,6 +12,10 @@ https://www.youtube.com/watch?v=D8UgRyRnvXU
 
 * [P5]https://p5js.org/
 
+### P4 Useful Links
+* [Processuing]https://github.com/processing/p5.js/wiki/Processing-transition
+* [P5_API_REF]https://p5js.org/reference/
+
 ## other misc links
 
 consider subscribing
@@ -28,10 +32,9 @@ Canvas as a grid
     each spot is a cell object
 
 ```
-## The Order
+## The Order - Memorize This
 
 * Top 
-    * 
 * Right
 * Bottom
 * Left
