@@ -7,8 +7,8 @@ import { logColumnDuringCreation, logRowDuringCreation, logger, loggerJson } fro
 export class MazeGenerator {
 
     //nullable so that it can be dynamically generated
-    columns?: number
-    rows?: number
+    numberOfColumns?: number
+    numberOfRows?: number
 
     //vars to hold current column and row during draw phase
     colIndBeingDrawn?: number
@@ -24,16 +24,16 @@ export class MazeGenerator {
         p.setup = () => {
             p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT)
 
-            //set up number of columns and rows based on the canvas pixel size and the cell width constants
-            this.columns = p.floor(CANVAS_WIDTH / GRID_CELL_WIDTH)
-            this.rows = p.floor(CANVAS_WIDTH / GRID_CELL_WIDTH)
+            //set up number of columns and numberOfRows based on the canvas pixel size and the cell width constants
+            this.numberOfColumns = p.floor(CANVAS_WIDTH / GRID_CELL_WIDTH)
+            this.numberOfRows = p.floor(CANVAS_WIDTH / GRID_CELL_WIDTH)
 
             //set up the grid
-            for (var rowNumber = 0; rowNumber < this.rows; rowNumber += 1) {
+            for (var rowNumber = 0; rowNumber < this.numberOfRows; rowNumber += 1) {
                 //log set of iteration
                 logRowDuringCreation(rowNumber)
 
-                for (var columnNumber = 0; columnNumber < this.columns; columnNumber += 1) {
+                for (var columnNumber = 0; columnNumber < this.numberOfColumns; columnNumber += 1) {
                     //log set of iteration
                     logColumnDuringCreation(columnNumber)
 
@@ -47,7 +47,7 @@ export class MazeGenerator {
 
             //set current cell as first
             this.grid[0].visited = true
-            this.currentCell = this.grid[0]
+            this.currentCell = this.grid[1]
             console.log(`Grid cell ${this.grid[0]} has visited value: ${this.grid[0].visited}`)
         }
 
@@ -62,46 +62,63 @@ export class MazeGenerator {
 
                 //set current cell as visited
             })
-            if(this.currentCell){
+            if (this.currentCell) {
                 //set current cell to visited to change its color on next frame
                 this.currentCell.visited = true
-                
-                //get the random next neightbor cell from the current cell
-                let nextCell = this.currentCell.checkIfNeighborsHaveBeenVisited(
-                    this.columns, 
-                    this.rows,
-                    this.grid
-                    )
 
-                if(nextCell){
+                //get the random next neightbor cell from the current cell
+                let nextCell = this.currentCell.getRandomNeightborToVisit(
+                    this.numberOfColumns ? this.numberOfColumns + 1 : 0,
+                    this.numberOfRows ? this.numberOfRows + 1 : 0,
+                    this.grid
+                )
+
+                if (nextCell) {
                     //set next cell to visited
                     logger(`Setting Next Cell As Visited`)
                     nextCell.visited = true
+
+                    //STEP 3
+                    this.removeWalls(this.currentCell, nextCell)
 
                     logger(`Next Cell is Becoming Current Cell:`)
                     this.currentCell = nextCell
                     loggerJson(nextCell)
                 }
             }
-
-
-
-            // new Array(this.columns).forEach((column: number, index: number, array: number[]) => {
-            //     //log set of iteration
-            //     logColumnDuringDrawing(column, index)
-
-            //     new Array(this.rows).forEach((row: number, index: number, array: number[]) => {
-            //         //log set of iteration
-            //         logColumnDuringDrawing(row, index)
-
-            //         //show the cell at this point
-            //         this.grid[this, row].show()
-
-            //     }, column)
-            //     //pass column so that both column and row are available on inner context aka scope
-            // })
-
-
+        }
+    }
+    removeWalls = (currentCell: Cell, nextCell: Cell) => {
+        //if the current cell and the next cell share the same index column
+        //it means they're above current is above next or visa versa
+        //get horizontal distance value to set left or right wall on each cell
+        let horizontalDistance = currentCell.column - nextCell.column
+        if (horizontalDistance == 1) {
+            //current cell is after the next cell 
+            //so set the current cell left wall to false to remove it
+            currentCell.walls[3] = false
+            //so set the next cell right wall to false to remove it
+            nextCell.walls[1] = false
+        } else if (horizontalDistance === -1) {
+            //current cell is before the next cell
+            //so set the current cell right wall to true to remove it
+            currentCell.walls[1] = false
+            //so set the next cell left wall to false to remove it
+            nextCell.walls[3] = false
+        }
+        //get vertical distance value to set left or right wall on each cell
+        let verticalDistance = currentCell.row - nextCell.row
+        if (verticalDistance == 1) {
+            //current cell is above the next cell 
+            //so set the current cell bottom wall to false to remove it
+            currentCell.walls[2] = false
+            //so set the next cell top wall to false to remove it
+            nextCell.walls[0] = false
+        } else if (verticalDistance === -1) {
+            //current cell is below the next cell
+            //so set the current cell top wall to false to remove it
+            //so set the next cell bottom wall to false to remove it
+            nextCell.walls[2] = false
         }
     }
 

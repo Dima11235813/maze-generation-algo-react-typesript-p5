@@ -4,7 +4,6 @@ export const getPointValsAtIndex = (
     numColumns: number,
     numRows: number
 ) => {
-    debugger
     //Handle the (literal) edge cases
     if (
         //in case index of neighbors would be outsidd of the grid

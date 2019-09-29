@@ -2,7 +2,7 @@ import { GRID_CELL_WIDTH } from "../../constants/gridConstants"
 import { CellWallPoints } from "./CellWallPoints"
 import { Point } from "./Point"
 import { Color } from "../../utils/colorUtils"
-import { logVisitedCell } from "../../utils/loggingUtils"
+import { logVisitedCell, logger } from "../../utils/loggingUtils"
 import { getPointValsAtIndex } from "../../utils/gridUtils"
 
 export class Cell {
@@ -22,16 +22,17 @@ export class Cell {
         let xColPointValToDraw = this.column * GRID_CELL_WIDTH
         let yRowPointValToDraw = this.row * GRID_CELL_WIDTH
 
-        this._p.stroke(255)
-
+        
         //set fill based on if visited or not
         if (this.visited) {
             // let colorForVisited = new Color(255, 0, 255, 100)
             // const { r, g, b, a } = colorForVisited
             // this._p.fill(r, g, b, a)
             logVisitedCell(this.column, this.row)
+            this._p.noStroke()
             this._p.fill(255, 0, 255, 100)
         } else {
+            this._p.stroke(255)
             this._p.noFill()
         }
 
@@ -59,23 +60,23 @@ export class Cell {
 
         if (drawTop) {
             let cellOptions = new CellWallPoints(point1, point2)
-            this.drawCellWalls(cellOptions)
+            this._drawCellWalls(cellOptions)
         }
         if (drawRight) {
             let cellOptions = new CellWallPoints(point2, point3)
-            this.drawCellWalls(cellOptions)
+            this._drawCellWalls(cellOptions)
         }
         if (drawBottom) {
             let cellOptions = new CellWallPoints(point3, point4)
-            this.drawCellWalls(cellOptions)
+            this._drawCellWalls(cellOptions)
         }
         if (drawLeft) {
             let cellOptions = new CellWallPoints(point4, point1)
-            this.drawCellWalls(cellOptions)
+            this._drawCellWalls(cellOptions)
         }
 
     }
-    drawCellWalls = (cellWallPoints: CellWallPoints) => {
+    private _drawCellWalls = (cellWallPoints: CellWallPoints) => {
         this._p.line(
             cellWallPoints.startPoint.x,
             cellWallPoints.startPoint.y,
@@ -84,7 +85,7 @@ export class Cell {
         )
     }
 
-    checkIfNeighborsHaveBeenVisited = (
+    getRandomNeightborToVisit = (
         numberOfColumns: number = 0,
         numberOfRows: number = 0,
         grid: Cell[]) => {
@@ -111,8 +112,11 @@ export class Cell {
 
         //pick random item out of array
         if (this.neightbors.length > 0) {
-            return this.neightbors[this._p.floor(this._p.random(0, this.neightbors.length))]
-        }else{
+            logger(`Number of neightbors: ${this.neightbors}`)
+            let nextNeighborToVisit = this.neightbors[this._p.floor(this._p.random(0, this.neightbors.length))]
+            console.log(nextNeighborToVisit)
+            return nextNeighborToVisit
+        } else {
             return undefined
         }
     }
