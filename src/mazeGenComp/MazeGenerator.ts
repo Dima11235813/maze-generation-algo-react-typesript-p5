@@ -17,6 +17,9 @@ export class MazeGenerator {
     //one dimensional array for the grid
     grid: Cell[] = []
 
+    //hold the path to do recursive traversal
+    stack: Cell[] = []
+
     //hold reference to current cell in iteration
     currentCell?: Cell
 
@@ -69,11 +72,12 @@ export class MazeGenerator {
 
                 //highlight the current cell to tell it apart from other visited ones
                 this.currentCell.highlight()
-                
+
                 //get the random next neightbor cell from the current cell
-                let nextCell = this.currentCell.getRandomNeightborToVisit(
-                    this.numberOfColumns ,
-                    this.numberOfRows ,
+                let nextCell
+                nextCell = this.currentCell.getRandomNeightborToVisit(
+                    this.numberOfColumns,
+                    this.numberOfRows,
                     this.grid
                 )
 
@@ -82,13 +86,16 @@ export class MazeGenerator {
                     // logger(`Setting Next Cell As Visited`)
                     nextCell.visited = true
 
+                    //STEP 2
+                    this.stack.push(this.currentCell)
+
                     //STEP 3
                     this.removeWalls(this.currentCell, nextCell)
-
-                    // logger(`Next Cell is Becoming Current Cell:`)
-                    this.currentCell = nextCell
-                    // loggerJson(nextCell)
+                } else {
+                    //if no visitable neighbors exist then pop a cell from the stack and check its neighbors in the next iteration
+                    nextCell = this.stack.pop()
                 }
+                this.currentCell = nextCell
             }
         }
     }
