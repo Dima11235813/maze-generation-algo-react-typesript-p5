@@ -1,16 +1,16 @@
 export const getPointValsAtIndex = (
-    row: number,
     col: number,
+    row: number,
     numColumns: number,
     numRows: number
 ) => {
     //Handle the (literal) edge cases
     if (
         //in case index of neighbors would be outsidd of the grid
-        row < 0 ||
         col < 0 ||
-        col > numColumns ||
-        row > numRows
+        row < 0 ||
+        col > (numColumns - 1) ||
+        row > (numRows - 1)
     ) {
         return -1
     } else {

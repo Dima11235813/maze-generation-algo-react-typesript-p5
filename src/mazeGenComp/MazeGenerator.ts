@@ -7,8 +7,8 @@ import { logColumnDuringCreation, logRowDuringCreation, logger, loggerJson } fro
 export class MazeGenerator {
 
     //nullable so that it can be dynamically generated
-    numberOfColumns?: number
-    numberOfRows?: number
+    numberOfColumns: number = 0
+    numberOfRows: number = 0
 
     //vars to hold current column and row during draw phase
     colIndBeingDrawn?: number
@@ -29,7 +29,7 @@ export class MazeGenerator {
             this.numberOfRows = p.floor(CANVAS_WIDTH / GRID_CELL_WIDTH)
 
             //set frame rate
-            p.frameRate(5)
+            p.frameRate(20)
 
             //set up the grid
             for (var rowNumber = 0; rowNumber < this.numberOfRows; rowNumber += 1) {
@@ -50,9 +50,6 @@ export class MazeGenerator {
 
             //set current cell as first
             this.currentCell = this.grid[0]
-            this.currentCell.visited = true
-            // //set current cell to visited to change its color
-            // this.currentCell.visited = true
             console.log(`Grid cell ${this.grid[0]} has visited value: ${this.grid[0].visited}`)
         }
 
@@ -65,14 +62,18 @@ export class MazeGenerator {
                 //show the cell
                 cell.show()
 
-                //set current cell as visited
             })
             if (this.currentCell) {
-                // this.currentCell.visited = true  
+                //set current cell as visited
+                this.currentCell.visited = true
+
+                //highlight the current cell to tell it apart from other visited ones
+                this.currentCell.highlight()
+                
                 //get the random next neightbor cell from the current cell
                 let nextCell = this.currentCell.getRandomNeightborToVisit(
-                    this.numberOfColumns ? this.numberOfColumns : 0,
-                    this.numberOfRows ? this.numberOfRows : 0,
+                    this.numberOfColumns ,
+                    this.numberOfRows ,
                     this.grid
                 )
 
@@ -96,7 +97,8 @@ export class MazeGenerator {
         //it means they're above current is above next or visa versa
         //get horizontal distance value to set left or right wall on each cell
         let horizontalDistance = currentCell.column - nextCell.column
-        if (horizontalDistance == 1) {
+        console.log(`Horizontal distance is ${horizontalDistance}`)
+        if (horizontalDistance === 1) {
             //current cell is after the next cell 
             //so set the current cell left wall to false to remove it
             currentCell.walls[3] = false
@@ -111,18 +113,19 @@ export class MazeGenerator {
         }
         //get vertical distance value to set left or right wall on each cell
         let verticalDistance = currentCell.row - nextCell.row
-        if (verticalDistance == 1) {
+        console.log(`Vertical distance is ${verticalDistance}`)
+        if (verticalDistance === 1) {
             //current cell is above the next cell 
             //so set the current cell bottom wall to false to remove it
-            currentCell.walls[2] = false
+            currentCell.walls[0] = false
             //so set the next cell top wall to false to remove it
-            nextCell.walls[0] = false
+            nextCell.walls[2] = false
         } else if (verticalDistance === -1) {
             //current cell is below the next cell
             //so set the current cell top wall to false to remove it
-            currentCell.walls[0] = false
+            currentCell.walls[2] = false
             //so set the next cell bottom wall to false to remove it
-            nextCell.walls[2] = false
+            nextCell.walls[0] = false
         }
     }
 

@@ -2,7 +2,7 @@ import { GRID_CELL_WIDTH } from "../../constants/gridConstants"
 import { CellWallPoints } from "./CellWallPoints"
 import { Point } from "./Point"
 import { Color } from "../../utils/colorUtils"
-import { logVisitedCell, logger } from "../../utils/loggingUtils"
+import { logVisitedCell, logger, loggerObj } from "../../utils/loggingUtils"
 import { getPointValsAtIndex } from "../../utils/gridUtils"
 
 export class Cell {
@@ -16,28 +16,28 @@ export class Cell {
         //i is the column number
         //j is the row number
         this.walls = new Array(4).fill(true)
-
     }
     show = () => {
         let xColPointValToDraw = this.column * GRID_CELL_WIDTH
         let yRowPointValToDraw = this.row * GRID_CELL_WIDTH
 
-        
+
         //set fill based on if visited or not
         if (this.visited) {
             // let colorForVisited = new Color(255, 0, 255, 100)
             // const { r, g, b, a } = colorForVisited
             // this._p.fill(r, g, b, a)
             // logVisitedCell(this.column, this.row)
-            this._p.noStroke()
+            // this._p.noStroke()
+            //draw the rectangle
             this._p.fill(255, 0, 255, 100)
+            this._p.noStroke()
+            this._p.rect(xColPointValToDraw, yRowPointValToDraw, GRID_CELL_WIDTH, GRID_CELL_WIDTH)
         } else {
-            this._p.stroke(255)
-            this._p.noFill()
+            // this._p.noFill()
         }
+        this._p.stroke(255)
 
-        //draw the rectangle
-        this._p.rect(xColPointValToDraw, yRowPointValToDraw, GRID_CELL_WIDTH, GRID_CELL_WIDTH)
 
         //Initially just draw the square - Not useful for individual cell wall drawing 
         // this._p.rect(xColPointValToDraw, yRowPointValToDraw, GRID_CELL_WIDTH, GRID_CELL_WIDTH)
@@ -59,20 +59,20 @@ export class Cell {
         let drawLeft = this.walls[3]
 
         if (drawTop) {
-            let cellOptions = new CellWallPoints(point1, point2)
-            this._drawCellWalls(cellOptions)
+            let pointsToDrawWallBetween = new CellWallPoints(point1, point2)
+            this._drawCellWalls(pointsToDrawWallBetween)
         }
         if (drawRight) {
-            let cellOptions = new CellWallPoints(point2, point3)
-            this._drawCellWalls(cellOptions)
+            let pointsToDrawWallBetween = new CellWallPoints(point2, point3)
+            this._drawCellWalls(pointsToDrawWallBetween)
         }
         if (drawBottom) {
-            let cellOptions = new CellWallPoints(point3, point4)
-            this._drawCellWalls(cellOptions)
+            let pointsToDrawWallBetween = new CellWallPoints(point3, point4)
+            this._drawCellWalls(pointsToDrawWallBetween)
         }
         if (drawLeft) {
-            let cellOptions = new CellWallPoints(point4, point1)
-            this._drawCellWalls(cellOptions)
+            let pointsToDrawWallBetween = new CellWallPoints(point4, point1)
+            this._drawCellWalls(pointsToDrawWallBetween)
         }
 
     }
@@ -83,6 +83,13 @@ export class Cell {
             cellWallPoints.endPoint.x,
             cellWallPoints.endPoint.y
         )
+    }
+    highlight = () => {
+        var xLength = this.column * GRID_CELL_WIDTH
+        var yLength = this.row * GRID_CELL_WIDTH
+        this._p.noStroke()
+        this._p.fill(0, 0, 255, 100)
+        this._p.rect(xLength, yLength, GRID_CELL_WIDTH, GRID_CELL_WIDTH)
     }
 
     getRandomNeightborToVisit = (
@@ -95,6 +102,9 @@ export class Cell {
         let rightNeightbor = grid[getPointValsAtIndex(this.column + 1, this.row, numberOfColumns, numberOfRows)]
         let bottomNeightbor = grid[getPointValsAtIndex(this.column, this.row + 1, numberOfColumns, numberOfRows)]
         let leftNeightbor = grid[getPointValsAtIndex(this.column - 1, this.row, numberOfColumns, numberOfRows)]
+
+        //clear out neighbors because this changes 
+        this.neightbors = []
 
         //add any neighbors to array
         if (topNeightbor && !topNeightbor.visited) {
@@ -112,9 +122,15 @@ export class Cell {
 
         //pick random item out of array
         if (this.neightbors.length > 0) {
-            logger(`Number of neightbors: ${this.neightbors.length}`)
-            let nextNeighborToVisit = this.neightbors[this._p.floor(this._p.random(0, this.neightbors.length - 1))]
-            console.log(nextNeighborToVisit)
+            let nextNeighborToVisit = this.neightbors[this._p.floor(this._p.random(0, this.neightbors.length))]
+            logger(`
+            Number of neightbors: ${this.neightbors.length}
+            Neighbor selected`)
+            loggerObj(nextNeighborToVisit)
+            logger(`Current Cell walls`)
+            loggerObj(this.walls)
+            logger(`Current Column and Row`)
+            loggerObj(`Column ${this.column} Row ${this.row}`)
             return nextNeighborToVisit
         } else {
             return undefined

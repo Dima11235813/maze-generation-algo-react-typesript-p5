@@ -10,6 +10,11 @@ export const loggerJson = (obj: any) => {
         console.table(obj)
     }
 }
+export const loggerObj = (obj: any) => {
+    if (LOG_VERBOSE) {
+        console.log(obj)
+    }
+}
 
 export const logRowDuringCreation = (row: number) => {
     //     logger(`
