@@ -1,12 +1,8 @@
 # Implement a depth first search recursive backtracker maze generator tutorial on youtube set up in a create react app typescript app
 
-part 1
-
-https://www.youtube.com/watch?v=HyK_Q5rrcr4
-
-part 2
-
-https://www.youtube.com/watch?v=D8UgRyRnvXU
+* [part 1]https://www.youtube.com/watch?v=HyK_Q5rrcr4
+* [part 2]https://www.youtube.com/watch?v=D8UgRyRnvXU
+* [part 3]https://www.youtube.com/watch?v=8Ju_uxJ9v44
 
 ## Libaries Used 
 

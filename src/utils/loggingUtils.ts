@@ -1,8 +1,13 @@
 import { LOG_VERBOSE } from "../constants/loggingConstants"
 
-const logger = (message: string) => {
+export const logger = (message: string) => {
     if (LOG_VERBOSE) {
         console.log(message)
+    }
+}
+export const loggerJson = (obj: any) => {
+    if (LOG_VERBOSE) {
+        console.table(obj)
     }
 }
 
