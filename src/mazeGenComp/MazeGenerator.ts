@@ -27,15 +27,30 @@ export class MazeGenerator {
         p.setup = () => {
             // p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT)
             p.createCanvas(width, height)
+            let ratioFloat = width / height
+            let ratio = parseFloat(ratioFloat.toPrecision(2))
+            console.log(`Ratio ${ratio}`)
 
+            let cellWidth
+            let cellHeight
+            if (ratio > 1.0) {
+                cellWidth = ratio * GRID_CELL_WIDTH
+                cellHeight = 1 * GRID_CELL_WIDTH
+            } else {
+                cellWidth = 1 * GRID_CELL_WIDTH
+                cellHeight = ratio * GRID_CELL_WIDTH
+            }
+            console.log(`
+            Cell width ${cellWidth}
+            Cell Height ${cellHeight}
+            `)
             //set up number of columns and numberOfRows based on the canvas pixel size and the cell width constants
-            this.numberOfColumns = width / GRID_CELL_WIDTH
-            this.numberOfRows = height / GRID_CELL_WIDTH
-            // this.numberOfColumns = p.floor(width / GRID_CELL_WIDTH)
-            // this.numberOfRows = p.floor(height / GRID_CELL_WIDTH)
+            this.numberOfColumns = p.floor(width / cellWidth)
+            this.numberOfRows = p.floor(height / cellHeight)
 
             //set frame rate
-            // p.frameRate(40)
+            // https://p5js.org/reference/#/p5/frameRate
+            p.frameRate(40)
 
             //set up the grid
             for (var rowNumber = 0; rowNumber < this.numberOfRows; rowNumber += 1) {
@@ -47,7 +62,7 @@ export class MazeGenerator {
                     logColumnDuringCreation(columnNumber)
 
                     //make a cell
-                    let cell = new Cell(columnNumber, rowNumber, p)
+                    let cell = new Cell(columnNumber, rowNumber, p, cellWidth, cellHeight)
 
                     //add the cell to the grid
                     this.grid.push(cell)

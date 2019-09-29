@@ -1,1 +1,1 @@
-export const GRID_CELL_WIDTH = 20
+export let GRID_CELL_WIDTH = 20

@@ -10,7 +10,14 @@ export class Cell {
     public walls: boolean[]
     public visited = false
     public neightbors: Cell[] = []
-    constructor(public column: any, public row: any, private _p: p5) {
+    constructor(
+        public column: any,
+        public row: any,
+        private _p: p5,
+        private _cellWidth: number,
+        private _cellHeight: number
+
+    ) {
         //TODO Fix this
         // console.log(`Created cell at column #${column} and row #${row}`)
         //i is the column number
@@ -18,8 +25,8 @@ export class Cell {
         this.walls = new Array(4).fill(true)
     }
     show = () => {
-        let xColPointValToDraw = this.column * GRID_CELL_WIDTH
-        let yRowPointValToDraw = this.row * GRID_CELL_WIDTH
+        let xColPointValToDraw = this.column * this._cellWidth
+        let yRowPointValToDraw = this.row * this._cellHeight
 
 
         //set fill based on if visited or not
@@ -31,7 +38,7 @@ export class Cell {
             //draw the rectangle
             this._p.fill(255, 50, 255, 100)
             this._p.noStroke()
-            this._p.rect(xColPointValToDraw, yRowPointValToDraw, GRID_CELL_WIDTH, GRID_CELL_WIDTH)
+            this._p.rect(xColPointValToDraw, yRowPointValToDraw, this._cellWidth, this._cellHeight)
         }
         this._p.stroke(255)
 
@@ -43,11 +50,11 @@ export class Cell {
         //point 1 @ x,y
         let point1 = new Point(xColPointValToDraw, yRowPointValToDraw)
         //point 2 @ x + width, y
-        let point2 = new Point(xColPointValToDraw + GRID_CELL_WIDTH, yRowPointValToDraw)
+        let point2 = new Point(xColPointValToDraw + this._cellWidth, yRowPointValToDraw)
         //point 3 @ x + width, y + width
-        let point3 = new Point(xColPointValToDraw + GRID_CELL_WIDTH, yRowPointValToDraw + GRID_CELL_WIDTH)
+        let point3 = new Point(xColPointValToDraw + this._cellWidth, yRowPointValToDraw + this._cellHeight)
         //point 4 @ x, y + width
-        let point4 = new Point(xColPointValToDraw, yRowPointValToDraw + GRID_CELL_WIDTH)
+        let point4 = new Point(xColPointValToDraw, yRowPointValToDraw + this._cellHeight)
 
         //Create bools to determine whether to draw each wall
         let drawTop = this.walls[0]
@@ -82,11 +89,11 @@ export class Cell {
         )
     }
     highlight = () => {
-        var xLength = this.column * GRID_CELL_WIDTH
-        var yLength = this.row * GRID_CELL_WIDTH
+        var xLength = this.column * this._cellWidth
+        var yLength = this.row * this._cellHeight
         this._p.noStroke()
         this._p.fill(0, 0, 255, 100)
-        this._p.rect(xLength, yLength, GRID_CELL_WIDTH, GRID_CELL_WIDTH)
+        this._p.rect(xLength, yLength, this._cellWidth, this._cellHeight)
     }
 
     getRandomNeightborToVisit = (
