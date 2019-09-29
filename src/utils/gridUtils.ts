@@ -14,6 +14,6 @@ export const getPointValsAtIndex = (
     ) {
         return -1
     } else {
-        return row * col * numColumns
+        return col + row * numColumns
     }
 }

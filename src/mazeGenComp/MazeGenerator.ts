@@ -28,6 +28,9 @@ export class MazeGenerator {
             this.numberOfColumns = p.floor(CANVAS_WIDTH / GRID_CELL_WIDTH)
             this.numberOfRows = p.floor(CANVAS_WIDTH / GRID_CELL_WIDTH)
 
+            //set frame rate
+            p.frameRate(5)
+
             //set up the grid
             for (var rowNumber = 0; rowNumber < this.numberOfRows; rowNumber += 1) {
                 //log set of iteration
@@ -46,14 +49,16 @@ export class MazeGenerator {
             }
 
             //set current cell as first
-            this.grid[0].visited = true
-            this.currentCell = this.grid[1]
+            this.currentCell = this.grid[0]
+            this.currentCell.visited = true
+            // //set current cell to visited to change its color
+            // this.currentCell.visited = true
             console.log(`Grid cell ${this.grid[0]} has visited value: ${this.grid[0].visited}`)
         }
 
         p.draw = () => {
             //set background of canvas
-            p.background(51)
+            p.background(151)
 
             //draw each cell in the grid
             this.grid.map(cell => {
@@ -63,27 +68,25 @@ export class MazeGenerator {
                 //set current cell as visited
             })
             if (this.currentCell) {
-                //set current cell to visited to change its color on next frame
-                this.currentCell.visited = true
-
+                // this.currentCell.visited = true  
                 //get the random next neightbor cell from the current cell
                 let nextCell = this.currentCell.getRandomNeightborToVisit(
-                    this.numberOfColumns ? this.numberOfColumns + 1 : 0,
-                    this.numberOfRows ? this.numberOfRows + 1 : 0,
+                    this.numberOfColumns ? this.numberOfColumns : 0,
+                    this.numberOfRows ? this.numberOfRows : 0,
                     this.grid
                 )
 
                 if (nextCell) {
                     //set next cell to visited
-                    logger(`Setting Next Cell As Visited`)
+                    // logger(`Setting Next Cell As Visited`)
                     nextCell.visited = true
 
                     //STEP 3
                     this.removeWalls(this.currentCell, nextCell)
 
-                    logger(`Next Cell is Becoming Current Cell:`)
+                    // logger(`Next Cell is Becoming Current Cell:`)
                     this.currentCell = nextCell
-                    loggerJson(nextCell)
+                    // loggerJson(nextCell)
                 }
             }
         }
@@ -117,6 +120,7 @@ export class MazeGenerator {
         } else if (verticalDistance === -1) {
             //current cell is below the next cell
             //so set the current cell top wall to false to remove it
+            currentCell.walls[0] = false
             //so set the next cell bottom wall to false to remove it
             nextCell.walls[2] = false
         }

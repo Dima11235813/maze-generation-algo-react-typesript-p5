@@ -28,7 +28,7 @@ export class Cell {
             // let colorForVisited = new Color(255, 0, 255, 100)
             // const { r, g, b, a } = colorForVisited
             // this._p.fill(r, g, b, a)
-            logVisitedCell(this.column, this.row)
+            // logVisitedCell(this.column, this.row)
             this._p.noStroke()
             this._p.fill(255, 0, 255, 100)
         } else {
@@ -112,8 +112,8 @@ export class Cell {
 
         //pick random item out of array
         if (this.neightbors.length > 0) {
-            logger(`Number of neightbors: ${this.neightbors}`)
-            let nextNeighborToVisit = this.neightbors[this._p.floor(this._p.random(0, this.neightbors.length))]
+            logger(`Number of neightbors: ${this.neightbors.length}`)
+            let nextNeighborToVisit = this.neightbors[this._p.floor(this._p.random(0, this.neightbors.length - 1))]
             console.log(nextNeighborToVisit)
             return nextNeighborToVisit
         } else {
