@@ -8,7 +8,7 @@ import { getPointValsAtIndex } from "../../utils/gridUtils"
 export class Cell {
     //TOP, RIGHT, BOTTOM, LEFT
     public walls: boolean[]
-    public visited = false
+    public visited = 0
     public neightbors: Cell[] = []
     constructor(
         public column: any,
@@ -24,6 +24,7 @@ export class Cell {
         //j is the row number
         this.walls = new Array(4).fill(true)
     }
+    getColorBasedOnVisited = () => this.visited + 1
     show = () => {
         let xColPointValToDraw = this.column * this._cellWidth
         let yRowPointValToDraw = this.row * this._cellHeight
@@ -36,7 +37,9 @@ export class Cell {
             // this._p.fill(r, g, b, a)
             // logVisitedCell(this.column, this.row)
             //draw the rectangle
-            this._p.fill(255, 50, 255, 100)
+            // /https://p5js.org/reference/#/p5/fill
+            this._p.fill(255 / (this.getColorBasedOnVisited()), 0, 0)
+            // this._p.fill(255 / (this.getColorBasedOnVisited()),0, 0, 255)
             this._p.noStroke()
             this._p.rect(xColPointValToDraw, yRowPointValToDraw, this._cellWidth, this._cellHeight)
         }
@@ -92,7 +95,7 @@ export class Cell {
         var xLength = this.column * this._cellWidth
         var yLength = this.row * this._cellHeight
         this._p.noStroke()
-        this._p.fill(0, 0, 255, 100)
+        this._p.fill(0, 0, 255 / this.visited + 1, 100)
         this._p.rect(xLength, yLength, this._cellWidth, this._cellHeight)
     }
 

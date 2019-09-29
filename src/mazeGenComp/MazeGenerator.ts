@@ -50,7 +50,7 @@ export class MazeGenerator {
 
             //set frame rate
             // https://p5js.org/reference/#/p5/frameRate
-            p.frameRate(40)
+            // p.frameRate(40)
 
             //set up the grid
             for (var rowNumber = 0; rowNumber < this.numberOfRows; rowNumber += 1) {
@@ -85,7 +85,7 @@ export class MazeGenerator {
             })
             if (this.currentCell) {
                 //set current cell as visited
-                this.currentCell.visited = true
+                this.currentCell.visited += 1
 
                 //highlight the current cell to tell it apart from other visited ones
                 this.currentCell.highlight()
@@ -101,7 +101,7 @@ export class MazeGenerator {
                 if (nextCell) {
                     //set next cell to visited
                     // logger(`Setting Next Cell As Visited`)
-                    nextCell.visited = true
+                    nextCell.visited += 1
 
                     //STEP 2
                     this.stack.push(this.currentCell)
