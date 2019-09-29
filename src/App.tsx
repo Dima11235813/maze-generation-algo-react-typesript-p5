@@ -4,8 +4,11 @@ import { MazeGenerator } from './mazeGenComp/MazeGenerator';
 import p5 from 'p5'
 
 const App: React.FC = () => {
+  //get the window dimensions
+  let height = window.innerHeight - 30
+  let width = window.innerWidth - 20
   var sketch = (p: p5) => {
-    new MazeGenerator(p)
+    new MazeGenerator(p, width, height)
   }
   new p5(sketch);
 

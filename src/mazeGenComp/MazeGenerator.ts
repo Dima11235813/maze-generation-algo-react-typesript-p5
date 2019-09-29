@@ -23,16 +23,19 @@ export class MazeGenerator {
     //hold reference to current cell in iteration
     currentCell?: Cell
 
-    constructor(p: p5) {
+    constructor(p: p5, width: number, height: number) {
         p.setup = () => {
-            p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT)
+            // p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT)
+            p.createCanvas(width, height)
 
             //set up number of columns and numberOfRows based on the canvas pixel size and the cell width constants
-            this.numberOfColumns = p.floor(CANVAS_WIDTH / GRID_CELL_WIDTH)
-            this.numberOfRows = p.floor(CANVAS_WIDTH / GRID_CELL_WIDTH)
+            this.numberOfColumns = width / GRID_CELL_WIDTH
+            this.numberOfRows = height / GRID_CELL_WIDTH
+            // this.numberOfColumns = p.floor(width / GRID_CELL_WIDTH)
+            // this.numberOfRows = p.floor(height / GRID_CELL_WIDTH)
 
             //set frame rate
-            p.frameRate(20)
+            // p.frameRate(40)
 
             //set up the grid
             for (var rowNumber = 0; rowNumber < this.numberOfRows; rowNumber += 1) {
@@ -53,7 +56,6 @@ export class MazeGenerator {
 
             //set current cell as first
             this.currentCell = this.grid[0]
-            console.log(`Grid cell ${this.grid[0]} has visited value: ${this.grid[0].visited}`)
         }
 
         p.draw = () => {
@@ -104,7 +106,7 @@ export class MazeGenerator {
         //it means they're above current is above next or visa versa
         //get horizontal distance value to set left or right wall on each cell
         let horizontalDistance = currentCell.column - nextCell.column
-        console.log(`Horizontal distance is ${horizontalDistance}`)
+        // console.log(`Horizontal distance is ${horizontalDistance}`)
         if (horizontalDistance === 1) {
             //current cell is after the next cell 
             //so set the current cell left wall to false to remove it
@@ -120,7 +122,7 @@ export class MazeGenerator {
         }
         //get vertical distance value to set left or right wall on each cell
         let verticalDistance = currentCell.row - nextCell.row
-        console.log(`Vertical distance is ${verticalDistance}`)
+        // console.log(`Vertical distance is ${verticalDistance}`)
         if (verticalDistance === 1) {
             //current cell is above the next cell 
             //so set the current cell bottom wall to false to remove it

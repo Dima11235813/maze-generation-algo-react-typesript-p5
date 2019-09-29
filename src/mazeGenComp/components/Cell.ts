@@ -28,13 +28,10 @@ export class Cell {
             // const { r, g, b, a } = colorForVisited
             // this._p.fill(r, g, b, a)
             // logVisitedCell(this.column, this.row)
-            // this._p.noStroke()
             //draw the rectangle
-            this._p.fill(255, 0, 255, 100)
+            this._p.fill(255, 50, 255, 100)
             this._p.noStroke()
             this._p.rect(xColPointValToDraw, yRowPointValToDraw, GRID_CELL_WIDTH, GRID_CELL_WIDTH)
-        } else {
-            // this._p.noFill()
         }
         this._p.stroke(255)
 
@@ -123,14 +120,14 @@ export class Cell {
         //pick random item out of array
         if (this.neightbors.length > 0) {
             let nextNeighborToVisit = this.neightbors[this._p.floor(this._p.random(0, this.neightbors.length))]
-            logger(`
-            Number of neightbors: ${this.neightbors.length}
-            Neighbor selected`)
-            loggerObj(nextNeighborToVisit)
-            logger(`Current Cell walls`)
-            loggerObj(this.walls)
-            logger(`Current Column and Row`)
-            loggerObj(`Column ${this.column} Row ${this.row}`)
+            // logger(`
+            // Number of neightbors: ${this.neightbors.length}
+            // Neighbor selected`)
+            // loggerObj(nextNeighborToVisit)
+            // logger(`Current Cell walls`)
+            // loggerObj(this.walls)
+            // logger(`Current Column and Row`)
+            // loggerObj(`Column ${this.column} Row ${this.row}`)
             return nextNeighborToVisit
         } else {
             return undefined
