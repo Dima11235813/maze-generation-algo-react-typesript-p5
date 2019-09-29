@@ -1,1 +1,1 @@
-export let GRID_CELL_WIDTH = 60
+export let GRID_CELL_WIDTH = 9

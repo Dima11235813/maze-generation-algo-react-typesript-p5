@@ -1,6 +1,6 @@
 .App {
     text-align: center;
-    border: 5px solid black;
+    /* border: 5px solid black; */
 }
 
 .App-logo {
@@ -23,5 +23,7 @@
 }
 
 .color-picker {
-    position: relative;
+    position: absolute;
+    bottom: -325px;
+    right: 0px;
 }
