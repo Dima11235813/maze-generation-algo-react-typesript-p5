@@ -28,6 +28,7 @@ export class MazeGenerator {
         p: p5,
         width: number,
         height: number,
+        public cellWidth: number,
         public cellColor: Color,
         public backgroundColor: Color
     ) {
@@ -37,22 +38,22 @@ export class MazeGenerator {
             let ratioFloat = width / height
             let ratio = parseFloat(ratioFloat.toPrecision(5))
 
-            let cellWidth
+            let newCellWidth
             let cellHeight
             if (ratio > 1.0) {
-                cellWidth = ratio * GRID_CELL_WIDTH
-                cellHeight = 1 * GRID_CELL_WIDTH
+                newCellWidth = ratio * cellWidth
+                cellHeight = 1 * cellWidth
             } else {
-                cellWidth = 1 * GRID_CELL_WIDTH
-                cellHeight = (1 / ratio) * GRID_CELL_WIDTH
+                newCellWidth = 1 * cellWidth
+                cellHeight = (1 / ratio) * cellWidth
             }
             console.log(`
-            Cell width ${cellWidth}
+            Cell width ${newCellWidth}
             Cell Height ${cellHeight}
             `)
             //set up number of columns and numberOfRows based on the canvas pixel size and the cell width constants
-            let padding = width % cellWidth
-            this.numberOfColumns = p.floor(width / cellWidth)
+            let padding = width % newCellWidth
+            this.numberOfColumns = p.floor(width / newCellWidth)
             this.numberOfRows = p.floor(height / cellHeight)
 
             //set frame rate
@@ -73,7 +74,7 @@ export class MazeGenerator {
                         columnNumber,
                         rowNumber,
                         p,
-                        cellWidth,
+                        newCellWidth,
                         cellHeight,
                         padding
                     )
