@@ -62,7 +62,13 @@ export class MazeGenerator {
                     logColumnDuringCreation(columnNumber)
 
                     //make a cell
-                    let cell = new Cell(columnNumber, rowNumber, p, cellWidth, cellHeight)
+                    let cell = new Cell(
+                        columnNumber, 
+                        rowNumber, 
+                        p, 
+                        cellWidth, 
+                        cellHeight
+                        )
 
                     //add the cell to the grid
                     this.grid.push(cell)
@@ -75,7 +81,8 @@ export class MazeGenerator {
 
         p.draw = () => {
             //set background of canvas
-            p.background(151)
+            p.background(255,255,255)
+            // p.background(151)
 
             //draw each cell in the grid
             this.grid.map(cell => {

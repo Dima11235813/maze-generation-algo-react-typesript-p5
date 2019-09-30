@@ -38,7 +38,13 @@ export class Cell {
             // logVisitedCell(this.column, this.row)
             //draw the rectangle
             // /https://p5js.org/reference/#/p5/fill
-            this._p.fill(255 / (this.getColorBasedOnVisited()), 0, 0)
+            this._p.fill(
+                255 / (this.getColorBasedOnVisited()),
+                255 / (this.getColorBasedOnVisited()),
+                100
+                // 126 / (this.getColorBasedOnVisited()),
+                // 1 / (this.getColorBasedOnVisited()),
+            )
             // this._p.fill(255 / (this.getColorBasedOnVisited()),0, 0, 255)
             this._p.noStroke()
             this._p.rect(xColPointValToDraw, yRowPointValToDraw, this._cellWidth, this._cellHeight)
