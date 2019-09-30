@@ -11,7 +11,7 @@ const App: React.FC = () => {
   // }
   //SET DEFAULT COLORS FOR MAZE
   const defaultCellColor = new Color(9, 170, 121, 100)
-  const defaultBackgroundColor = new Color(145,101,100,100)
+  const defaultBackgroundColor = new Color(145, 101, 100, 100)
 
   //SET UP CHANGABLE VAR FOR COLOR TO PASS TO GENERATOR
   let cellColor = defaultCellColor
@@ -38,8 +38,10 @@ const App: React.FC = () => {
   }
 
   //get the window dimensions
-  let height = window.innerHeight - 5
-  let width = window.innerWidth
+  let offsetX = 17
+  let height = window.innerHeight
+  let width = window.innerWidth - offsetX
+
   var sketch = (p: p5) => {
     new MazeGenerator(
       p,

@@ -10,14 +10,19 @@ export class Cell {
     public walls: boolean[]
     public visited = 0
     public neightbors: Cell[] = []
+    paddingToApplyToLeft: number
+    paddingToApplyToTop: number
     constructor(
         public column: any,
         public row: any,
         private _p: p5,
         private _cellWidth: number,
-        private _cellHeight: number
+        private _cellHeight: number,
+        private _padding: number
 
     ) {
+        this.paddingToApplyToLeft = _padding / 2
+        this.paddingToApplyToTop = _padding / 2
         //TODO Fix this
         // console.log(`Created cell at column #${column} and row #${row}`)
         //i is the column number
@@ -60,7 +65,11 @@ export class Cell {
             // console.log(color)
             // this._p.fill(255 / (this.getColorBasedOnVisited()),0, 0, 255)
             this._p.noStroke()
-            this._p.rect(xColPointValToDraw, yRowPointValToDraw, this._cellWidth, this._cellHeight)
+            this._p.rect(
+                xColPointValToDraw + this.paddingToApplyToLeft, 
+                yRowPointValToDraw + this.paddingToApplyToTop, 
+                this._cellWidth, 
+                this._cellHeight)
         }
         this._p.stroke(255)
 
@@ -104,10 +113,10 @@ export class Cell {
     }
     private _drawCellWalls = (cellWallPoints: CellWallPoints) => {
         this._p.line(
-            cellWallPoints.startPoint.x,
-            cellWallPoints.startPoint.y,
-            cellWallPoints.endPoint.x,
-            cellWallPoints.endPoint.y
+            cellWallPoints.startPoint.x + this.paddingToApplyToLeft,
+            cellWallPoints.startPoint.y + this.paddingToApplyToTop,
+            cellWallPoints.endPoint.x + this.paddingToApplyToLeft,
+            cellWallPoints.endPoint.y + this.paddingToApplyToTop
         )
     }
     highlight = () => {
@@ -115,7 +124,7 @@ export class Cell {
         var yLength = this.row * this._cellHeight
         this._p.noStroke()
         this._p.fill(0, 0, 255 / this.visited + 1, 100)
-        this._p.rect(xLength, yLength, this._cellWidth, this._cellHeight)
+        this._p.rect(xLength + this.paddingToApplyToLeft, yLength + this.paddingToApplyToTop, this._cellWidth, this._cellHeight)
     }
 
     getRandomNeightborToVisit = (

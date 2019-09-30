@@ -25,18 +25,17 @@ export class MazeGenerator {
     currentCell?: Cell
     //TODO Set up builder class for many options handling
     constructor(
-        p: p5, 
-        width: number, 
-        height: number, 
+        p: p5,
+        width: number,
+        height: number,
         public cellColor: Color,
         public backgroundColor: Color
-        ) {
+    ) {
         p.setup = () => {
             // p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT)
             p.createCanvas(width, height)
             let ratioFloat = width / height
-            let ratio = parseFloat(ratioFloat.toPrecision(2))
-            console.log(`Ratio ${ratio}`)
+            let ratio = parseFloat(ratioFloat.toPrecision(5))
 
             let cellWidth
             let cellHeight
@@ -45,13 +44,14 @@ export class MazeGenerator {
                 cellHeight = 1 * GRID_CELL_WIDTH
             } else {
                 cellWidth = 1 * GRID_CELL_WIDTH
-                cellHeight = ratio * GRID_CELL_WIDTH
+                cellHeight = (1 / ratio) * GRID_CELL_WIDTH
             }
             console.log(`
             Cell width ${cellWidth}
             Cell Height ${cellHeight}
             `)
             //set up number of columns and numberOfRows based on the canvas pixel size and the cell width constants
+            let padding = width % cellWidth
             this.numberOfColumns = p.floor(width / cellWidth)
             this.numberOfRows = p.floor(height / cellHeight)
 
@@ -74,7 +74,8 @@ export class MazeGenerator {
                         rowNumber,
                         p,
                         cellWidth,
-                        cellHeight
+                        cellHeight,
+                        padding
                     )
 
                     //add the cell to the grid
@@ -88,13 +89,12 @@ export class MazeGenerator {
 
         p.draw = () => {
             const { r, g, b, a } = this.backgroundColor
-            console.log(`Background color`)
-            console.log(this.backgroundColor)
+
             //set background of canvas
             // if (a) {
             //     p.background(r, g, b, a)
             // } else {
-                p.background(r, g, b)
+            p.background(r, g, b)
 
             // }
             // p.background(151)
