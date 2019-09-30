@@ -1,9 +1,9 @@
 import { GRID_CELL_WIDTH } from "../../constants/gridConstants"
 import { CellWallPoints } from "./CellWallPoints"
 import { Point } from "./Point"
-import { Color } from "../../utils/colorUtils"
 import { logVisitedCell, logger, loggerObj } from "../../utils/loggingUtils"
 import { getPointValsAtIndex } from "../../utils/gridUtils"
+import { Color } from "../../utils/colorUtils"
 
 export class Cell {
     //TOP, RIGHT, BOTTOM, LEFT
@@ -25,7 +25,7 @@ export class Cell {
         this.walls = new Array(4).fill(true)
     }
     getColorBasedOnVisited = () => this.visited + 1
-    show = () => {
+    show = (color: Color) => {
         let xColPointValToDraw = this.column * this._cellWidth
         let yRowPointValToDraw = this.row * this._cellHeight
 
@@ -38,13 +38,30 @@ export class Cell {
             // logVisitedCell(this.column, this.row)
             //draw the rectangle
             // /https://p5js.org/reference/#/p5/fill
-            this._p.fill(
-                255 / (this.getColorBasedOnVisited()),
-                255 / (this.getColorBasedOnVisited()),
-                100
-                // 126 / (this.getColorBasedOnVisited()),
-                // 1 / (this.getColorBasedOnVisited()),
-            )
+            const { r, g, b, a } = color
+            // if (a) {
+
+            //     this._p.fill(
+            //         r / (this.getColorBasedOnVisited()),
+            //         g / (this.getColorBasedOnVisited()),
+            //         b,
+            //         a
+            //         // 126 / (this.getColorBasedOnVisited()),
+            //         // 1 / (this.getColorBasedOnVisited()),
+            //     )
+            // } else {
+                this._p.fill(
+                    r / (this.getColorBasedOnVisited()),
+                    g / (this.getColorBasedOnVisited()),
+                    b / (this.getColorBasedOnVisited())
+                    // 126 / (this.getColorBasedOnVisited()),
+                    // 1 / (this.getColorBasedOnVisited()),
+                )
+
+            // }
+
+            console.log(`Cell Color`)
+            console.log(color)
             // this._p.fill(255 / (this.getColorBasedOnVisited()),0, 0, 255)
             this._p.noStroke()
             this._p.rect(xColPointValToDraw, yRowPointValToDraw, this._cellWidth, this._cellHeight)

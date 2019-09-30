@@ -24,6 +24,12 @@
 
 .color-picker {
     position: absolute;
-    bottom: -325px;
+    bottom: -345px;
     right: 0px;
+}
+
+.color-picker-2 {
+    position: absolute;
+    bottom: -345px;
+    left: 0px;
 }

@@ -13,9 +13,9 @@ export class Color {
     // constructor(r?: string | number, g?: number, b?: number)
     // constructor(public r?: string | number, g?: number, b?: number, a?: number) {
     constructor(
-        public r?: number,
-        public g?: number,
-        public b?: number,
+        public r: number,
+        public g: number,
+        public b: number,
         public a?: number
     ) {
         // if (typeof r === 'string') {

@@ -3,6 +3,7 @@ import { GRID_CELL_WIDTH } from "../constants/gridConstants"
 
 import { Cell } from "./components/Cell"
 import { logColumnDuringCreation, logRowDuringCreation, logger, loggerJson } from "../utils/loggingUtils"
+import { Color } from "../utils/colorUtils"
 
 export class MazeGenerator {
 
@@ -22,8 +23,14 @@ export class MazeGenerator {
 
     //hold reference to current cell in iteration
     currentCell?: Cell
-
-    constructor(p: p5, width: number, height: number) {
+    //TODO Set up builder class for many options handling
+    constructor(
+        p: p5, 
+        width: number, 
+        height: number, 
+        public cellColor: Color,
+        public backgroundColor: Color
+        ) {
         p.setup = () => {
             // p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT)
             p.createCanvas(width, height)
@@ -63,12 +70,12 @@ export class MazeGenerator {
 
                     //make a cell
                     let cell = new Cell(
-                        columnNumber, 
-                        rowNumber, 
-                        p, 
-                        cellWidth, 
+                        columnNumber,
+                        rowNumber,
+                        p,
+                        cellWidth,
                         cellHeight
-                        )
+                    )
 
                     //add the cell to the grid
                     this.grid.push(cell)
@@ -80,14 +87,22 @@ export class MazeGenerator {
         }
 
         p.draw = () => {
+            const { r, g, b, a } = this.backgroundColor
+            console.log(`Background color`)
+            console.log(this.backgroundColor)
             //set background of canvas
-            p.background(255,255,255)
+            // if (a) {
+            //     p.background(r, g, b, a)
+            // } else {
+                p.background(r, g, b)
+
+            // }
             // p.background(151)
 
             //draw each cell in the grid
             this.grid.map(cell => {
                 //show the cell
-                cell.show()
+                cell.show(this.cellColor)
 
             })
             if (this.currentCell) {
