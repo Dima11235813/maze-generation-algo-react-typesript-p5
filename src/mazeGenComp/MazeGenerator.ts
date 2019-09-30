@@ -111,7 +111,7 @@ export class MazeGenerator {
 
                 //highlight the current cell to tell it apart from other visited ones
                 this.currentCell.highlight()
-
+                //STEP 1
                 //get the random next neightbor cell from the current cell
                 let nextCell
                 nextCell = this.currentCell.getRandomNeightborToVisit(
@@ -121,10 +121,6 @@ export class MazeGenerator {
                 )
 
                 if (nextCell) {
-                    //set next cell to visited
-                    // logger(`Setting Next Cell As Visited`)
-                    nextCell.visited += 1
-
                     //STEP 2
                     this.stack.push(this.currentCell)
 

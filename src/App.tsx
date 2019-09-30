@@ -10,24 +10,22 @@ const App: React.FC = () => {
   //   debugger
   // }
   //SET DEFAULT COLORS FOR MAZE
-  const defaultCellColor = new Color(255, 255, 100)
-  const defaultBackgroundColor = new Color(0, 0, 0, 0)
+  const defaultCellColor = new Color(9, 170, 121, 100)
+  const defaultBackgroundColor = new Color(145,101,100,100)
 
   //SET UP CHANGABLE VAR FOR COLOR TO PASS TO GENERATOR
   let cellColor = defaultCellColor
   let backgroundColor = defaultBackgroundColor
 
   //SET UP HANDLERS FOR COLOR CHANGE
-  const handleColorChange = (color: any) => {
+  const handleCellColorChange = (color: any) => {
     const { r, g, b, a } = color.rgb
     cellColor.r = r
     cellColor.g = g
     cellColor.b = b
-    if (a) {
-      cellColor.a = a
-    } else {
-      backgroundColor.a = 1
-    }
+    // if (a) {
+    //   cellColor.a = a
+    // }
   }
   const handleBackgroundColorChange = (color: any) => {
     const { r, g, b, a } = color.rgb
@@ -36,8 +34,6 @@ const App: React.FC = () => {
     backgroundColor.b = b
     if (a) {
       backgroundColor.a = a
-    } else {
-      backgroundColor.a = 1
     }
   }
 
@@ -59,7 +55,7 @@ const App: React.FC = () => {
         <div>Cell Color</div>
         <SketchPicker
           color={defaultCellColor}
-          onChange={handleColorChange}
+          onChange={handleCellColorChange}
         // onChangeComplete={handleColorChangeComplete}
         />
       </div>
