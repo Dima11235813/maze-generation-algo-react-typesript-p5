@@ -1,10 +1,21 @@
+@media (min-width: 801px) {
+    .App {
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+    }
+}
+
+@media (min-width: 0px) and (max-width: 799px) {
+    .App {
+        grid-template-rows: 1fr 1fr 1fr 1fr;
+    }
+}
+
 .App {
     text-align: center;
     position: absolute;
     width: 90vw;
     top: 100vh;
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
     justify-content: space-between;
     /* border: 5px solid black; */
 }
@@ -28,18 +39,8 @@
     color: #09d3ac;
 }
 
-.color-picker {
-    /* bottom: -345px;
-    right: 0px; */
-}
-
-.color-picker-2 {
-    /* bottom: -345px;
-    left: 0px; */
-}
-
 .grid-controls {
     display: grid;
     grid-template-columns: 1fr;
-    align-content: flex-end;
+    align-content: center;
 }

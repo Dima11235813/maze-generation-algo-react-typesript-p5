@@ -4,12 +4,14 @@ import { Point } from "./Point"
 import { logVisitedCell, logger, loggerObj } from "../../utils/loggingUtils"
 import { getPointValsAtIndex } from "../../utils/gridUtils"
 import { Color } from "../../utils/colorUtils"
+import { strokeCapOptions } from "../../utils/storkeUtils"
 
 export class Cell {
     //TOP, RIGHT, BOTTOM, LEFT
     public walls: boolean[]
     public visited = 0
     public neightbors: Cell[] = []
+    private stackSubractorFromColor: number = 0
     paddingToApplyToLeft: number
     paddingToApplyToTop: number
     constructor(
@@ -18,7 +20,7 @@ export class Cell {
         private _p: p5,
         private _cellWidth: number,
         private _cellHeight: number,
-        private _padding: number
+        private _padding: number,
 
     ) {
         this.paddingToApplyToLeft = _padding / 2
@@ -29,8 +31,18 @@ export class Cell {
         //j is the row number
         this.walls = new Array(4).fill(true)
     }
-    getColorBasedOnVisited = () => this.visited * .99
-    show = (color: Color) => {
+    // getColorBasedOnVisited = (stackLength: number) => (1 / (this.visited + 1)) * (1 / (stackLength + 1))
+    // getColorBasedOnVisited = (stackLength: number) => ((1 / this.visited * 10)) +  (1 / (stackLength * 2 + 1))
+    //grid of roughly 400 cells had max of aobut 250 
+    //need to calc number o cells and take 5/8s as the max number - to normalize acroos grid sizes
+    //make it so that most dominant r, g, b value is oscilated by 250 based on the scope size
+    getColorBasedOnVisited = () => this.visited //+ ((stackLength + 1) / 10) //+ ((stackLength + 1) / 10)
+    show = (
+        color: Color,
+        cellWallColor: Color,
+        cellWallWidthPercent: number = 1,
+        stackLength: number
+    ) => {
         let xColPointValToDraw = this.column * this._cellWidth
         let yRowPointValToDraw = this.row * this._cellHeight
 
@@ -43,20 +55,28 @@ export class Cell {
             // logVisitedCell(this.column, this.row)
             //draw the rectangle
             // /https://p5js.org/reference/#/p5/fill
+            const divider = this.getColorBasedOnVisited()
+            if(this.stackSubractorFromColor === 0){
+                this.stackSubractorFromColor = stackLength
+            }
+            // else if(stackLength > this.stackSubractorFromColor){
+            //     this.stackSubractorFromColor = stackLength
+            // }
+            console.log(`Stack length ${stackLength}`)
             const { r, g, b, a } = color
             if (a) {
 
                 this._p.fill(
-                    this._p.floor(r / (this.getColorBasedOnVisited())),
-                    this._p.floor(g / (this.getColorBasedOnVisited())),
-                    this._p.floor(b / (this.getColorBasedOnVisited())),
+                    this._p.floor(r),
+                    this._p.floor(g / divider),
+                    this._p.floor(b - this.stackSubractorFromColor),
                     a
                 )
             } else {
                 this._p.fill(
-                    this._p.floor(r / (this.getColorBasedOnVisited())),
-                    this._p.floor(g / (this.getColorBasedOnVisited())),
-                    this._p.floor(b / (this.getColorBasedOnVisited()))
+                    this._p.floor(r),
+                    this._p.floor(g / divider),
+                    this._p.floor(b - this.stackSubractorFromColor)
                 )
 
             }
@@ -66,12 +86,31 @@ export class Cell {
             // this._p.fill(255 / (this.getColorBasedOnVisited()),0, 0, 255)
             this._p.noStroke()
             this._p.rect(
-                xColPointValToDraw + this.paddingToApplyToLeft, 
-                yRowPointValToDraw + this.paddingToApplyToTop, 
-                this._cellWidth, 
+                xColPointValToDraw + this.paddingToApplyToLeft,
+                yRowPointValToDraw + this.paddingToApplyToTop,
+                this._cellWidth,
                 this._cellHeight)
         }
-        this._p.stroke(255)
+        //set wall options 
+        //stroke
+        if (cellWallWidthPercent) {
+            let newStrokeWeight: number = (cellWallWidthPercent)
+            console.log(`Stroke weight is ${newStrokeWeight}`)
+            this._p.strokeWeight(newStrokeWeight)
+        }
+        //set stroke style
+        let projecctCap = this._p.PROJECT
+        let squareCap = this._p.SQUARE
+        let roundCap = this._p.ROUND
+
+        this._p.strokeCap(roundCap)
+        //wall color
+        const { r, g, b, a } = cellWallColor
+        if (a) {
+            this._p.stroke(r, g, b, 255)
+        } else {
+            this._p.stroke(r, g, b, 255)
+        }
 
 
         //Initially just draw the square - Not useful for individual cell wall drawing 

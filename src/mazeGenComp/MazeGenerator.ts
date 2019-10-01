@@ -30,6 +30,8 @@ export class MazeGenerator {
         height: number,
         public cellWidth: number,
         public cellColor: Color,
+        public cellWallWidthPercent: number,
+        public cellWallColor: Color,
         public backgroundColor: Color
     ) {
         p.setup = () => {
@@ -78,7 +80,6 @@ export class MazeGenerator {
                         cellHeight,
                         padding
                     )
-
                     //add the cell to the grid
                     this.grid.push(cell)
                 }
@@ -103,7 +104,7 @@ export class MazeGenerator {
             //draw each cell in the grid
             this.grid.map(cell => {
                 //show the cell
-                cell.show(this.cellColor)
+                cell.show(this.cellColor, this.cellWallColor, this.cellWallWidthPercent, this.stack.length)
 
             })
             if (this.currentCell) {
@@ -124,6 +125,7 @@ export class MazeGenerator {
                 if (nextCell) {
                     //STEP 2
                     this.stack.push(this.currentCell)
+                    console.log(`Stack length ${this.stack.length}`)
 
                     //STEP 3
                     this.removeWalls(this.currentCell, nextCell)
