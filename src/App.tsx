@@ -5,157 +5,105 @@ import { MazeGenerator } from './mazeGenComp/MazeGenerator';
 import p5 from 'p5'
 import { Color } from './utils/colorUtils';
 import { GRID_CELL_WIDTH } from './constants/gridConstants';
+import { mazeDefaultsStorageKeys } from './utils/storageUtils';
+import { mazeDefaultOptions } from './mazeGenComp/mazeUtils/mazeDefaults';
+import { MazeOptions } from './mazeGenComp/mazeUtils/mazeOptions';
+import { MazeOptionsSetter } from './mazeGenComp/mazeUtils/mazeOptionsSetter';
 
 
 const App: React.FC = () => {
-  let cellWidthKey = "cellWidthKey"
-  let cellWallWidthKey = "cellWallWidthKey"
-  // const handleColorChangeComplete = (color: any) => {
-  //   debugger
-  // }
-  //SET DEFAULT COLORS FOR MAZE
-  const defaultCellColor = new Color(9, 170, 121, 100)
-  const defaultBackgroundColor = new Color(145, 101, 100, 100)
-  const defaultCellWallColor = new Color(255, 255, 255, 100)
-  const defaultCellWallWidth = 1
+  let mazeOptions = new MazeOptions()
+  let mazeOptionsSetter = new MazeOptionsSetter(mazeOptions)
 
-  //SET UP CHANGABLE VAR FOR COLOR TO PASS TO GENERATOR
-  let cellColor = defaultCellColor
-  let cellWallWidth = defaultCellWallWidth
-  let cellWallColor = defaultCellWallColor
-  let backgroundColor = defaultBackgroundColor
-  let cellWallStrokeCapStyle = ""
+  console.log('Maze Options:')
+  console.log(mazeOptions)
+  debugger
 
-  //SET UP HANDLERS FOR COLOR CHANGE
-  const handleCellColorChange = (color: any) => {
-    const { r, g, b, a } = color.rgb
-    cellColor.r = r
-    cellColor.g = g
-    cellColor.b = b
-    // if (a) {
-    //   cellColor.a = a
-    // }
-  }
-  const handleBackgroundColorChange = (color: any) => {
-    const { r, g, b, a } = color.rgb
-    backgroundColor.r = r
-    backgroundColor.g = g
-    backgroundColor.b = b
-    if (a) {
-      backgroundColor.a = a
-    }
-  }
-  const handleCellWallColorChange = (color: any) => {
-    const { r, g, b, a } = color.rgb
-    cellWallColor.r = r
-    cellWallColor.g = g
-    cellWallColor.b = b
-    // if (a) {
-    //   cellWallColor.a = a
-    // }
-  }
-
+  //SET UP SCENE CLASS _ TODO Move to that - WHERE the maze generator operates
   //get the window dimensions
   let height = window.innerHeight
   let width = window.innerWidth - 23
   //cell width rules
   let minCellWidth = 6
   let maxCellWidth = width / 20
-  let cellSize = minCellWidth
   // let controlsTopPadding = 100
-  let cellWidthFromStorage = localStorage.getItem(cellWidthKey)
-  if (cellWidthFromStorage) {
-    cellSize = parseInt(cellWidthFromStorage, 10)
-  } else {
-    cellSize = minCellWidth
-    localStorage.setItem(cellWidthKey, cellSize.toString())
-  }
-  let handleCellWidthChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    // temp = newWidth
-    // newWidth += temp
-    // if (newWidth > minCellWidth && newWidth < maxCellWidth) {
-    //   cellSize = newWidth
-    // } else {
-    // }
-    let newWidth = parseInt(event.target.value)
-    cellSize = newWidth
-    localStorage.setItem(cellWidthKey, event.target.value)
-    console.log(`New cell width is ${cellSize}`)
+
+  const rerunMaze = () => {
+    //todo instead of reloading clear out the maze and generate a new one
+    window.location.reload()
   }
 
-  let cellWallWidthFromStorage = localStorage.getItem(cellWallWidthKey)
-  if (cellWallWidthFromStorage) {
-    cellWallWidth = parseInt(cellWallWidthFromStorage, 10)
-  } else {
-    cellWallWidth = defaultCellWallWidth
-    localStorage.setItem(cellWallWidthKey, cellWallWidthKey.toString())
-  }
-  let handleCellWallWidthPercentChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    // temp = newWidth
-    // newWidth += temp
-    // if (newWidth > minCellWidth && newWidth < maxCellWidth) {
-    //   cellSize = newWidth
-    // } else {
-    // }
-    let newWidthPercent = parseInt(event.target.value)
-    cellWallWidth = newWidthPercent
-    localStorage.setItem(cellWallWidthKey, event.target.value)
-    console.log(`New cell wall width percent is ${cellWallWidth}`)
-  }
-  let handleCellWallStrokeCap =  (event: ChangeEvent<HTMLSelectElement>) => {
+  let handleCellWallStrokeCap = (event: ChangeEvent<HTMLSelectElement>) => {
     let newStrokeCapStyle = event.target.value
-    cellWallStrokeCapStyle = newStrokeCapStyle
-    localStorage.setItem(cellWallStrokeCapStyle, event.target.value)
-    console.log(`New cell wall width percent is ${cellWallStrokeCapStyle}`)
+    mazeOptions.cellWallStrokeCapStyle = newStrokeCapStyle
+    console.log(`New cell wall width percent is ${mazeOptions.cellWallStrokeCapStyle}`)
   }
+
   useEffect(() => {
     // Update the document title using the browser API
     var sketch = (p: p5) => {
       // cellSizeSlider = p.createSlider(6, 255, 100)
       // cellSizeSlider.position(width / 2, height + controlsTopPadding)
-      // let cellSize = cellSizeSlider.value()
-      // if (typeof cellSize === "string") {
-      //   cellSize = parseInt(cellSize, 10)
+      // let mazeOptions.cellSize = cellSizeSlider.value()
+      // if (typeof mazeOptions.cellSize === "string") {
+      //   mazeOptions.cellSize = parseInt(mazeOptions.cellSize, 10)
       // }
       new MazeGenerator(
         p,
         width,
         height,
-        cellSize,
-        cellColor,
-        cellWallWidth,
-        cellWallColor,
-        backgroundColor)
+        mazeOptions.cellSize,
+        mazeOptions.cellColor,
+        mazeOptions.cellWallSize,
+        mazeOptions.cellWallColor,
+        mazeOptions.backgroundColor)
     }
     new p5(sketch);
   });
+  //handle cell size change
+  const handleCellWidthChangeInApp = (event: ChangeEvent<HTMLSelectElement>) => {
+    mazeOptionsSetter.handleCellWidthChange(event)
+    rerunMaze()
+  }
+  const handleCellWallWidthPercentChangeInApp = (event: ChangeEvent<HTMLSelectElement>) => {
+    mazeOptionsSetter.handleCellWallWidthPercentChange(event)
+  }
+
+  //PUT into UI controls generator class
+
   let interval = 5
   let numberOfOptions = Math.floor((maxCellWidth - minCellWidth) / interval)
-  let optionsValue = cellSize
-  let dropDownForCellWidth = <select onChange={handleCellWidthChange}>
+  let optionsValue = minCellWidth
+  let dropDownForCellWidth = <select onChange={handleCellWidthChangeInApp}>
     {
       new Array(numberOfOptions).fill(1).map(item => {
         let valueToUse = optionsValue
         optionsValue += interval
         return <option
           key={valueToUse}
-          value={valueToUse}>{valueToUse}</option>
+          value={valueToUse}
+          selected={valueToUse === mazeOptions.cellSize}
+        >{valueToUse
+
+          }</option>
       })
     }
   </select>
+
   let minStokeWidth = 1
-  let maxStrokeWidth = cellSize / 2 
+  let maxStrokeWidth = mazeOptions.cellSize / 2
   let wallStrokeWidthInterval = 1
   let numberOfOptionsForStrokeWidth = Math.floor(maxStrokeWidth - minStokeWidth)
   let optionsValueForStrokeWidth = minStokeWidth
-  let dropDownForCellWidthForStrokeWidth = <select onChange={handleCellWallWidthPercentChange}>
+  let dropDownForCellWidthForStrokeWidth = <select onChange={handleCellWallWidthPercentChangeInApp}>
     {
       new Array(numberOfOptionsForStrokeWidth).fill(1).map(item => {
         let valueToUse = optionsValueForStrokeWidth
         optionsValueForStrokeWidth += wallStrokeWidthInterval
         return <option
           key={valueToUse}
-          value={valueToUse}>{valueToUse}</option>
+          value={valueToUse}
+          selected={valueToUse === mazeOptions.cellWallSize}>{valueToUse}</option>
       })
     }
   </select>
@@ -166,10 +114,14 @@ const App: React.FC = () => {
   //       optionsValueForStrokeWidth += wallStrokeWidthInterval
   //       return <option
   //         key={valueToUse}
-  //         value={valueToUse}>{valueToUse}</option>
+  //         value={valueToUse}
+  //         selected={valueToUse === mazeOptions.cellWallStrokeCapStyle}>
+  //         {valueToUse}
+  //         </option>
   //     })
   //   }
   // </select>
+
 
   return (
     <div className="App">
@@ -182,28 +134,32 @@ const App: React.FC = () => {
         <div>
           {dropDownForCellWidthForStrokeWidth}
         </div>
+        {/* <div>Cell Wall Cap Style</div>
+        <div>
+          {dropDownForCellWidthForStrokeCap}
+        </div> */}
       </div>
       <div className="color-picker-cell-rect">
         <div>Cell Color</div>
         <SketchPicker
-          color={defaultCellColor}
-          onChange={handleCellColorChange}
+          color={mazeDefaultOptions.defaultCellColor}
+          onChange={mazeOptionsSetter.handleCellColorChange}
         // onChangeComplete={handleColorChangeComplete}
         />
       </div>
       <div className="color-picker-cell-wall">
         <div>Cell Wall Color</div>
         <SketchPicker
-          color={defaultCellWallColor}
-          onChange={handleCellWallColorChange}
+          color={mazeDefaultOptions.defaultCellWallColor}
+          onChange={mazeOptionsSetter.handleCellWallColorChange}
         // onChangeComplete={handleColorChangeComplete}
         />
       </div>
       <div className="color-picker-background">
         <div>Background Color</div>
         <SketchPicker
-          color={defaultBackgroundColor}
-          onChange={handleBackgroundColorChange}
+          color={mazeDefaultOptions.defaultBackgroundColor}
+          onChange={mazeOptionsSetter.handleBackgroundColorChange}
         // onChangeComplete={handleColorChangeComplete}
         />
       </div>

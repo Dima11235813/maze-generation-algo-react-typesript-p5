@@ -100,7 +100,6 @@ export class MazeGenerator {
 
             // }
             // p.background(151)
-
             //draw each cell in the grid
             this.grid.map(cell => {
                 //show the cell

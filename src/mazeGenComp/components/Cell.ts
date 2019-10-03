@@ -4,12 +4,13 @@ import { Point } from "./Point"
 import { logVisitedCell, logger, loggerObj } from "../../utils/loggingUtils"
 import { getPointValsAtIndex } from "../../utils/gridUtils"
 import { Color } from "../../utils/colorUtils"
-import { strokeCapOptions } from "../../utils/storkeUtils"
 
 export class Cell {
     //TOP, RIGHT, BOTTOM, LEFT
     public walls: boolean[]
     public visited = 0
+    public lastVisitedState = 0
+    public shouldShow = true
     public neightbors: Cell[] = []
     private stackSubractorFromColor: number = 0
     paddingToApplyToLeft: number
@@ -36,13 +37,19 @@ export class Cell {
     //grid of roughly 400 cells had max of aobut 250 
     //need to calc number o cells and take 5/8s as the max number - to normalize acroos grid sizes
     //make it so that most dominant r, g, b value is oscilated by 250 based on the scope size
-    getColorBasedOnVisited = () => this.visited //+ ((stackLength + 1) / 10) //+ ((stackLength + 1) / 10)
+    getColorBasedOnVisited = () => this.visited * .42 //+ ((stackLength + 1) / 10) //+ ((stackLength + 1) / 10)
     show = (
         color: Color,
         cellWallColor: Color,
         cellWallWidthPercent: number = 1,
         stackLength: number
     ) => {
+        //Before executing show - check if anything changed about this cell
+        let stateChangeOccurred = this.visited !== this.lastVisitedState
+        if (!stateChangeOccurred) {
+            return
+        }
+
         let xColPointValToDraw = this.column * this._cellWidth
         let yRowPointValToDraw = this.row * this._cellHeight
 
@@ -56,7 +63,7 @@ export class Cell {
             //draw the rectangle
             // /https://p5js.org/reference/#/p5/fill
             const divider = this.getColorBasedOnVisited()
-            if(this.stackSubractorFromColor === 0){
+            if (this.stackSubractorFromColor === 0) {
                 this.stackSubractorFromColor = stackLength
             }
             // else if(stackLength > this.stackSubractorFromColor){
@@ -197,14 +204,6 @@ export class Cell {
         //pick random item out of array
         if (this.neightbors.length > 0) {
             let nextNeighborToVisit = this.neightbors[this._p.floor(this._p.random(0, this.neightbors.length))]
-            // logger(`
-            // Number of neightbors: ${this.neightbors.length}
-            // Neighbor selected`)
-            // loggerObj(nextNeighborToVisit)
-            // logger(`Current Cell walls`)
-            // loggerObj(this.walls)
-            // logger(`Current Column and Row`)
-            // loggerObj(`Column ${this.column} Row ${this.row}`)
             return nextNeighborToVisit
         } else {
             return undefined

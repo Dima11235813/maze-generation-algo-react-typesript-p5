@@ -2,6 +2,44 @@ import { RegexExecReturnValObj } from "./regexTypes";
 
 export const RGB_COLOR_REGEX = /\((\d+),\s*(\d+),\s*(\d+)(,\s*(\d*.\d*))?\)/;
 
+const COLOR_STRING_DELIMITER = ":"
+//Singleton for static class
+// export const ColorUtils = function () {
+//     return {
+//         FromStringToObj : (colorString: string): Color => {
+//             let colorStringArray = colorString.split(COLOR_STRING_DELIMITER)
+//             let colorToReturn = new Color(
+//                 parseInt(colorStringArray[0]),
+//                 parseInt(colorStringArray[1]),
+//                 parseInt(colorStringArray[2]),
+//             )
+//             let a = parseInt(colorStringArray[3])
+//             //a is optional
+//             if (a) {
+//                 colorToReturn.a = a
+//             }
+//             return colorToReturn
+//         }
+//     }
+// }()
+//isn't the above syntactic sugar for this
+export class ColorUtils {
+    public fromStringToObj(colorString: string): Color {
+        let colorStringArray = colorString.split(COLOR_STRING_DELIMITER)
+        let colorToReturn = new Color(
+            parseInt(colorStringArray[0]),
+            parseInt(colorStringArray[1]),
+            parseInt(colorStringArray[2]),
+        )
+        let a = parseInt(colorStringArray[3])
+        //a is optional
+        if (a) {
+            colorToReturn.a = a
+        }
+        return colorToReturn
+    }
+}
+
 export class Color {
     // public r?: number;
     // public g?: number;
@@ -55,5 +93,9 @@ export class Color {
 
     toRgba() {
         return `rgba(${this.r}, ${this.g}, ${this.b}, ${this.a})`;
+
+    }
+    toString() {
+        return `${this.r}${COLOR_STRING_DELIMITER}${this.g}${COLOR_STRING_DELIMITER}${this.b}${COLOR_STRING_DELIMITER}${this.a ? this.a : ""}`
     }
 }
