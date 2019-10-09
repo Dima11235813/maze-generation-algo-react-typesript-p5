@@ -25,6 +25,8 @@ export class MazeOptions {
         this.cellWallSize = mazeDefaultOptions.defaultCellWallSize
         //CELL WALL SHAPE
         this.cellWallStrokeCapStyle = mazeDefaultOptions.defaultStrokeCapStyle
+        //Update any options that were persisted in storage
+        this.updateOptionsFromStorage()
     }
     saveOptionsToStorage() {
         storageUtils.setMazeoptionsInStorage(this)

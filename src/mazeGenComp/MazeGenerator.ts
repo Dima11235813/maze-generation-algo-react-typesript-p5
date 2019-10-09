@@ -4,6 +4,7 @@ import { GRID_CELL_WIDTH } from "../constants/gridConstants"
 import { Cell } from "./components/Cell"
 import { logColumnDuringCreation, logRowDuringCreation, logger, loggerJson } from "../utils/loggingUtils"
 import { Color } from "../utils/colorUtils"
+import { MazeOptions } from "./mazeUtils/mazeOptions"
 
 export class MazeGenerator {
 
@@ -28,13 +29,27 @@ export class MazeGenerator {
         p: p5,
         width: number,
         height: number,
-        public cellWidth: number,
-        public cellColor: Color,
-        public cellWallWidthPercent: number,
-        public cellWallColor: Color,
-        public backgroundColor: Color
+        mazeOptions: MazeOptions,
+        // public cellWidth: number,
+        // public cellColor: Color,
+        // public cellWallWidthPercent: number,
+        // public cellWallColor: Color,
+        // public backgroundColor: Color
     ) {
         p.setup = () => {
+            //bind window resize event handler
+            let windowProperties = {
+                height : window.innerHeight,
+                width : window.innerWidth
+              }
+
+            window.onresize = function(event:Event) {
+                debugger
+              width = window.innerWidth
+              height = window.innerHeight
+                // windowProperties
+                
+            };    
             // p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT)
             p.createCanvas(width, height)
             let ratioFloat = width / height
@@ -43,11 +58,11 @@ export class MazeGenerator {
             let newCellWidth
             let cellHeight
             if (ratio > 1.0) {
-                newCellWidth = ratio * cellWidth
-                cellHeight = 1 * cellWidth
+                newCellWidth = ratio * mazeOptions.cellSize
+                cellHeight = 1 * mazeOptions.cellSize
             } else {
-                newCellWidth = 1 * cellWidth
-                cellHeight = (1 / ratio) * cellWidth
+                newCellWidth = 1 * mazeOptions.cellSize
+                cellHeight = (1 / ratio) * mazeOptions.cellSize
             }
             console.log(`
             Cell width ${newCellWidth}
@@ -60,7 +75,7 @@ export class MazeGenerator {
 
             //set frame rate
             // https://p5js.org/reference/#/p5/frameRate
-            // p.frameRate(40)
+            p.frameRate(22)
 
             //set up the grid
             for (var rowNumber = 0; rowNumber < this.numberOfRows; rowNumber += 1) {
@@ -90,9 +105,9 @@ export class MazeGenerator {
         }
 
         p.draw = () => {
-            const { r, g, b, a } = this.backgroundColor
+            const { r, g, b, a } = mazeOptions.backgroundColor
 
-            //set background of canvas
+            //set background of canvasw
             // if (a) {
             //     p.background(r, g, b, a)
             // } else {
@@ -103,7 +118,7 @@ export class MazeGenerator {
             //draw each cell in the grid
             this.grid.map(cell => {
                 //show the cell
-                cell.show(this.cellColor, this.cellWallColor, this.cellWallWidthPercent, this.stack.length)
+                cell.show(mazeOptions, this.stack.length)
 
             })
             if (this.currentCell) {

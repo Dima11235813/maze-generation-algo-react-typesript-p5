@@ -43,9 +43,9 @@ export const logColumnDuringDrawing = (column: number, index: number) => {
     //             `)
 }
 
-export const logVisitedCell = (col: number, row: number) =>
-    console.log(`
-VISITED
-Column ${col}
-Row ${row}
-`)
+export const logVisitedCell = (col: number, row: number) => null
+//     console.log(`
+// VISITED
+// Column ${col}
+// Row ${row}
+// `)

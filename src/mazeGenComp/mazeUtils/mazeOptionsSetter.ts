@@ -1,6 +1,6 @@
 import { MazeOptions } from "./mazeOptions"
 import { ChangeEvent } from "react"
-import { mazeDefaultsStorageKeys } from "../../utils/storageUtils"
+import { mazeDefaultsStorageKeys, storageUtils } from "../../utils/storageUtils"
 import { Color } from "../../utils/colorUtils"
 
 export class MazeOptionsSetter {
@@ -9,14 +9,21 @@ export class MazeOptionsSetter {
     }
     //TODO Move to color utils class
     //SET UP HANDLERS FOR COLOR CHANGE
-    handleCellColorChange = (color: any): void => {
-        this.assignColorToTarget(color.rgb, this.mazeOptions.cellColor)
+    updateStorage = () => {
+        //todo set up individual setters for options
+        storageUtils.setMazeoptionsInStorage(this.mazeOptions)
     }
     handleBackgroundColorChange = (color: any): void => {
         this.assignColorToTarget(color.rgb, this.mazeOptions.backgroundColor)
+        this.updateStorage()
+    }
+    handleCellColorChange = (color: any): void => {
+        this.assignColorToTarget(color.rgb, this.mazeOptions.cellColor)
+        this.updateStorage()
     }
     handleCellWallColorChange = (color: any): void => {
         this.assignColorToTarget(color.rgb, this.mazeOptions.cellWallColor)
+        this.updateStorage()
     }
     assignColorToTarget = (assignmentColor: Color, targetColor: Color) => {
         const { r, g, b, a } = assignmentColor
@@ -27,9 +34,9 @@ export class MazeOptionsSetter {
         // if (a) {
         //   this.mazeOptions.cellColor.a = a
         // }
-        if (a) {
-            targetColor.a = a
-        }
+        // if (a) {
+        //     targetColor.a = a
+        // }
     }
     handleCellWidthChange = (event: ChangeEvent<HTMLSelectElement>) => {
         // temp = newWidth

@@ -9,6 +9,7 @@
 
 * [P5]https://p5js.org/
 * [ColorUtil]https://gist.github.com/EvAlex/ad0e43f4087e2e813a8f4cd872b433b8
+* [Range]https://github.com/tjallen/react-simple-range
 
 ### P4 Useful Links
 * [Processuing]https://github.com/processing/p5.js/wiki/Processing-transition

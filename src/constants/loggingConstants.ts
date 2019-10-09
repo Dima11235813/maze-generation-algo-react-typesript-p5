@@ -1,1 +1,1 @@
-export const LOG_VERBOSE = true
+export const LOG_VERBOSE = false

@@ -10,12 +10,15 @@
     "@types/react": "16.9.3",
     "@types/react-color": "^3.0.1",
     "@types/react-dom": "16.9.1",
+    "@types/react-select": "^3.0.5",
     "p5": "^0.9.0",
     "rc-slider": "^8.7.1",
     "react": "^16.10.1",
     "react-color": "^2.17.3",
     "react-dom": "^16.10.1",
     "react-scripts": "3.1.2",
+    "react-select": "^3.0.8",
+    "react-simple-range": "^1.6.0",
     "typescript": "3.6.3"
   },
   "scripts": {

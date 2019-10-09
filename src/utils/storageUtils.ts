@@ -24,13 +24,13 @@ export const storageUtils = {
 
     setMazeoptionsInStorage: (mazeOptions: MazeOptions) => {
         //BACKGROUND
-        localStorage.setItem(mazeDefaultsStorageKeys.backgroundColorKey, mazeOptions.cellColor.toString())
+        localStorage.setItem(mazeDefaultsStorageKeys.backgroundColorKey, mazeOptions.backgroundColor.toString())
         //CELL COLOR
         localStorage.setItem(mazeDefaultsStorageKeys.cellColorKey, mazeOptions.cellColor.toString())
         localStorage.setItem(mazeDefaultsStorageKeys.cellWallColorKey, mazeOptions.cellWallColor.toString())
         //CELL SHAPE
         localStorage.setItem(mazeDefaultsStorageKeys.cellSizeKey, mazeOptions.cellSize.toString())
-        localStorage.setItem(mazeDefaultsStorageKeys.cellWallSizeKey, mazeDefaultsStorageKeys.cellWallSizeKey.toString())
+        localStorage.setItem(mazeDefaultsStorageKeys.cellWallSizeKey, mazeOptions.cellWallSize.toString())
         //CELL SHAPE STYLE
         localStorage.setItem(mazeDefaultsStorageKeys.cellWallStrokeCapStyleKey, mazeOptions.cellWallStrokeCapStyle)
     },
@@ -55,6 +55,7 @@ export const storageUtils = {
         mazeOptions.backgroundColor = colorUtils.fromStringToObj(
             backgroundColor ? backgroundColor : defaultIfFail
         )
+        //TODO Use defaults class to construct color strings and set util func for that
         //CELL COLOR
         mazeOptions.cellColor = colorUtils.fromStringToObj(cellColor ? cellColor : defaultIfFail)
         mazeOptions.cellWallColor = colorUtils.fromStringToObj(cellWallColor ? cellWallColor : defaultIfFail)

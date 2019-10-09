@@ -4,6 +4,7 @@ import { Point } from "./Point"
 import { logVisitedCell, logger, loggerObj } from "../../utils/loggingUtils"
 import { getPointValsAtIndex } from "../../utils/gridUtils"
 import { Color } from "../../utils/colorUtils"
+import { MazeOptions } from "../mazeUtils/mazeOptions"
 
 export class Cell {
     //TOP, RIGHT, BOTTOM, LEFT
@@ -39,14 +40,14 @@ export class Cell {
     //make it so that most dominant r, g, b value is oscilated by 250 based on the scope size
     getColorBasedOnVisited = () => this.visited * .42 //+ ((stackLength + 1) / 10) //+ ((stackLength + 1) / 10)
     show = (
-        color: Color,
-        cellWallColor: Color,
-        cellWallWidthPercent: number = 1,
+        mazeOptions: MazeOptions,
         stackLength: number
     ) => {
-        //Before executing show - check if anything changed about this cell
-        let stateChangeOccurred = this.visited !== this.lastVisitedState
-        if (!stateChangeOccurred) {
+        //Before executing show
+        //check if anything changed about this cell
+
+        //Don't show the cell until it's been visited
+        if (this.visited === 0) {
             return
         }
 
@@ -69,21 +70,28 @@ export class Cell {
             // else if(stackLength > this.stackSubractorFromColor){
             //     this.stackSubractorFromColor = stackLength
             // }
-            console.log(`Stack length ${stackLength}`)
-            const { r, g, b, a } = color
+            logger(`Stack length ${stackLength}`)
+            const { r, g, b, a } = mazeOptions.cellColor
+            const gValToApply = this._p.floor(g / divider)
+            const bValToApply = b - this.stackSubractorFromColor
+            console.log(`
+            R: ${r}
+            G: ${gValToApply}
+            A: ${bValToApply}
+            ${a ? a : ""}
+            `)
             if (a) {
-
                 this._p.fill(
                     this._p.floor(r),
-                    this._p.floor(g / divider),
-                    this._p.floor(b - this.stackSubractorFromColor),
-                    a
+                    this._p.floor(gValToApply),
+                    this._p.floor(bValToApply),
+                    // a
                 )
             } else {
                 this._p.fill(
                     this._p.floor(r),
-                    this._p.floor(g / divider),
-                    this._p.floor(b - this.stackSubractorFromColor)
+                    this._p.floor(gValToApply),
+                    this._p.floor(bValToApply)
                 )
 
             }
@@ -100,8 +108,8 @@ export class Cell {
         }
         //set wall options 
         //stroke
-        if (cellWallWidthPercent) {
-            let newStrokeWeight: number = (cellWallWidthPercent)
+        if (mazeOptions.cellWallSize) {
+            let newStrokeWeight: number = (mazeOptions.cellWallSize)
             console.log(`Stroke weight is ${newStrokeWeight}`)
             this._p.strokeWeight(newStrokeWeight)
         }
@@ -110,9 +118,9 @@ export class Cell {
         let squareCap = this._p.SQUARE
         let roundCap = this._p.ROUND
 
-        this._p.strokeCap(roundCap)
+        this._p.strokeCap(squareCap)
         //wall color
-        const { r, g, b, a } = cellWallColor
+        const { r, g, b, a } = mazeOptions.cellWallColor
         if (a) {
             this._p.stroke(r, g, b, 255)
         } else {
