@@ -8,10 +8,6 @@ import { MazeOptions } from "./mazeUtils/mazeOptions"
 
 export class MazeGenerator {
 
-    //nullable so that it can be dynamically generated
-    numberOfColumns: number = 0
-    numberOfRows: number = 0
-
     //vars to hold current column and row during draw phase
     colIndBeingDrawn?: number
     rowIndBeingDrawn?: number
@@ -25,50 +21,27 @@ export class MazeGenerator {
     //hold reference to current cell in iteration
     currentCell?: Cell
     //TODO Set up builder class for many options handling
-    constructor(
-        p: p5,
-        mazeOptions: MazeOptions,
-        // public cellWidth: number,
-        // public cellColor: Color,
-        // public cellWallWidthPercent: number,
-        // public cellWallColor: Color,
-        // public backgroundColor: Color
-    ) {
+    constructor(p: p5, mazeOptions: MazeOptions) {
         p.setup = () => {
-            
-            const {width, height } = mazeOptions
-            p.createCanvas(width, height)
-            let ratioFloat = width / height
-            let ratio = parseFloat(ratioFloat.toPrecision(5))
-
-            let newCellWidth
-            let cellHeight
-            if (ratio > 1.0) {
-                newCellWidth = ratio * mazeOptions.cellSize
-                cellHeight = 1 * mazeOptions.cellSize
-            } else {
-                newCellWidth = 1 * mazeOptions.cellSize
-                cellHeight = (1 / ratio) * mazeOptions.cellSize
-            }
-            logger(`
-            Cell width ${newCellWidth}
-            Cell Height ${cellHeight}
-            `)
-            //set up number of columns and numberOfRows based on the canvas pixel size and the cell width constants
-            let padding = width % newCellWidth
-            this.numberOfColumns = p.floor(width / newCellWidth)
-            this.numberOfRows = p.floor(height / cellHeight)
-
+            mazeOptions.updateDynamicValues()
+            const { windowWidth,
+                windowHeight,
+                calculatedCellHeight,
+                calculatedCellWidth,
+                numberOfColumns,
+                numberOfRows,
+                padding } = mazeOptions
+            p.createCanvas(windowWidth, windowHeight)
             //set frame rate
             // https://p5js.org/reference/#/p5/frameRate
             p.frameRate(22)
 
             //set up the grid
-            for (var rowNumber = 0; rowNumber < this.numberOfRows; rowNumber += 1) {
+            for (var rowNumber = 0; rowNumber < numberOfRows; rowNumber += 1) {
                 //log set of iteration
                 logRowDuringCreation(rowNumber)
 
-                for (var columnNumber = 0; columnNumber < this.numberOfColumns; columnNumber += 1) {
+                for (var columnNumber = 0; columnNumber < numberOfColumns; columnNumber += 1) {
                     //log set of iteration
                     logColumnDuringCreation(columnNumber)
 
@@ -77,8 +50,8 @@ export class MazeGenerator {
                         columnNumber,
                         rowNumber,
                         p,
-                        newCellWidth,
-                        cellHeight,
+                        calculatedCellWidth,
+                        calculatedCellHeight,
                         padding
                     )
                     //add the cell to the grid
@@ -91,6 +64,7 @@ export class MazeGenerator {
         }
 
         p.draw = () => {
+            const {numberOfColumns, numberOfRows} = mazeOptions
             const { r, g, b, a } = mazeOptions.backgroundColor
 
             //set background of canvasw
@@ -117,8 +91,8 @@ export class MazeGenerator {
                 //get the random next neightbor cell from the current cell
                 let nextCell
                 nextCell = this.currentCell.getRandomNeightborToVisit(
-                    this.numberOfColumns,
-                    this.numberOfRows,
+                    numberOfColumns,
+                    numberOfRows,
                     this.grid
                 )
 

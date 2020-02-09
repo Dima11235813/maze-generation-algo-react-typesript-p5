@@ -39,22 +39,17 @@ export class MazeOptionsSetter {
         //     targetColor.a = a
         // }
     }
-    handleCellWidthChange = (size: number) => {
+    handleCellSizeChange = (size: number) => {
         this.mazeOptions.cellSize = size
         localStorage.setItem(mazeDefaultsStorageKeys.cellSizeKey, size.toString())
         console.log(`New cell width is ${this.mazeOptions.cellSize}`)
     }
-
-
-    handleCellWallWidthPercentChange = (event: ChangeEvent<HTMLSelectElement>) => {
-        // temp = newWidth
-        // newWidth += temp
-        // if (newWidth > minCellWidth && newWidth < maxCellWidth) {
-        //   mazeOptions.cellSize = newWidth
-        // } else {
-        // }
-        let newWidthPercent = parseInt(event.target.value)
-        this.mazeOptions.cellWallSize = newWidthPercent
-        logger(`New cell wall width percent is ${this.mazeOptions.cellWallSize}`)
+    
+    
+    handleCellWallWidthPercentChange = (newValue: number) => {
+        this.mazeOptions.cellWallSize = newValue
+        this.mazeOptions.updateDynamicValues()
+        localStorage.setItem(mazeDefaultsStorageKeys.cellWallSizeKey, newValue.toString())
+        console.log(`New cell wall width percent is ${this.mazeOptions.cellWallSize}`)
     }
 }

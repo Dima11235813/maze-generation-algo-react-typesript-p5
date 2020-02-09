@@ -9,6 +9,7 @@ import { logger, loggerObj } from "./utils/loggingUtils";
 import CellSizeSlider from "./uiComponents/CellSizeSlider";
 import { storageUtils } from "./utils/storageUtils";
 import Header from "./views/Header";
+import CellWallSizeSlider from "./uiComponents/CellWallSizeSlider";
 
 const App: React.FC = () => {
   let mazeOptions: MazeOptions;
@@ -54,8 +55,8 @@ const App: React.FC = () => {
         New Widow Width ${window.innerWidth}
         New Window Height ${window.innerHeight}
         `);
-      mazeOptions.width = window.innerWidth;
-      mazeOptions.height = window.innerHeight;
+      mazeOptions.windowWidth = window.innerWidth;
+      mazeOptions.windowHeight = window.innerHeight;
       storageUtils.setMazeoptionsInStorage(mazeOptions);
       rerunMaze();
     };
@@ -63,34 +64,7 @@ const App: React.FC = () => {
 
   const handleCellWallWidthPercentChangeInApp = (
     event: ChangeEvent<HTMLSelectElement>
-  ) => {
-    mazeOptionsSetter.handleCellWallWidthPercentChange(event);
-  };
-
-  // let minStokeWidth = 1;
-  // let maxStrokeWidth = mazeOptions.cellSize / 2;
-  // let wallStrokeWidthInterval = 1;
-  // let numberOfOptionsForStrokeWidth = Math.floor(
-  //   maxStrokeWidth - minStokeWidth
-  // );
-  // let optionsValueForStrokeWidth = minStokeWidth;
-  // let dropDownForCellWidthForStrokeWidth = (
-  //   <select onChange={handleCellWallWidthPercentChangeInApp}>
-  //     {new Array(numberOfOptionsForStrokeWidth).fill(1).map(item => {
-  //       let valueToUse = optionsValueForStrokeWidth;
-  //       optionsValueForStrokeWidth += wallStrokeWidthInterval;
-  //       return (
-  //         <option
-  //           key={valueToUse}
-  //           value={valueToUse}
-  //           selected={valueToUse === mazeOptions.cellWallSize}
-  //         >
-  //           {valueToUse}
-  //         </option>
-  //       );
-  //     })}
-  //   </select>
-  // );
+  ) => {};
   // let dropDownForCellWidthForStrokeCap = <select onChange={handleCellWallStrokeCap}>
   //   {
   //     new Array(numberOfOptionsForStrokeWidth).fill(1).map(item => {
@@ -113,9 +87,17 @@ const App: React.FC = () => {
         <div className="grid-controls">
           <div>
             <CellSizeSlider
-              mazeOptions={mazeOptions}
               mazeOptionsSetter={mazeOptionsSetter}
               onSizeChange={rerunMaze}
+              windowWidth={mazeOptions.windowWidth}
+              cellSize={mazeOptions.cellSize}
+            />
+          </div>
+          <div>
+            <CellWallSizeSlider
+              mazeOptionsSetter={mazeOptionsSetter}
+              cellWallSize={mazeOptions.cellWallSize}
+              maxStrokeWidth={mazeOptions.maxStrokeWidth}
             />
           </div>
           {/* <div>Cell Wall Percent</div>
