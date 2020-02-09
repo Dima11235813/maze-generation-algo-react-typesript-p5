@@ -1,23 +1,27 @@
-import React, { useState, ChangeEvent, useEffect } from "react";
-import { SketchPicker, ColorPickerProps, RGBColor } from "react-color";
+import React, { ChangeEvent, useEffect } from "react";
+import { SketchPicker } from "react-color";
 import "./App.css";
 import { MazeGenerator } from "./mazeGenComp/MazeGenerator";
 import p5 from "p5";
-import { Color } from "./utils/colorUtils";
-import { GRID_CELL_WIDTH } from "./constants/gridConstants";
-import { mazeDefaultsStorageKeys } from "./utils/storageUtils";
-import { mazeDefaultOptions } from "./mazeGenComp/mazeUtils/mazeDefaults";
 import { MazeOptions } from "./mazeGenComp/mazeUtils/mazeOptions";
 import { MazeOptionsSetter } from "./mazeGenComp/mazeUtils/mazeOptionsSetter";
 import { logger, loggerObj } from "./utils/loggingUtils";
 import CellSizeSlider from "./uiComponents/CellSizeSlider";
+import { storageUtils } from "./utils/storageUtils";
 
 const App: React.FC = () => {
-  let mazeSketch: p5; // holde reference to the sketch
-  let sketchHandler;
   let mazeOptions = new MazeOptions();
   let mazeOptionsSetter = new MazeOptionsSetter(mazeOptions);
-
+  let sketchHandler = (p: p5) => new MazeGenerator(p, mazeOptions);
+  let mazeSketch: p5; // holde reference to the sketch
+  //set up window resize event
+  //bind window resize event handler
+  window.onresize = function(event: Event) {
+    mazeOptions.width = window.innerWidth;
+    mazeOptions.height = window.innerHeight;
+    storageUtils.setMazeoptionsInStorage(mazeOptions);
+    rerunMaze()
+  };
   logger("Maze Options:");
   loggerObj(mazeOptions);
   //SET UP SCENE CLASS _ TODO Move to that - WHERE the maze generator operates
@@ -40,7 +44,6 @@ const App: React.FC = () => {
   };
 
   const createMazeSketch = () => {
-    sketchHandler = (p: p5) => new MazeGenerator(p, mazeOptions);
     mazeSketch = new p5(sketchHandler);
   };
   useEffect(() => {
@@ -95,7 +98,6 @@ const App: React.FC = () => {
   return (
     <div className="App">
       <div className="grid-controls">
-        <div>Cell Width</div>
         <div>
           <CellSizeSlider
             mazeOptions={mazeOptions}

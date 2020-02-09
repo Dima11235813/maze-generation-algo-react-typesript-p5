@@ -14,7 +14,7 @@ import { Labels } from "../shared/labels";
 interface CellSizeSlider {
   mazeOptions: MazeOptions;
   mazeOptionsSetter: MazeOptionsSetter;
-  onSizeChange: Function;
+  onSizeChange: Function
 }
 
 const CellSizeSlider = (props: CellSizeSlider) => {
@@ -22,9 +22,8 @@ const CellSizeSlider = (props: CellSizeSlider) => {
   //cell width rules
   let minCellWidth = 6;
   let maxCellWidth = mazeOptions.width / 20;
-  let cellSizeIncrementor = 2;
+  let cellSizeIncrementor = 2
 
-  //create ui component
   const useStyles = makeStyles({
     root: {
       width: 200
@@ -34,28 +33,20 @@ const CellSizeSlider = (props: CellSizeSlider) => {
     }
   });
   const classes = useStyles();
-
-  //Set up state for slider
   const [value, setValue] = React.useState(mazeOptions.cellSize);
 
-  //Event for slider
+//   const handleSliderChange = (event: React.ChangeEvent<Element>, newValue: number | number[]) => {
   const handleSliderChange = (event: any, newValue: any) => {
     setValue(newValue);
-    updateCellSizeForMaze(newValue);
-  };
-  //Even for input
-  const handleInputChange = (event: any) => {
-    let newValue =
-      event.target.value === "" ? minCellWidth : Number(event.target.value);
-    setValue(newValue);
-    updateCellSizeForMaze(newValue);
-  };
-  const updateCellSizeForMaze = (newValue: number) => {
     mazeOptionsSetter.handleCellWidthChange(newValue);
-    onSizeChange();
+    onSizeChange()
   };
 
-  //state change
+  const handleInputChange = (event: any) => {
+    setValue(
+      event.target.value === "" ? minCellWidth : Number(event.target.value)
+    );
+  };
 
   const handleBlur = () => {
     if (value < minCellWidth) {
@@ -64,6 +55,29 @@ const CellSizeSlider = (props: CellSizeSlider) => {
       setValue(maxCellWidth);
     }
   };
+
+  //PUT into UI controls generator class
+
+  let interval = 5;
+  let numberOfOptions = Math.floor((maxCellWidth - minCellWidth) / interval);
+  let optionsValue = minCellWidth;
+  //   let dropDownForCellWidth = (
+  //     <select onChange={handleCellWidthChangeInApp}>
+  //       {new Array(numberOfOptions).fill(1).map(item => {
+  //         let valueToUse = optionsValue;
+  //         optionsValue += interval;
+  //         return (
+  //           <option
+  //             key={valueToUse}
+  //             value={valueToUse}
+  //             selected={valueToUse === mazeOptions.cellSize}
+  //           >
+  //             {valueToUse}
+  //           </option>
+  //         );
+  //       })}
+  //     </select>
+  //   );
 
   return (
     <div className={classes.root}>

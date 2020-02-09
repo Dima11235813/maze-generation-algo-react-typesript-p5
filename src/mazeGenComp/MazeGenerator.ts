@@ -35,11 +35,7 @@ export class MazeGenerator {
         // public backgroundColor: Color
     ) {
         p.setup = () => {
-            //bind window resize event handler
-            window.onresize = (event:Event) => {
-              mazeOptions.width = window.innerWidth
-              mazeOptions.height = window.innerHeight
-            };    
+            
             const {width, height } = mazeOptions
             p.createCanvas(width, height)
             let ratioFloat = width / height
