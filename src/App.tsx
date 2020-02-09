@@ -8,6 +8,7 @@ import { MazeOptionsSetter } from "./mazeGenComp/mazeUtils/mazeOptionsSetter";
 import { logger, loggerObj } from "./utils/loggingUtils";
 import CellSizeSlider from "./uiComponents/CellSizeSlider";
 import { storageUtils } from "./utils/storageUtils";
+import Header from "./views/Header";
 
 const App: React.FC = () => {
   let mazeOptions = new MazeOptions();
@@ -20,7 +21,7 @@ const App: React.FC = () => {
     mazeOptions.width = window.innerWidth;
     mazeOptions.height = window.innerHeight;
     storageUtils.setMazeoptionsInStorage(mazeOptions);
-    rerunMaze()
+    rerunMaze();
   };
   logger("Maze Options:");
   loggerObj(mazeOptions);
@@ -96,48 +97,51 @@ const App: React.FC = () => {
   // </select>
 
   return (
-    <div className="App">
-      <div className="grid-controls">
-        <div>
-          <CellSizeSlider
-            mazeOptions={mazeOptions}
-            mazeOptionsSetter={mazeOptionsSetter}
-            onSizeChange={rerunMaze}
-          />
-        </div>
-        {/* <div>Cell Wall Percent</div>
+    <React.Fragment>
+      <Header />
+      <div className="App">
+        <div className="grid-controls">
+          <div>
+            <CellSizeSlider
+              mazeOptions={mazeOptions}
+              mazeOptionsSetter={mazeOptionsSetter}
+              onSizeChange={rerunMaze}
+            />
+          </div>
+          {/* <div>Cell Wall Percent</div>
         <div>{dropDownForCellWidthForStrokeWidth}</div> */}
-        {/* <div>Cell Wall Cap Style</div>
+          {/* <div>Cell Wall Cap Style</div>
         <div>
           {dropDownForCellWidthForStrokeCap}
         </div> */}
+        </div>
+        <div className="color-picker-cell-rect">
+          <div>Cell Color</div>
+          <SketchPicker
+            color={mazeOptions.cellColor}
+            onChange={mazeOptionsSetter.handleCellColorChange}
+            // onChangeComplete={handleColorChangeComplete}
+          />
+        </div>
+        <div className="color-picker-cell-wall">
+          <div>Cell Wall Color</div>
+          <SketchPicker
+            color={mazeOptions.cellWallColor}
+            onChange={mazeOptionsSetter.handleCellWallColorChange}
+            // onChangeComplete={handleColorChangeComplete}
+          />
+        </div>
+        <div className="color-picker-background">
+          <div>Background Color</div>
+          <SketchPicker
+            color={mazeOptions.backgroundColor}
+            onChange={mazeOptionsSetter.handleBackgroundColorChange}
+            // onChangeComplete={handleColorChangeComplete}
+          />
+        </div>
+        <button onClick={rerunMaze}>Create new maze</button>
       </div>
-      <div className="color-picker-cell-rect">
-        <div>Cell Color</div>
-        <SketchPicker
-          color={mazeOptions.cellColor}
-          onChange={mazeOptionsSetter.handleCellColorChange}
-          // onChangeComplete={handleColorChangeComplete}
-        />
-      </div>
-      <div className="color-picker-cell-wall">
-        <div>Cell Wall Color</div>
-        <SketchPicker
-          color={mazeOptions.cellWallColor}
-          onChange={mazeOptionsSetter.handleCellWallColorChange}
-          // onChangeComplete={handleColorChangeComplete}
-        />
-      </div>
-      <div className="color-picker-background">
-        <div>Background Color</div>
-        <SketchPicker
-          color={mazeOptions.backgroundColor}
-          onChange={mazeOptionsSetter.handleBackgroundColorChange}
-          // onChangeComplete={handleColorChangeComplete}
-        />
-      </div>
-      <button onClick={rerunMaze}>Create new maze</button>
-    </div>
+    </React.Fragment>
   );
 };
 
