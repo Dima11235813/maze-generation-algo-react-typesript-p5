@@ -10,25 +10,25 @@ import { mazeDefaultOptions } from "./mazeGenComp/mazeUtils/mazeDefaults";
 import { MazeOptions } from "./mazeGenComp/mazeUtils/mazeOptions";
 import { MazeOptionsSetter } from "./mazeGenComp/mazeUtils/mazeOptionsSetter";
 import { logger, loggerObj } from "./utils/loggingUtils";
+import CellSizeSlider from "./uiComponents/CellSizeSlider";
 
 const App: React.FC = () => {
+  let mazeSketch: p5; // holde reference to the sketch
+  let sketchHandler;
   let mazeOptions = new MazeOptions();
   let mazeOptionsSetter = new MazeOptionsSetter(mazeOptions);
 
   logger("Maze Options:");
   loggerObj(mazeOptions);
   //SET UP SCENE CLASS _ TODO Move to that - WHERE the maze generator operates
-  //get the window dimensions
-  let height = window.innerHeight;
-  let width = window.innerWidth;
-  //cell width rules
-  let minCellWidth = 6;
-  let maxCellWidth = width / 20;
+  //get the window dimension
   // let controlsTopPadding = 100
 
   const rerunMaze = () => {
-    //todo instead of reloading clear out the maze and generate a new one
-    window.location.reload();
+    logger(`Removing sketch.`);
+    mazeSketch.remove();
+    //destroy current sketch
+    createMazeSketch();
   };
 
   let handleCellWallStrokeCap = (event: ChangeEvent<HTMLSelectElement>) => {
@@ -39,79 +39,44 @@ const App: React.FC = () => {
     );
   };
 
-  useEffect(() => {
-    // Update the document title using the browser API
-    var sketch = (p: p5) => {
-      // cellSizeSlider = p.createSlider(6, 255, 100)
-      // cellSizeSlider.position(width / 2, height + controlsTopPadding)
-      // let mazeOptions.cellSize = cellSizeSlider.value()
-      // if (typeof mazeOptions.cellSize === "string") {
-      //   mazeOptions.cellSize = parseInt(mazeOptions.cellSize, 10)
-      // }
-      new MazeGenerator(p, width, height, mazeOptions);
-    };
-    new p5(sketch);
-  });
-  //handle cell size change
-  const handleCellWidthChangeInApp = (
-    event: ChangeEvent<HTMLSelectElement>
-  ) => {
-    mazeOptionsSetter.handleCellWidthChange(event);
-    rerunMaze();
+  const createMazeSketch = () => {
+    sketchHandler = (p: p5) => new MazeGenerator(p, mazeOptions);
+    mazeSketch = new p5(sketchHandler);
   };
+  useEffect(() => {
+    createMazeSketch();
+  });
+
   const handleCellWallWidthPercentChangeInApp = (
     event: ChangeEvent<HTMLSelectElement>
   ) => {
     mazeOptionsSetter.handleCellWallWidthPercentChange(event);
   };
 
-  //PUT into UI controls generator class
-
-  let interval = 5;
-  let numberOfOptions = Math.floor((maxCellWidth - minCellWidth) / interval);
-  let optionsValue = minCellWidth;
-  let dropDownForCellWidth = (
-    <select onChange={handleCellWidthChangeInApp}>
-      {new Array(numberOfOptions).fill(1).map(item => {
-        let valueToUse = optionsValue;
-        optionsValue += interval;
-        return (
-          <option
-            key={valueToUse}
-            value={valueToUse}
-            selected={valueToUse === mazeOptions.cellSize}
-          >
-            {valueToUse}
-          </option>
-        );
-      })}
-    </select>
-  );
-
-  let minStokeWidth = 1;
-  let maxStrokeWidth = mazeOptions.cellSize / 2;
-  let wallStrokeWidthInterval = 1;
-  let numberOfOptionsForStrokeWidth = Math.floor(
-    maxStrokeWidth - minStokeWidth
-  );
-  let optionsValueForStrokeWidth = minStokeWidth;
-  let dropDownForCellWidthForStrokeWidth = (
-    <select onChange={handleCellWallWidthPercentChangeInApp}>
-      {new Array(numberOfOptionsForStrokeWidth).fill(1).map(item => {
-        let valueToUse = optionsValueForStrokeWidth;
-        optionsValueForStrokeWidth += wallStrokeWidthInterval;
-        return (
-          <option
-            key={valueToUse}
-            value={valueToUse}
-            selected={valueToUse === mazeOptions.cellWallSize}
-          >
-            {valueToUse}
-          </option>
-        );
-      })}
-    </select>
-  );
+  // let minStokeWidth = 1;
+  // let maxStrokeWidth = mazeOptions.cellSize / 2;
+  // let wallStrokeWidthInterval = 1;
+  // let numberOfOptionsForStrokeWidth = Math.floor(
+  //   maxStrokeWidth - minStokeWidth
+  // );
+  // let optionsValueForStrokeWidth = minStokeWidth;
+  // let dropDownForCellWidthForStrokeWidth = (
+  //   <select onChange={handleCellWallWidthPercentChangeInApp}>
+  //     {new Array(numberOfOptionsForStrokeWidth).fill(1).map(item => {
+  //       let valueToUse = optionsValueForStrokeWidth;
+  //       optionsValueForStrokeWidth += wallStrokeWidthInterval;
+  //       return (
+  //         <option
+  //           key={valueToUse}
+  //           value={valueToUse}
+  //           selected={valueToUse === mazeOptions.cellWallSize}
+  //         >
+  //           {valueToUse}
+  //         </option>
+  //       );
+  //     })}
+  //   </select>
+  // );
   // let dropDownForCellWidthForStrokeCap = <select onChange={handleCellWallStrokeCap}>
   //   {
   //     new Array(numberOfOptionsForStrokeWidth).fill(1).map(item => {
@@ -131,9 +96,15 @@ const App: React.FC = () => {
     <div className="App">
       <div className="grid-controls">
         <div>Cell Width</div>
-        <div>{dropDownForCellWidth}</div>
-        <div>Cell Wall Percent</div>
-        <div>{dropDownForCellWidthForStrokeWidth}</div>
+        <div>
+          <CellSizeSlider
+            mazeOptions={mazeOptions}
+            mazeOptionsSetter={mazeOptionsSetter}
+            onSizeChange={rerunMaze}
+          />
+        </div>
+        {/* <div>Cell Wall Percent</div>
+        <div>{dropDownForCellWidthForStrokeWidth}</div> */}
         {/* <div>Cell Wall Cap Style</div>
         <div>
           {dropDownForCellWidthForStrokeCap}
@@ -163,6 +134,7 @@ const App: React.FC = () => {
           // onChangeComplete={handleColorChangeComplete}
         />
       </div>
+      <button onClick={rerunMaze}>Create new maze</button>
     </div>
   );
 };

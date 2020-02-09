@@ -13,6 +13,9 @@ export class MazeOptions {
     cellWallSize: number;
     //CELL WALL SHAPE
     cellWallStrokeCapStyle: string;
+    //Window 
+    height: number;
+    width: number;
     constructor() {
         //SET UP DEFAULTS FOR MAZE if not using storage
         //SCENE
@@ -26,6 +29,10 @@ export class MazeOptions {
         //CELL WALL SHAPE
         this.cellWallStrokeCapStyle = mazeDefaultOptions.defaultStrokeCapStyle
         //Update any options that were persisted in storage
+        this.updateOptionsFromStorage()
+        //Set UI Vars
+        this.height = window.innerHeight;
+        this.width = window.innerWidth;
         this.updateOptionsFromStorage()
     }
     saveOptionsToStorage() {

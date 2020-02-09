@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@material-ui/core": "^4.9.2",
+    "@material-ui/icons": "^4.9.1",
     "@types/jest": "24.0.18",
+    "@types/material-ui": "^0.21.7",
     "@types/node": "12.7.8",
     "@types/p5": "^0.9.0",
     "@types/rc-slider": "^8.6.5",

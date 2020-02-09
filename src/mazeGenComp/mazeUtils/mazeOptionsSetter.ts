@@ -2,6 +2,7 @@ import { MazeOptions } from "./mazeOptions"
 import { ChangeEvent } from "react"
 import { mazeDefaultsStorageKeys, storageUtils } from "../../utils/storageUtils"
 import { Color } from "../../utils/colorUtils"
+import { logger } from "../../utils/loggingUtils"
 
 export class MazeOptionsSetter {
     constructor(public mazeOptions: MazeOptions) {
@@ -38,17 +39,10 @@ export class MazeOptionsSetter {
         //     targetColor.a = a
         // }
     }
-    handleCellWidthChange = (event: ChangeEvent<HTMLSelectElement>) => {
-        // temp = newWidth
-        // newWidth += temp
-        // if (newWidth > minCellWidth && newWidth < maxCellWidth) {
-        //   mazeOptions.cellSize = newWidth
-        // } else {
-        // }
-        let newWidth = parseInt(event.target.value)
-        this.mazeOptions.cellSize = newWidth
-        localStorage.setItem(mazeDefaultsStorageKeys.cellSizeKey, event.target.value)
-        console.log(`New cell width is ${this.mazeOptions.cellSize}`)
+    handleCellWidthChange = (size: number) => {
+        this.mazeOptions.cellSize = size
+        localStorage.setItem(mazeDefaultsStorageKeys.cellSizeKey, size.toString())
+        logger(`New cell width is ${this.mazeOptions.cellSize}`)
     }
 
 
@@ -61,6 +55,6 @@ export class MazeOptionsSetter {
         // }
         let newWidthPercent = parseInt(event.target.value)
         this.mazeOptions.cellWallSize = newWidthPercent
-        console.log(`New cell wall width percent is ${this.mazeOptions.cellWallSize}`)
+        logger(`New cell wall width percent is ${this.mazeOptions.cellWallSize}`)
     }
 }

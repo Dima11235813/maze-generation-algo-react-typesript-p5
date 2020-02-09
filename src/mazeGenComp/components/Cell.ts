@@ -28,7 +28,7 @@ export class Cell {
         this.paddingToApplyToLeft = _padding / 2
         this.paddingToApplyToTop = _padding / 2
         //TODO Fix this
-        // console.log(`Created cell at column #${column} and row #${row}`)
+        // logger(`Created cell at column #${column} and row #${row}`)
         //i is the column number
         //j is the row number
         this.walls = new Array(4).fill(true)
@@ -74,7 +74,7 @@ export class Cell {
             const { r, g, b, a } = mazeOptions.cellColor
             const gValToApply = this._p.floor(g / divider)
             const bValToApply = b - this.stackSubractorFromColor
-            console.log(`
+            logger(`
             R: ${r}
             G: ${gValToApply}
             A: ${bValToApply}
@@ -96,8 +96,8 @@ export class Cell {
 
             }
 
-            // console.log(`Cell Color`)
-            // console.log(color)
+            // logger(`Cell Color`)
+            // logger(color)
             // this._p.fill(255 / (this.getColorBasedOnVisited()),0, 0, 255)
             this._p.noStroke()
             this._p.rect(
@@ -110,7 +110,7 @@ export class Cell {
         //stroke
         if (mazeOptions.cellWallSize) {
             let newStrokeWeight: number = (mazeOptions.cellWallSize)
-            console.log(`Stroke weight is ${newStrokeWeight}`)
+            logger(`Stroke weight is ${newStrokeWeight}`)
             this._p.strokeWeight(newStrokeWeight)
         }
         //set stroke style

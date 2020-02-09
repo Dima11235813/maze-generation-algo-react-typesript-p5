@@ -27,8 +27,6 @@ export class MazeGenerator {
     //TODO Set up builder class for many options handling
     constructor(
         p: p5,
-        width: number,
-        height: number,
         mazeOptions: MazeOptions,
         // public cellWidth: number,
         // public cellColor: Color,
@@ -38,19 +36,11 @@ export class MazeGenerator {
     ) {
         p.setup = () => {
             //bind window resize event handler
-            let windowProperties = {
-                height : window.innerHeight,
-                width : window.innerWidth
-              }
-
-            window.onresize = function(event:Event) {
-                debugger
-              width = window.innerWidth
-              height = window.innerHeight
-                // windowProperties
-                
+            window.onresize = (event:Event) => {
+              mazeOptions.width = window.innerWidth
+              mazeOptions.height = window.innerHeight
             };    
-            // p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT)
+            const {width, height } = mazeOptions
             p.createCanvas(width, height)
             let ratioFloat = width / height
             let ratio = parseFloat(ratioFloat.toPrecision(5))
@@ -64,7 +54,7 @@ export class MazeGenerator {
                 newCellWidth = 1 * mazeOptions.cellSize
                 cellHeight = (1 / ratio) * mazeOptions.cellSize
             }
-            console.log(`
+            logger(`
             Cell width ${newCellWidth}
             Cell Height ${cellHeight}
             `)
@@ -139,7 +129,7 @@ export class MazeGenerator {
                 if (nextCell) {
                     //STEP 2
                     this.stack.push(this.currentCell)
-                    console.log(`Stack length ${this.stack.length}`)
+                    logger(`Stack length ${this.stack.length}`)
 
                     //STEP 3
                     this.removeWalls(this.currentCell, nextCell)
