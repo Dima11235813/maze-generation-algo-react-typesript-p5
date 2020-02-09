@@ -11,20 +11,12 @@ import { storageUtils } from "./utils/storageUtils";
 import Header from "./views/Header";
 
 const App: React.FC = () => {
-  let mazeOptions = new MazeOptions();
-  let mazeOptionsSetter = new MazeOptionsSetter(mazeOptions);
-  let sketchHandler = (p: p5) => new MazeGenerator(p, mazeOptions);
+  let mazeOptions: MazeOptions;
+  let mazeOptionsSetter: MazeOptionsSetter;
+  let sketchHandler: Function | any;
   let mazeSketch: p5; // holde reference to the sketch
   //set up window resize event
   //bind window resize event handler
-  window.onresize = function(event: Event) {
-    mazeOptions.width = window.innerWidth;
-    mazeOptions.height = window.innerHeight;
-    storageUtils.setMazeoptionsInStorage(mazeOptions);
-    rerunMaze();
-  };
-  logger("Maze Options:");
-  loggerObj(mazeOptions);
   //SET UP SCENE CLASS _ TODO Move to that - WHERE the maze generator operates
   //get the window dimension
   // let controlsTopPadding = 100
@@ -44,12 +36,30 @@ const App: React.FC = () => {
     );
   };
 
-  const createMazeSketch = () => {
-    mazeSketch = new p5(sketchHandler);
-  };
+  mazeOptions = new MazeOptions();
+  mazeOptionsSetter = new MazeOptionsSetter(mazeOptions);
   useEffect(() => {
+    attachEventHandlers();
     createMazeSketch();
   });
+  const createMazeSketch = () => {
+    sketchHandler = (p: p5) => new MazeGenerator(p, mazeOptions);
+    logger("Maze Options:");
+    loggerObj(mazeOptions);
+    mazeSketch = new p5(sketchHandler);
+  };
+  const attachEventHandlers = () => {
+    window.onresize = function(event: Event) {
+      console.log(`
+        New Widow Width ${window.innerWidth}
+        New Window Height ${window.innerHeight}
+        `);
+      mazeOptions.width = window.innerWidth;
+      mazeOptions.height = window.innerHeight;
+      storageUtils.setMazeoptionsInStorage(mazeOptions);
+      rerunMaze();
+    };
+  };
 
   const handleCellWallWidthPercentChangeInApp = (
     event: ChangeEvent<HTMLSelectElement>

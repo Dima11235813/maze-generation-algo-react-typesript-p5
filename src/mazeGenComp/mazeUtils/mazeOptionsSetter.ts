@@ -42,7 +42,7 @@ export class MazeOptionsSetter {
     handleCellWidthChange = (size: number) => {
         this.mazeOptions.cellSize = size
         localStorage.setItem(mazeDefaultsStorageKeys.cellSizeKey, size.toString())
-        logger(`New cell width is ${this.mazeOptions.cellSize}`)
+        console.log(`New cell width is ${this.mazeOptions.cellSize}`)
     }
 
 

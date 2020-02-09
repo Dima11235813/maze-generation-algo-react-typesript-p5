@@ -40,15 +40,17 @@ const CellSizeSlider = (props: CellSizeSlider) => {
 
   //Event for slider
   const handleSliderChange = (event: any, newValue: any) => {
-    setValue(newValue);
-    updateCellSizeForMaze(newValue);
+    setStateAndPersistSelection(newValue);
   };
   //Even for input
   const handleInputChange = (event: any) => {
     let newValue =
       event.target.value === "" ? minCellWidth : Number(event.target.value);
-    setValue(newValue);
-    updateCellSizeForMaze(newValue);
+    setStateAndPersistSelection(newValue);
+  };
+  const setStateAndPersistSelection = (newValue: number) => {
+    let valueForStorage = setStateConditionally(newValue);
+    updateCellSizeForMaze(valueForStorage);
   };
   const updateCellSizeForMaze = (newValue: number) => {
     mazeOptionsSetter.handleCellWidthChange(newValue);
@@ -58,10 +60,18 @@ const CellSizeSlider = (props: CellSizeSlider) => {
   //state change
 
   const handleBlur = () => {
+    setStateConditionally(value);
+  };
+  const setStateConditionally = (value: number): number => {
     if (value < minCellWidth) {
       setValue(minCellWidth);
+      return minCellWidth;
     } else if (value > maxCellWidth) {
       setValue(maxCellWidth);
+      return maxCellWidth;
+    } else {
+      setValue(value);
+      return value;
     }
   };
 

@@ -33,7 +33,6 @@ export class MazeOptions {
         //Set UI Vars
         this.height = window.innerHeight;
         this.width = window.innerWidth;
-        this.updateOptionsFromStorage()
     }
     saveOptionsToStorage() {
         storageUtils.setMazeoptionsInStorage(this)
