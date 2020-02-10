@@ -1,29 +1,27 @@
 import { MazeOptions } from "./mazeOptions"
-import { ChangeEvent } from "react"
 import { mazeDefaultsStorageKeys, storageUtils } from "../../utils/storageUtils"
 import { Color } from "../../utils/colorUtils"
-import { logger } from "../../utils/loggingUtils"
 
 export class MazeOptionsSetter {
-    constructor(public mazeOptions: MazeOptions) {
+    constructor(private _mazeOptions: MazeOptions) {
 
     }
     //TODO Move to color utils class
     //SET UP HANDLERS FOR COLOR CHANGE
     updateStorage = () => {
         //todo set up individual setters for options
-        storageUtils.setMazeoptionsInStorage(this.mazeOptions)
+        storageUtils.setMazeoptionsInStorage(this._mazeOptions)
     }
     handleBackgroundColorChange = (color: any): void => {
-        this.assignColorToTarget(color.rgb, this.mazeOptions.backgroundColor)
+        this.assignColorToTarget(color.rgb, this._mazeOptions.backgroundColor)
         this.updateStorage()
     }
     handleCellColorChange = (color: any): void => {
-        this.assignColorToTarget(color.rgb, this.mazeOptions.cellColor)
+        this.assignColorToTarget(color.rgb, this._mazeOptions.cellColor)
         this.updateStorage()
     }
     handleCellWallColorChange = (color: any): void => {
-        this.assignColorToTarget(color.rgb, this.mazeOptions.cellWallColor)
+        this.assignColorToTarget(color.rgb, this._mazeOptions.cellWallColor)
         this.updateStorage()
     }
     assignColorToTarget = (assignmentColor: Color, targetColor: Color) => {
@@ -33,23 +31,23 @@ export class MazeOptionsSetter {
         targetColor.b = b
         //TODO FIGURE OUT WHY SENDING A TO P5 CAUSES ODD THINGS TO HAPPEN
         // if (a) {
-        //   this.mazeOptions.cellColor.a = a
+        //   this._mazeOptions.cellColor.a = a
         // }
         // if (a) {
         //     targetColor.a = a
         // }
     }
     handleCellSizeChange = (size: number) => {
-        this.mazeOptions.cellSize = size
+        this._mazeOptions.cellSize = size
         localStorage.setItem(mazeDefaultsStorageKeys.cellSizeKey, size.toString())
-        console.log(`New cell width is ${this.mazeOptions.cellSize}`)
+        console.log(`New cell width is ${this._mazeOptions.cellSize}`)
     }
     
     
     handleCellWallWidthPercentChange = (newValue: number) => {
-        this.mazeOptions.cellWallSize = newValue
-        this.mazeOptions.updateDynamicValues()
+        this._mazeOptions.cellWallSize = newValue
+        this._mazeOptions.updateDynamicValues()
         localStorage.setItem(mazeDefaultsStorageKeys.cellWallSizeKey, newValue.toString())
-        console.log(`New cell wall width percent is ${this.mazeOptions.cellWallSize}`)
+        console.log(`New cell wall width percent is ${this._mazeOptions.cellWallSize}`)
     }
 }

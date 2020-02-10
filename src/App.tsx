@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect } from "react";
+import React, { useEffect, ChangeEvent } from "react";
 import { SketchPicker } from "react-color";
 import "./App.css";
 import { MazeGenerator } from "./mazeGenComp/MazeGenerator";

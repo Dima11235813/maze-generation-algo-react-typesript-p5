@@ -7,6 +7,9 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import useScrollTrigger from "@material-ui/core/useScrollTrigger";
 import Slide from "@material-ui/core/Slide";
 
+//Components
+import ExpandSideBar from "../components/ExpandSidebar";
+
 function HideOnScroll(props: any) {
   const { children, window } = props;
   // Note that you normally won't need to set the window ref as useScrollTrigger
@@ -37,7 +40,8 @@ export default function Header(props: any) {
       <HideOnScroll {...props}>
         <AppBar>
           <Toolbar>
-            <Typography variant="h6">Maze Generator</Typography>
+            <Typography variant="h1">Maze Generator</Typography>
+              <ExpandSideBar />
           </Toolbar>
         </AppBar>
       </HideOnScroll>
