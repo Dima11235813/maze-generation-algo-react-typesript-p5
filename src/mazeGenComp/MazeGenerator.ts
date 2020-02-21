@@ -1,9 +1,5 @@
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../constants/canvasConstants"
-import { GRID_CELL_WIDTH } from "../constants/gridConstants"
-
 import { Cell } from "./components/Cell"
 import { logColumnDuringCreation, logRowDuringCreation, logger, loggerJson } from "../utils/loggingUtils"
-import { Color } from "../utils/colorUtils"
 import { MazeOptions } from "./mazeUtils/mazeOptions"
 
 export class MazeGenerator {
