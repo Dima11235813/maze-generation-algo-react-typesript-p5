@@ -38,7 +38,7 @@ export class Cell {
     //grid of roughly 400 cells had max of aobut 250 
     //need to calc number o cells and take 5/8s as the max number - to normalize acroos grid sizes
     //make it so that most dominant r, g, b value is oscilated by 250 based on the scope size
-    getColorBasedOnVisited = () => this.visited * .42 //+ ((stackLength + 1) / 10) //+ ((stackLength + 1) / 10)
+    getColorBasedOnVisited = () => this.visited * .242 //+ ((stackLength + 1) / 10) //+ ((stackLength + 1) / 10)
     show = (
         mazeOptions: MazeOptions,
         stackLength: number
@@ -191,7 +191,7 @@ export class Cell {
     highlight = () => {
         var xLength = this.column * this._cellWidth
         var yLength = this.row * this._cellHeight
-        this._p.noStroke()
+        // this._p.noStroke()
         this._p.fill(0, 0, 255 / this.visited + 1, 100)
         this._p.rect(xLength + this.paddingToApplyToLeft, yLength + this.paddingToApplyToTop, this._cellWidth, this._cellHeight)
     }

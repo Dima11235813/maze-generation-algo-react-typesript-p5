@@ -1,8 +1,9 @@
 export enum Labels {
-    CELL_WIDTH_LABEL = "Cell Size",
-    CELL_COLOR_LABEL = "Cell Color",
+    HEADER = "Maze Settings/Options",
+    CELL_SIZE = "Cell Size",
+    CELL_WALL_SIZE = "Cell Wall Width",
+    CELL_COLOR = "Cell Color",
     CELL_WALL_COLOR = "Cell Wall Color",
-    CELL_BACKGROUND_COLOR = "Cell Background Color",
-    CELL_WALL_WIDTH = "Cell Wall Width",
-    SKETCH_BACKGROUND_COLOR = "Maze Background Color"
+    MAZE_BACKGROUND_COLOR = "Maze Background Color",
+    CELL_WALL_STYLE = "Cell Wall Style"
 }
