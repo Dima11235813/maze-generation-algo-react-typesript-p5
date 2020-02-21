@@ -1,0 +1,3 @@
+export const CELL_MIN_SIZE = 3
+export const MIN_NUMBER_OF_CELLS_HORIZONTALLY = 10
+export const CELL_SIZE_INCREMENT_INTERVAL = 1

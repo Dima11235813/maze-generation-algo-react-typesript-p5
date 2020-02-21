@@ -1,15 +1,13 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
-import Typography from "@material-ui/core/Typography";
 import Slider from "@material-ui/core/Slider";
 import Input from "@material-ui/core/Input";
 import FormatSize from "@material-ui/icons/FormatSize";
 
 //Maze Config
-import { MazeOptions } from "../mazeGenComp/mazeUtils/mazeOptions";
 import { MazeOptionsSetter } from "../mazeGenComp/mazeUtils/mazeOptionsSetter";
-import { Labels } from "../shared/labels";
+import { CELL_MIN_SIZE, MIN_NUMBER_OF_CELLS_HORIZONTALLY, CELL_SIZE_INCREMENT_INTERVAL } from "../shared/constants";
 
 interface CellSizeSlider {
   mazeOptionsSetter: MazeOptionsSetter;
@@ -22,9 +20,8 @@ interface CellSizeSlider {
 const CellSizeSlider = (props: CellSizeSlider) => {
   const { mazeOptionsSetter, windowWidth, cellSize, onSizeChange } = props!;
   //cell width rules
-  let minCellSize = 6;
-  let maxCellSize = windowWidth / 20;
-  let cellSizeIncrementor = 2;
+  let maxCellSize = windowWidth / MIN_NUMBER_OF_CELLS_HORIZONTALLY;
+  let cellSizeIncrementor = CELL_SIZE_INCREMENT_INTERVAL;
 
   //create ui component
   const useStyles = makeStyles({
@@ -47,7 +44,7 @@ const CellSizeSlider = (props: CellSizeSlider) => {
   //Even for input
   const handleInputChange = (event: any) => {
     let newValue =
-      event.target.value === "" ? minCellSize : Number(event.target.value);
+      event.target.value === "" ? CELL_MIN_SIZE : Number(event.target.value);
     setStateAndPersistSelection(newValue);
   };
   const setStateAndPersistSelection = (newValue: number) => {
@@ -65,9 +62,9 @@ const CellSizeSlider = (props: CellSizeSlider) => {
     setStateConditionally(value);
   };
   const setStateConditionally = (value: number): number => {
-    if (value < minCellSize) {
-      setValue(minCellSize);
-      return minCellSize;
+    if (value < CELL_MIN_SIZE) {
+      setValue(CELL_MIN_SIZE);
+      return CELL_MIN_SIZE;
     } else if (value > maxCellSize) {
       setValue(maxCellSize);
       return maxCellSize;
@@ -85,7 +82,7 @@ const CellSizeSlider = (props: CellSizeSlider) => {
         </Grid>
         <Grid item xs>
           <Slider
-            value={typeof value === "number" ? value : minCellSize}
+            value={typeof value === "number" ? value : CELL_MIN_SIZE}
             onChange={handleSliderChange}
             aria-labelledby="input-slider"
           />
@@ -99,7 +96,7 @@ const CellSizeSlider = (props: CellSizeSlider) => {
             onBlur={handleBlur}
             inputProps={{
               step: cellSizeIncrementor,
-              min: minCellSize,
+              min: CELL_MIN_SIZE,
               max: maxCellSize,
               type: "number",
               "aria-labelledby": "input-slider"
