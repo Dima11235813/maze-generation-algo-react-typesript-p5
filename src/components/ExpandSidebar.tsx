@@ -50,32 +50,8 @@ export default function SwipeableTemporaryDrawer() {
   };
 
   const sideList = (side: DrawerSide) => (
-    <div
-      className={classes.list}
-      role="presentation"
-    >
+    <div className={classes.list} role="presentation">
       <MazeOptionsUiExpansionPanel />
-      {/* <List>
-        {["Inbox", "Starred", "Send email", "Drafts"].map((text, index) => (
-          <ListItem button key={text}>
-            <ListItemIcon>
-              {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-            </ListItemIcon>
-            <ListItemText primary={text} />
-          </ListItem>
-        ))}
-      </List>
-      <Divider />
-      <List>
-        {["All mail", "Trash", "Spam"].map((text, index) => (
-          <ListItem button key={text}>
-            <ListItemIcon>
-              {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-            </ListItemIcon>
-            <ListItemText primary={text} />
-          </ListItem>
-        ))}
-      </List> */}
     </div>
   );
 
@@ -111,25 +87,23 @@ export default function SwipeableTemporaryDrawer() {
   );
 
   return (
-    <div
-    className={styles.toggleMazeOptionsUi}
-    >
+    <div className={styles.toggleMazeOptionsUi}>
       {/* Make icon instead */}
       <div
         className={styles.toggleMazeOptionsUiButton}
-        onClick={toggleDrawer("right", true)}
+        onClick={toggleDrawer("left", true)}
       >
         <Typography variant="h6">Maze Options</Typography>
       </div>
-      <Button onClick={toggleDrawer('right', true)}>Open Right</Button>
-      <Button onClick={toggleDrawer('top', true)}>Open Top</Button>
-      <Button onClick={toggleDrawer('bottom', true)}>Open Bottom</Button>
+      <Button onClick={toggleDrawer("right", true)}>Open Right</Button>
+      {/* <Button onClick={toggleDrawer('top', true)}>Open Top</Button>
+      <Button onClick={toggleDrawer('bottom', true)}>Open Bottom</Button> */}
       <SwipeableDrawer
         transitionDuration={2}
         open={state.left}
         onClose={toggleDrawer("left", false)}
         onOpen={toggleDrawer("left", true)}
-        >
+      >
         {sideList("left")}
       </SwipeableDrawer>
       <SwipeableDrawer
@@ -138,7 +112,7 @@ export default function SwipeableTemporaryDrawer() {
         transitionDuration={1}
         onClose={toggleDrawer("top", false)}
         onOpen={toggleDrawer("top", true)}
-        >
+      >
         {fullList("top")}
       </SwipeableDrawer>
       <SwipeableDrawer

@@ -69,9 +69,6 @@ const CellWallSizeSlider = (props: CellWallSizeSlider) => {
   `);
   return (
     <div className={classes.root}>
-      <Typography id="input-slider" gutterBottom>
-        {Labels.CELL_WALL_WIDTH}
-      </Typography>
       <Grid container spacing={2} alignItems="center">
         <Grid item>
           <FormatSize />

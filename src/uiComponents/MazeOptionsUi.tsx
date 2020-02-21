@@ -1,19 +1,13 @@
-import React from "react";
+import React, { useContext } from "react";
 import styles from "./MazeOptionsUi.module.scss";
 import { SketchPicker } from "react-color";
+import CellSizeSlider from "./CellSizeSlider";
+import CellWallSizeSlider from "./CellWallSizeSlider";
+import { P5_MazeContext, p5_MazeContext } from "../AppContext";
 
 export default function MazeOptionsUi() {
   return (
     <div className={styles.mazeOptionsUi}>
-      <div className="color-picker-background">
-        <div>Background Color</div>
-        sketch piccker
-        {/* <SketchPicker
-          color={mazeOptions.backgroundColor}
-          onChange={mazeOptionsSetter.handleBackgroundColorChange}
-          // onChangeComplete={handleColorChangeComplete}
-        /> */}
-      </div>
     </div>
   );
 }

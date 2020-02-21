@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useState } from "react";
 import List from "@material-ui/core/List";
 import Divider from "@material-ui/core/Divider";
 import ListItem from "@material-ui/core/ListItem";
@@ -14,6 +14,11 @@ import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import Typography from "@material-ui/core/Typography";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import MazeOptionsUi from "./MazeOptionsUi";
+import { p5_MazeContext, P5_MazeContext } from "../AppContext";
+import CellSizeSlider from "./CellSizeSlider";
+import CellWallSizeSlider from "./CellWallSizeSlider";
+import { SketchPicker } from "react-color";
+import { Labels } from "../shared/labels";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -32,88 +37,185 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
+enum MazeOptionPanels {
+  CELL_SIZE = "cellSizePanel",
+  CELL_WALL_SIZE = "cellWallSizePanel",
+  CELL_COLOR = "cellColor",
+  CELL_WALL_COLOR = "cellWallColor",
+  MAZE_BACKGROUND_COLOR = "mazeBackgroundColor"
+}
+
+//TODO Move to maze options ui defaults
 export default function MazeOptionsUiExpansionPanel() {
+  const CELL_SIZE_PANEL_DEFAULT = true;
+  const CELL_COLOR_PANEL_DEFAULT = true;
+  let mazeContext: P5_MazeContext = useContext(p5_MazeContext);
+  const { mazeOptionsSetter, mazeOptions, p5_MazeFuncs } = mazeContext!;
+  const { resetMaze } = p5_MazeFuncs;
   const classes = useStyles();
-  const [expanded, setExpanded] = React.useState<string | false>(false);
+  const [expanded1, setExpanded1] = useState<string | false | true>(
+    CELL_SIZE_PANEL_DEFAULT
+  );
+  const [expanded2, setExpanded2] = useState<string | false | true>(false);
+  const [expanded3, setExpanded3] = useState<string | false | true>(
+    CELL_COLOR_PANEL_DEFAULT
+  );
+  const [expanded4, setExpanded4] = useState<string | false | true>(false);
+  const [expanded5, setExpanded5] = useState<string | false | true>(false);
 
   const handleChange = (panel: string) => (
     event: React.ChangeEvent<{}>,
     isExpanded: boolean
   ) => {
-    setExpanded(isExpanded ? panel : false);
+    switch (panel) {
+      case MazeOptionPanels.CELL_SIZE:
+        setExpanded1(isExpanded ? panel : false);
+        break;
+      case MazeOptionPanels.CELL_WALL_SIZE:
+        setExpanded2(isExpanded ? panel : false);
+        break;
+      case MazeOptionPanels.CELL_COLOR:
+        setExpanded3(isExpanded ? panel : false);
+        break;
+      case MazeOptionPanels.CELL_WALL_COLOR:
+        setExpanded4(isExpanded ? panel : false);
+        break;
+      case MazeOptionPanels.MAZE_BACKGROUND_COLOR:
+        setExpanded5(isExpanded ? panel : false);
+        break;
+      default:
+        break;
+    }
   };
-
   return (
     <div className={classes.root}>
       <ExpansionPanel
-        expanded={expanded === "panel1"}
-        onChange={handleChange("panel1")}
+        expanded={expanded1 === MazeOptionPanels.CELL_SIZE}
+        onChange={handleChange(MazeOptionPanels.CELL_SIZE)}
       >
         <ExpansionPanelSummary
           expandIcon={<ExpandMoreIcon />}
           aria-controls="panel1bh-content"
           id="panel1bh-header"
         >
-          <Typography className={classes.heading}>General settings</Typography>
-          <Typography className={classes.secondaryHeading}>
-            I am an expansion panel
+          <Typography className={classes.heading}>
+            Maze General settings
           </Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>
-          <MazeOptionsUi />
+          {/* TODO Add ability to toggle panel state defaults */}
         </ExpansionPanelDetails>
       </ExpansionPanel>
-      {/* <ExpansionPanel expanded={expanded === 'panel2'} onChange={handleChange('panel2')}>
+      <ExpansionPanel
+        expanded={expanded1 === MazeOptionPanels.CELL_SIZE}
+        onChange={handleChange(MazeOptionPanels.CELL_SIZE)}
+      >
         <ExpansionPanelSummary
           expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel2bh-content"
-          id="panel2bh-header"
+          aria-controls="panel1bh-content"
+          id="panel1bh-header"
         >
-          <Typography className={classes.heading}>Users</Typography>
-          <Typography className={classes.secondaryHeading}>
-            You are currently not an owner
+          <Typography id="input-slider" className={classes.secondaryHeading}>
+            {Labels.CELL_WIDTH_LABEL}
           </Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>
-          <Typography>
-            Donec placerat, lectus sed mattis semper, neque lectus feugiat lectus, varius pulvinar
-            diam eros in elit. Pellentesque convallis laoreet laoreet.
-          </Typography>
+          <CellSizeSlider
+            mazeOptionsSetter={mazeOptionsSetter}
+            onSizeChange={resetMaze}
+            windowWidth={mazeOptions.windowWidth}
+            cellSize={mazeOptions.cellSize}
+          />
         </ExpansionPanelDetails>
       </ExpansionPanel>
-      <ExpansionPanel expanded={expanded === 'panel3'} onChange={handleChange('panel3')}>
+      <ExpansionPanel
+        expanded={expanded2 === MazeOptionPanels.CELL_WALL_SIZE}
+        onChange={handleChange(MazeOptionPanels.CELL_WALL_SIZE)}
+      >
         <ExpansionPanelSummary
           expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel3bh-content"
-          id="panel3bh-header"
+          aria-controls="panel1bh-content"
+          id="panel1bh-header"
         >
-          <Typography className={classes.heading}>Advanced settings</Typography>
-          <Typography className={classes.secondaryHeading}>
-            Filtering has been entirely disabled for whole web server
+          <Typography
+            className={classes.secondaryHeading}
+            id="input-slider"
+            gutterBottom
+          >
+            {Labels.CELL_WALL_WIDTH}
           </Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>
-          <Typography>
-            Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros,
-            vitae egestas augue. Duis vel est augue.
-          </Typography>
+          <CellWallSizeSlider
+            mazeOptionsSetter={mazeOptionsSetter}
+            cellWallSize={mazeOptions.cellWallSize}
+            maxStrokeWidth={mazeOptions.maxStrokeWidth}
+          />
         </ExpansionPanelDetails>
       </ExpansionPanel>
-      <ExpansionPanel expanded={expanded === 'panel4'} onChange={handleChange('panel4')}>
+      <ExpansionPanel
+        expanded={expanded3 === MazeOptionPanels.CELL_COLOR}
+        onChange={handleChange(MazeOptionPanels.CELL_COLOR)}
+      >
         <ExpansionPanelSummary
           expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel4bh-content"
-          id="panel4bh-header"
+          aria-controls="panel1bh-content"
+          id="panel1bh-header"
         >
-          <Typography className={classes.heading}>Personal data</Typography>
+          <Typography className={classes.secondaryHeading}>
+            Cell Color
+          </Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>
-          <Typography>
-            Nunc vitae orci ultricies, auctor nunc in, volutpat nisl. Integer sit amet egestas eros,
-            vitae egestas augue. Duis vel est augue.
-          </Typography>
+          <SketchPicker
+            color={mazeOptions.cellColor}
+            onChange={mazeOptionsSetter.handleCellColorChange}
+            // onChangeComplete={handleColorChangeComplete}
+          />
         </ExpansionPanelDetails>
-      </ExpansionPanel> */}
+      </ExpansionPanel>
+      <ExpansionPanel
+        expanded={expanded4 === MazeOptionPanels.CELL_WALL_COLOR}
+        onChange={handleChange(MazeOptionPanels.CELL_WALL_COLOR)}
+      >
+        <ExpansionPanelSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="panel1bh-content"
+          id="panel1bh-header"
+        >
+          <Typography className={classes.secondaryHeading}>
+            Cell Wall Color
+          </Typography>
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails>
+          <SketchPicker
+            color={mazeOptions.cellWallColor}
+            onChange={mazeOptionsSetter.handleCellWallColorChange}
+            // onChangeComplete={handleColorChangeComplete}
+          />
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
+      <ExpansionPanel
+        expanded={expanded5 === MazeOptionPanels.MAZE_BACKGROUND_COLOR}
+        onChange={handleChange(MazeOptionPanels.MAZE_BACKGROUND_COLOR)}
+      >
+        <ExpansionPanelSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="panel1bh-content"
+          id="panel1bh-header"
+        >
+          <Typography className={classes.secondaryHeading}>
+            Background Color
+          </Typography>
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails>
+          <SketchPicker
+            color={mazeOptions.backgroundColor}
+            onChange={mazeOptionsSetter.handleBackgroundColorChange}
+            // onChangeComplete={handleColorChangeComplete}
+          />
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
     </div>
   );
 }

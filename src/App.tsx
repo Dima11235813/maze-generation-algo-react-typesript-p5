@@ -9,7 +9,8 @@ import CellSizeSlider from "./uiComponents/CellSizeSlider";
 import { storageUtils } from "./utils/storageUtils";
 import Header from "./views/Header";
 import CellWallSizeSlider from "./uiComponents/CellWallSizeSlider";
-import { P5_MazeContext } from "./AppContext";
+import { P5_MazeContext, p5_MazeContext } from "./AppContext";
+import Footer from "./views/Footer";
 
 const App: React.FC = () => {
   // const mazeContext = useContext({});
@@ -23,6 +24,9 @@ const App: React.FC = () => {
   //get the window dimension
   // let controlsTopPadding = 100
   // const mazeContainerRef = useRef(undefined);
+
+  let mazeContext: P5_MazeContext = useContext(p5_MazeContext);
+  const { mazeOptionsSetter, mazeOptions, p5_MazeFuncs } = mazeContext!;
 
   const rerunMaze = () => {
     logger(`Removing sketch.`);
@@ -49,7 +53,10 @@ const App: React.FC = () => {
     loggerObj(mazeOptions);
     let mazeContainer = document.getElementById("maze-container");
     if (mazeContainer) {
-      mazeSketch = new p5(sketchHandler);
+      mazeSketch = new p5(sketchHandler, mazeContainer);
+      p5_MazeFuncs.resetMaze = () => {
+        rerunMaze();
+      };
     }
   };
   const attachEventHandlers = () => {
@@ -82,64 +89,16 @@ const App: React.FC = () => {
   //     })
   //   }
   // </select>
-  let mazeContext: P5_MazeContext = useContext(P5_MazeContext);
-  debugger
-  const { mazeOptionsSetter, mazeOptions } = mazeContext!;
   return (
     <React.Fragment>
       <Header />
       <div className="App">
         <div className="grid-controls">
-          {/*  ref={mazeContainerRef}></div> */}
+          {/*  TODO Get maze to be generated within this container */}
           <div id="maze-container"></div>
-          <div>
-            <CellSizeSlider
-              mazeOptionsSetter={mazeOptionsSetter}
-              onSizeChange={rerunMaze}
-              windowWidth={mazeOptions.windowWidth}
-              cellSize={mazeOptions.cellSize}
-            />
-          </div>
-          <div>
-            <CellWallSizeSlider
-              mazeOptionsSetter={mazeOptionsSetter}
-              cellWallSize={mazeOptions.cellWallSize}
-              maxStrokeWidth={mazeOptions.maxStrokeWidth}
-            />
-          </div>
-          {/* <div>Cell Wall Percent</div>
-        <div>{dropDownForCellWidthForStrokeWidth}</div> */}
-          {/* <div>Cell Wall Cap Style</div>
-        <div>
-          {dropDownForCellWidthForStrokeCap}
-        </div> */}
         </div>
-        <div className="color-picker-cell-rect">
-          <div>Cell Color</div>
-          <SketchPicker
-            color={mazeOptions.cellColor}
-            onChange={mazeOptionsSetter.handleCellColorChange}
-            // onChangeComplete={handleColorChangeComplete}
-          />
-        </div>
-        <div className="color-picker-cell-wall">
-          <div>Cell Wall Color</div>
-          <SketchPicker
-            color={mazeOptions.cellWallColor}
-            onChange={mazeOptionsSetter.handleCellWallColorChange}
-            // onChangeComplete={handleColorChangeComplete}
-          />
-        </div>
-        <div className="color-picker-background">
-          <div>Background Color</div>
-          <SketchPicker
-            color={mazeOptions.backgroundColor}
-            onChange={mazeOptionsSetter.handleBackgroundColorChange}
-            // onChangeComplete={handleColorChangeComplete}
-          />
-        </div>
-        <button onClick={rerunMaze}>Create new maze</button>
       </div>
+      <Footer />
     </React.Fragment>
   );
 };

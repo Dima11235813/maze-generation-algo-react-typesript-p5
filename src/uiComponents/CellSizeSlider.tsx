@@ -20,7 +20,7 @@ interface CellSizeSlider {
 }
 
 const CellSizeSlider = (props: CellSizeSlider) => {
-  const { mazeOptionsSetter, windowWidth, cellSize, onSizeChange } = props;
+  const { mazeOptionsSetter, windowWidth, cellSize, onSizeChange } = props!;
   //cell width rules
   let minCellSize = 6;
   let maxCellSize = windowWidth / 20;
@@ -79,9 +79,6 @@ const CellSizeSlider = (props: CellSizeSlider) => {
 
   return (
     <div className={classes.root}>
-      <Typography id="input-slider" gutterBottom>
-        {Labels.CELL_WIDTH_LABEL}
-      </Typography>
       <Grid container spacing={2} alignItems="center">
         <Grid item>
           <FormatSize />

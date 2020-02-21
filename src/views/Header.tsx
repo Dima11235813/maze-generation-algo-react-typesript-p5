@@ -51,7 +51,7 @@ const toolbarItemStyles = {
   gridTemplateColumns: "1fr 1fr"
 };
 const appLogoStyles = {
-  padding: "1rem"
+  padding: ".75rem"
 };
 
 const ToolbarItems = () => {
