@@ -42,12 +42,21 @@ export class MazeOptionsSetter {
         localStorage.setItem(mazeDefaultsStorageKeys.cellSizeKey, size.toString())
         console.log(`New cell width is ${this._mazeOptions.cellSize}`)
     }
-    
-    
+
+
     handleCellWallWidthPercentChange = (newValue: number) => {
         this._mazeOptions.cellWallSize = newValue
         this._mazeOptions.updateDynamicValues()
         localStorage.setItem(mazeDefaultsStorageKeys.cellWallSizeKey, newValue.toString())
         console.log(`New cell wall width percent is ${this._mazeOptions.cellWallSize}`)
+    }
+    handleCellWallStyleChange = (newValue: string) => {
+        this._mazeOptions.cellWallStrokeCapStyle = newValue
+        localStorage.setItem(mazeDefaultsStorageKeys.cellWallStrokeCapStyleKey, newValue)
+        console.log(`New cell wall style is ${this._mazeOptions.cellWallStrokeCapStyle}`)
+        //TODO Change console.logs to logger
+        // logger(
+        //   );
+
     }
 }

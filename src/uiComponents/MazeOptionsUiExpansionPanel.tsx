@@ -19,6 +19,7 @@ import CellSizeSlider from "./CellSizeSlider";
 import CellWallSizeSlider from "./CellWallSizeSlider";
 import { SketchPicker } from "react-color";
 import { Labels } from "../shared/labels";
+import { FormControl, InputLabel, Select, MenuItem } from "@material-ui/core";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -33,6 +34,13 @@ const useStyles = makeStyles((theme: Theme) =>
     secondaryHeading: {
       fontSize: theme.typography.pxToRem(15),
       color: theme.palette.text.secondary
+    },
+    formControl: {
+      margin: theme.spacing(1),
+      minWidth: 120
+    },
+    selectEmpty: {
+      marginTop: theme.spacing(2)
     }
   })
 );
@@ -42,7 +50,13 @@ enum MazeOptionPanels {
   CELL_WALL_SIZE = "cellWallSizePanel",
   CELL_COLOR = "cellColor",
   CELL_WALL_COLOR = "cellWallColor",
-  MAZE_BACKGROUND_COLOR = "mazeBackgroundColor"
+  MAZE_BACKGROUND_COLOR = "mazeBackgroundColor",
+  CELL_WALL_STYLE = "cellWallStyle"
+}
+
+enum CellWallOptions {
+  ROUND = "round",
+  SQUARE = "square"
 }
 
 //TODO Move to maze options ui defaults
@@ -62,6 +76,26 @@ export default function MazeOptionsUiExpansionPanel() {
   );
   const [expanded4, setExpanded4] = useState<string | false | true>(false);
   const [expanded5, setExpanded5] = useState<string | false | true>(false);
+  const [expanded6, setExpanded6] = useState<string | false | true>(false);
+
+  //Cell wall style state
+  const cellWallStyleDefault = "round";
+  const [cellWallStyle, setCellWallStyle] = useState<string>(
+    cellWallStyleDefault
+  );
+
+  // const inputLabel = React.useRef<HTMLLabelElement>(null);
+  // const [labelWidth, setLabelWidth] = React.useState(0);
+  // React.useEffect(() => {
+  //   setLabelWidth(inputLabel.current!.offsetWidth);
+  // }, [])
+
+  const handleCellWallStyleChange = (
+    event: React.ChangeEvent<{ value: unknown }>
+  ) => {
+    mazeOptionsSetter.handleCellWallStyleChange(value);
+    setCellWallStyle(event.target.value as string);
+  };
 
   const handleChange = (panel: string) => (
     event: React.ChangeEvent<{}>,
@@ -82,6 +116,9 @@ export default function MazeOptionsUiExpansionPanel() {
         break;
       case MazeOptionPanels.MAZE_BACKGROUND_COLOR:
         setExpanded5(isExpanded ? panel : false);
+        break;
+      case MazeOptionPanels.CELL_WALL_STYLE:
+        setExpanded6(isExpanded ? panel : false);
         break;
       default:
         break;
@@ -163,7 +200,7 @@ export default function MazeOptionsUiExpansionPanel() {
           id="panel1bh-header"
         >
           <Typography className={classes.secondaryHeading}>
-            Cell Color
+            {Labels.CELL_COLOR_LABEL}
           </Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>
@@ -184,7 +221,7 @@ export default function MazeOptionsUiExpansionPanel() {
           id="panel1bh-header"
         >
           <Typography className={classes.secondaryHeading}>
-            Cell Wall Color
+          {Labels.CELL_WALL_COLOR}
           </Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>
@@ -205,7 +242,7 @@ export default function MazeOptionsUiExpansionPanel() {
           id="panel1bh-header"
         >
           <Typography className={classes.secondaryHeading}>
-            Background Color
+            {Labels.SKETCH_BACKGROUND_COLOR}
           </Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>
@@ -214,6 +251,34 @@ export default function MazeOptionsUiExpansionPanel() {
             onChange={mazeOptionsSetter.handleBackgroundColorChange}
             // onChangeComplete={handleColorChangeComplete}
           />
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
+      <ExpansionPanel
+        expanded={expanded6 === MazeOptionPanels.CELL_WALL_STYLE}
+        onChange={handleChange(MazeOptionPanels.CELL_WALL_STYLE)}
+      >
+        <ExpansionPanelSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="panel1bh-content"
+          id="panel1bh-header"
+        >
+          <Typography className={classes.secondaryHeading}>
+          Cell Wall Style
+          </Typography>
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails>
+          <FormControl className={classes.formControl}>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={cellWallStyle}
+              onChange={handleCellWallStyleChange}
+            >
+              {Object.values(CellWallOptions).map((cellWallOption: string) => (
+                <MenuItem value={cellWallOption}>{cellWallOption}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </ExpansionPanelDetails>
       </ExpansionPanel>
     </div>
