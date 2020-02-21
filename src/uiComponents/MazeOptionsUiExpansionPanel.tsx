@@ -1,18 +1,11 @@
 import React, { useContext, useState } from "react";
 
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
-import ExpansionPanel from "@material-ui/core/ExpansionPanel";
-import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
-import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
-import Typography from "@material-ui/core/Typography";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { p5_MazeContext, P5_MazeContext } from "../AppContext";
-import CellSizeSlider from "./CellSizeSlider";
 import CellWallSizeSlider from "./CellWallSizeSlider";
 import { SketchPicker } from "react-color";
 import { Labels } from "../shared/labels";
 import { FormControl, Select, MenuItem } from "@material-ui/core";
-import { mazeDefaultOptions } from "../mazeGenComp/mazeUtils/mazeDefaults";
 import { ExpansionPanelWrapper } from "./MazeOptionsUiExpansionPanel/ExpansionPanel";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -51,17 +44,6 @@ export default function MazeOptionsUiExpansionPanel() {
   return (
     <div className={classes.root}>
       <ExpansionPanelWrapper name={Labels.HEADER} />
-      <ExpansionPanelWrapper
-        name={Labels.CELL_SIZE}
-        render={() => (
-          <CellSizeSlider
-            mazeOptionsSetter={mazeOptionsSetter}
-            onSizeChange={resetMaze}
-            windowWidth={mazeOptions.windowWidth}
-            cellSize={mazeOptions.cellSize}
-          />
-        )}
-      />
       <ExpansionPanelWrapper
         name={Labels.CELL_WALL_SIZE}
         render={() => (
