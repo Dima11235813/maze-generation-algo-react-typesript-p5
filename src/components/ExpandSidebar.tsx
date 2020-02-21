@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import SwipeableDrawer from "@material-ui/core/SwipeableDrawer";
 import Button from "@material-ui/core/Button";
@@ -85,7 +85,12 @@ export default function SwipeableTemporaryDrawer() {
       </List>
     </div>
   );
-
+  useEffect(() => {
+    const keepMenuOpen = true
+    if(keepMenuOpen){
+      toggleDrawer("right", true)
+    }
+  })
   return (
     <div className={styles.toggleMazeOptionsUi}>
       {/* Make icon instead */}

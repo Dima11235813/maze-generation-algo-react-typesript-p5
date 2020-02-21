@@ -4,7 +4,7 @@ import { logVisitedCell, logger, loggerObj } from "../../utils/loggingUtils"
 import { getPointValsAtIndex } from "../../utils/gridUtils"
 import { MazeOptions } from "../mazeUtils/mazeOptions"
 import { STROKE_CAP } from "p5"
-import { CellWallOptions } from "../../uiComponents/MazeOptionsUiExpansionPanel"
+import { CellWallOptions } from "../../uiComponents/MazeOptionsUiExpansionPanel/CellWallStyleWrapper"
 
 export class Cell {
     //TOP, RIGHT, BOTTOM, LEFT
