@@ -10,6 +10,7 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 
 interface ExpansionPanelWrapperProps {
   name: string;
+  panelIsExpanded: boolean;
   children?: FunctionComponent<any>;
   onPanelStateChange?: Function;
   render?: any
@@ -33,8 +34,8 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export const ExpansionPanelWrapper = (props: ExpansionPanelWrapperProps) => {
-  const { name, children, onPanelStateChange, render = () => {} } = props;
-  const [expanded, setExpanded] = useState<string | false | true>(name);
+  const { panelIsExpanded, name, children, onPanelStateChange, render = () => {} } = props;
+  const [expanded, setExpanded] = useState<string | false | true>(panelIsExpanded === true ? name : false);
   const classes = useStyles();
   const handleChange = (panel: string) => (
     event: React.ChangeEvent<{}>,

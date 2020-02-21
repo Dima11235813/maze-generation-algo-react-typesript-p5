@@ -23,3 +23,29 @@ export const P5_MazeContextInitialValue: P5_MazeContext = {
 }
 
 export const p5_MazeContext = React.createContext(P5_MazeContextInitialValue)
+
+interface PanelIsExpandedState {
+    cellSize: boolean;
+    cellWallSize: boolean;
+    cellColor: boolean;
+    cellWallColor: boolean;
+    mazeBackgroundColor: boolean;
+    cellWallStyle: boolean;
+}
+const panelIsExpandedState: PanelIsExpandedState = {
+    cellSize: true,
+    cellWallSize: false,
+    cellColor: true,
+    cellWallColor: false,
+    mazeBackgroundColor: false,
+    cellWallStyle: true,
+}
+export interface MazeOptionsUiContext {
+    panelIsExpandedState: PanelIsExpandedState
+}
+export const MazeOptionsUiContextInitialValue: MazeOptionsUiContext = {
+    panelIsExpandedState
+}
+
+
+export const mazeOptionsUiContext = React.createContext(MazeOptionsUiContextInitialValue)
