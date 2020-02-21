@@ -61,13 +61,20 @@ export class MazeGenerator {
         }
 
         p.draw = () => {
-            const {numberOfColumns, numberOfRows} = mazeOptions
-            const { r, g, b, a } = mazeOptions.backgroundColor
+            const { numberOfColumns, numberOfRows } = mazeOptions
+            let { r, g, b, a } = mazeOptions.backgroundColor
 
             //set background of canvasw
             // if (a) {
             //     p.background(r, g, b, a)
             // } else {
+            const { inverseColorMode } = stores.uiPreferencesStore!
+            //TODO Move to color util
+            if (inverseColorMode) {
+                r = 255 - r
+                g = 255 - g
+                b = 255 - b
+            }
             p.background(r, g, b)
 
             // }
@@ -75,7 +82,6 @@ export class MazeGenerator {
             //draw each cell in the grid
             this.grid.map(cell => {
                 //show the cell
-                const {inverseColorMode} = stores.uiPreferencesStore!
                 cell.show(mazeOptions, this.stack.length, inverseColorMode)
 
             })

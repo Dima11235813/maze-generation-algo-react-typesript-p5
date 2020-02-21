@@ -72,9 +72,16 @@ export class Cell {
             //     this.stackSubractorFromColor = stackLength
             // }
             logger(`Stack length ${stackLength}`)
-            const { r, g, b, a } = mazeOptions.cellColor
-            const gValToApply = this._p.floor(g / divider)
-            const bValToApply = b - this.stackSubractorFromColor
+            let { r, g, b, a } = mazeOptions.cellColor
+            let gValToApply = this._p.floor(g / divider)
+            let bValToApply = b - this.stackSubractorFromColor
+            //apply color negative if selected
+            if (inverseColorMode) {
+                r = 255 - r
+                gValToApply = 255 - gValToApply
+                bValToApply = 255 - bValToApply
+            }
+
             logger(`
             R: ${r}
             G: ${gValToApply}
@@ -133,10 +140,15 @@ export class Cell {
                     break;
             }
         }
-
-
         //wall color
-        const { r, g, b, a } = mazeOptions.cellWallColor
+        let { r, g, b, a } = mazeOptions.cellWallColor
+
+        //apply color negative if selected
+        if (inverseColorMode) {
+            r = 255 - r
+            g = 255 - g
+            b = 255 - b
+        }
         if (a) {
             this._p.stroke(r, g, b, 255)
         } else {
