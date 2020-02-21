@@ -13,6 +13,7 @@ import InboxIcon from "@material-ui/icons/MoveToInbox";
 import MailIcon from "@material-ui/icons/Mail";
 
 import styles from "./ExpandSidebar.module.scss";
+import MazeOptionsUiExpansionPanel from "../uiComponents/MazeOptionsUiExpansionPanel";
 
 const useStyles = makeStyles({
   list: {
@@ -52,10 +53,9 @@ export default function SwipeableTemporaryDrawer() {
     <div
       className={classes.list}
       role="presentation"
-      onClick={toggleDrawer(side, false)}
-      onKeyDown={toggleDrawer(side, false)}
     >
-      <List>
+      <MazeOptionsUiExpansionPanel />
+      {/* <List>
         {["Inbox", "Starred", "Send email", "Drafts"].map((text, index) => (
           <ListItem button key={text}>
             <ListItemIcon>
@@ -75,7 +75,7 @@ export default function SwipeableTemporaryDrawer() {
             <ListItemText primary={text} />
           </ListItem>
         ))}
-      </List>
+      </List> */}
     </div>
   );
 
@@ -111,11 +111,13 @@ export default function SwipeableTemporaryDrawer() {
   );
 
   return (
-    <div>
+    <div
+    className={styles.toggleMazeOptionsUi}
+    >
       {/* Make icon instead */}
       <div
         className={styles.toggleMazeOptionsUiButton}
-        onClick={toggleDrawer("left", true)}
+        onClick={toggleDrawer("right", true)}
       >
         <Typography variant="h6">Maze Options</Typography>
       </div>

@@ -1,4 +1,8 @@
-.toggleMazeOptionsUiButton{
-  cursor: pointer;
-  padding: 1rem;
+.toggleMazeOptionsUi {
+  display: flex;
+  .toggleMazeOptionsUiButton {
+    justify-self: right;
+    cursor: pointer;
+    padding: 1rem;
+  }
 }

@@ -1,6 +1,5 @@
-import React, { useEffect, ChangeEvent } from "react";
+import React, { useEffect, ChangeEvent, useContext } from "react";
 import { SketchPicker } from "react-color";
-import "./App.css";
 import { MazeGenerator } from "./mazeGenComp/MazeGenerator";
 import p5 from "p5";
 import { MazeOptions } from "./mazeGenComp/mazeUtils/mazeOptions";
@@ -10,10 +9,12 @@ import CellSizeSlider from "./uiComponents/CellSizeSlider";
 import { storageUtils } from "./utils/storageUtils";
 import Header from "./views/Header";
 import CellWallSizeSlider from "./uiComponents/CellWallSizeSlider";
+import { P5_MazeContext } from "./AppContext";
 
 const App: React.FC = () => {
-  let mazeOptions: MazeOptions;
-  let mazeOptionsSetter: MazeOptionsSetter;
+  // const mazeContext = useContext({});
+  // let mazeOptions: MazeOptions;
+  // let mazeOptionsSetter: MazeOptionsSetter;
   let sketchHandler: Function | any;
   let mazeSketch: p5; // holde reference to the sketch
   //set up window resize event
@@ -21,6 +22,7 @@ const App: React.FC = () => {
   //SET UP SCENE CLASS _ TODO Move to that - WHERE the maze generator operates
   //get the window dimension
   // let controlsTopPadding = 100
+  // const mazeContainerRef = useRef(undefined);
 
   const rerunMaze = () => {
     logger(`Removing sketch.`);
@@ -37,8 +39,6 @@ const App: React.FC = () => {
     );
   };
 
-  mazeOptions = new MazeOptions();
-  mazeOptionsSetter = new MazeOptionsSetter(mazeOptions);
   useEffect(() => {
     attachEventHandlers();
     createMazeSketch();
@@ -47,7 +47,10 @@ const App: React.FC = () => {
     sketchHandler = (p: p5) => new MazeGenerator(p, mazeOptions);
     logger("Maze Options:");
     loggerObj(mazeOptions);
-    mazeSketch = new p5(sketchHandler);
+    let mazeContainer = document.getElementById("maze-container");
+    if (mazeContainer) {
+      mazeSketch = new p5(sketchHandler);
+    }
   };
   const attachEventHandlers = () => {
     window.onresize = function(event: Event) {
@@ -79,12 +82,16 @@ const App: React.FC = () => {
   //     })
   //   }
   // </select>
-
+  let mazeContext: P5_MazeContext = useContext(P5_MazeContext);
+  debugger
+  const { mazeOptionsSetter, mazeOptions } = mazeContext!;
   return (
     <React.Fragment>
       <Header />
       <div className="App">
         <div className="grid-controls">
+          {/*  ref={mazeContainerRef}></div> */}
+          <div id="maze-container"></div>
           <div>
             <CellSizeSlider
               mazeOptionsSetter={mazeOptionsSetter}

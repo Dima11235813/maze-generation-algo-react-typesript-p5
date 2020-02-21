@@ -1,10 +1,19 @@
 import React from "react";
-import List from "@material-ui/core/List";
-import Divider from "@material-ui/core/Divider";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
-import InboxIcon from "@material-ui/icons/MoveToInbox";
-import MailIcon from "@material-ui/icons/Mail";
+import styles from "./MazeOptionsUi.module.scss";
+import { SketchPicker } from "react-color";
 
-export const MazeOptionsUi = () => <div></div>;
+export default function MazeOptionsUi() {
+  return (
+    <div className={styles.mazeOptionsUi}>
+      <div className="color-picker-background">
+        <div>Background Color</div>
+        sketch piccker
+        {/* <SketchPicker
+          color={mazeOptions.backgroundColor}
+          onChange={mazeOptionsSetter.handleBackgroundColorChange}
+          // onChangeComplete={handleColorChangeComplete}
+        /> */}
+      </div>
+    </div>
+  );
+}

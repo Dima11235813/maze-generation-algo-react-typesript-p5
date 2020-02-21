@@ -1,5 +1,5 @@
 import React from "react";
-import PropTypes from "prop-types";
+// import PropTypes from "prop-types";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
@@ -24,28 +24,43 @@ function HideOnScroll(props: any) {
   );
 }
 
-HideOnScroll.propTypes = {
-  children: PropTypes.element.isRequired,
-  /**
-   * Injected by the documentation to work in an iframe.
-   * You won't need it on your project.
-   */
-  window: PropTypes.func
-};
+// HideOnScroll.propTypes = {
+//   children: PropTypes.element.isRequired,
+//   /**
+//    * Injected by the documentation to work in an iframe.
+//    * You won't need it on your project.
+//    */
+//   window: PropTypes.func
+// };
 
 export default function Header(props: any) {
   return (
     <React.Fragment>
       <CssBaseline />
-      <HideOnScroll {...props}>
-        <AppBar>
-          <Toolbar>
-            <Typography variant="h1">Maze Generator</Typography>
-              <ExpandSideBar />
-          </Toolbar>
-        </AppBar>
-      </HideOnScroll>
+      {/* <HideOnScroll {...props}> */}
+      <AppBar>
+        <Toolbar component={ToolbarItems}></Toolbar>
+      </AppBar>
+      {/* </HideOnScroll> */}
       <Toolbar />
     </React.Fragment>
   );
 }
+const toolbarItemStyles = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr"
+};
+const appLogoStyles = {
+  padding: "1rem"
+};
+
+const ToolbarItems = () => {
+  return (
+    <div style={toolbarItemStyles}>
+      <div style={appLogoStyles}>
+        <Typography variant="h4">Maze Generator</Typography>
+      </div>
+      <ExpandSideBar />
+    </div>
+  );
+};
