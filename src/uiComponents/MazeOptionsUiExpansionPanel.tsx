@@ -1,11 +1,4 @@
 import React, { useContext, useState } from "react";
-import List from "@material-ui/core/List";
-import Divider from "@material-ui/core/Divider";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
-import InboxIcon from "@material-ui/icons/MoveToInbox";
-import MailIcon from "@material-ui/icons/Mail";
 
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
@@ -13,13 +6,13 @@ import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import Typography from "@material-ui/core/Typography";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import MazeOptionsUi from "./MazeOptionsUi";
 import { p5_MazeContext, P5_MazeContext } from "../AppContext";
 import CellSizeSlider from "./CellSizeSlider";
 import CellWallSizeSlider from "./CellWallSizeSlider";
 import { SketchPicker } from "react-color";
 import { Labels } from "../shared/labels";
-import { FormControl, InputLabel, Select, MenuItem } from "@material-ui/core";
+import { FormControl, Select, MenuItem } from "@material-ui/core";
+import { mazeDefaultOptions } from "../mazeGenComp/mazeUtils/mazeDefaults";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -54,9 +47,10 @@ enum MazeOptionPanels {
   CELL_WALL_STYLE = "cellWallStyle"
 }
 
-enum CellWallOptions {
-  ROUND = "round",
-  SQUARE = "square"
+export enum CellWallOptions {
+  ROUND = "ROUND",
+  SQUARE = "SQUARE",
+  PROJECT = "PROJECT"
 }
 
 //TODO Move to maze options ui defaults
@@ -79,9 +73,8 @@ export default function MazeOptionsUiExpansionPanel() {
   const [expanded6, setExpanded6] = useState<string | false | true>(false);
 
   //Cell wall style state
-  const cellWallStyleDefault = "round";
   const [cellWallStyle, setCellWallStyle] = useState<string>(
-    cellWallStyleDefault
+    mazeDefaultOptions.defaultStrokeCapStyle
   );
 
   // const inputLabel = React.useRef<HTMLLabelElement>(null);
@@ -93,8 +86,9 @@ export default function MazeOptionsUiExpansionPanel() {
   const handleCellWallStyleChange = (
     event: React.ChangeEvent<{ value: unknown }>
   ) => {
-    mazeOptionsSetter.handleCellWallStyleChange(value);
-    setCellWallStyle(event.target.value as string);
+    let newValue = event.target.value as string;
+    mazeOptionsSetter.handleCellWallStyleChange(newValue);
+    setCellWallStyle(newValue);
   };
 
   const handleChange = (panel: string) => (
@@ -221,7 +215,7 @@ export default function MazeOptionsUiExpansionPanel() {
           id="panel1bh-header"
         >
           <Typography className={classes.secondaryHeading}>
-          {Labels.CELL_WALL_COLOR}
+            {Labels.CELL_WALL_COLOR}
           </Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>
@@ -263,7 +257,7 @@ export default function MazeOptionsUiExpansionPanel() {
           id="panel1bh-header"
         >
           <Typography className={classes.secondaryHeading}>
-          Cell Wall Style
+            Cell Wall Style
           </Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>

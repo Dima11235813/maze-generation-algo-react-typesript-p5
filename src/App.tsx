@@ -66,7 +66,7 @@ const App: React.FC = () => {
         New Window Height ${window.innerHeight}
         `);
       mazeOptions.windowWidth = window.innerWidth;
-      mazeOptions.windowHeight = window.innerHeight;
+      mazeOptions.windowHeight = window.innerHeight - 65;
       storageUtils.setMazeoptionsInStorage(mazeOptions);
       rerunMaze();
     };

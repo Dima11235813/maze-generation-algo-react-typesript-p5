@@ -5,6 +5,8 @@ import { logVisitedCell, logger, loggerObj } from "../../utils/loggingUtils"
 import { getPointValsAtIndex } from "../../utils/gridUtils"
 import { Color } from "../../utils/colorUtils"
 import { MazeOptions } from "../mazeUtils/mazeOptions"
+import { STROKE_CAP } from "p5"
+import { CellWallOptions } from "../../uiComponents/MazeOptionsUiExpansionPanel"
 
 export class Cell {
     //TOP, RIGHT, BOTTOM, LEFT
@@ -113,12 +115,27 @@ export class Cell {
             logger(`Stroke weight is ${newStrokeWeight}`)
             this._p.strokeWeight(newStrokeWeight)
         }
-        //set stroke style
-        let projecctCap = this._p.PROJECT
-        let squareCap = this._p.SQUARE
-        let roundCap = this._p.ROUND
+        //stroke cap style
+        if (mazeOptions.cellWallStrokeCapStyle) {
+            //set stroke style
+            let projectCap = this._p.PROJECT
+            let squareCap = this._p.SQUARE
+            let roundCap = this._p.ROUND
+            logger(`Stroke weight is ${mazeOptions.cellWallStrokeCapStyle}`)
+            switch (mazeOptions.cellWallStrokeCapStyle) {
+                case CellWallOptions.SQUARE:
+                    this._p.strokeCap(squareCap)
+                    break;
+                case CellWallOptions.PROJECT:
+                    this._p.strokeCap(projectCap)
+                    break;
+                case CellWallOptions.ROUND:
+                    this._p.strokeCap(roundCap)
+                    break;
+            }
+        }
 
-        this._p.strokeCap(squareCap)
+
         //wall color
         const { r, g, b, a } = mazeOptions.cellWallColor
         if (a) {

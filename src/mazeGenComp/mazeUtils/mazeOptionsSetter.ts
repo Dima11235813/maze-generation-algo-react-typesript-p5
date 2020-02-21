@@ -1,6 +1,7 @@
 import { MazeOptions } from "./mazeOptions"
 import { mazeDefaultsStorageKeys, storageUtils } from "../../utils/storageUtils"
 import { Color } from "../../utils/colorUtils"
+import { logger } from "../../utils/loggingUtils"
 
 export class MazeOptionsSetter {
     constructor(private _mazeOptions: MazeOptions) {
@@ -40,7 +41,7 @@ export class MazeOptionsSetter {
     handleCellSizeChange = (size: number) => {
         this._mazeOptions.cellSize = size
         localStorage.setItem(mazeDefaultsStorageKeys.cellSizeKey, size.toString())
-        console.log(`New cell width is ${this._mazeOptions.cellSize}`)
+        logger(`New cell width is ${this._mazeOptions.cellSize}`)
     }
 
 
@@ -48,7 +49,7 @@ export class MazeOptionsSetter {
         this._mazeOptions.cellWallSize = newValue
         this._mazeOptions.updateDynamicValues()
         localStorage.setItem(mazeDefaultsStorageKeys.cellWallSizeKey, newValue.toString())
-        console.log(`New cell wall width percent is ${this._mazeOptions.cellWallSize}`)
+        logger(`New cell wall width percent is ${this._mazeOptions.cellWallSize}`)
     }
     handleCellWallStyleChange = (newValue: string) => {
         this._mazeOptions.cellWallStrokeCapStyle = newValue
