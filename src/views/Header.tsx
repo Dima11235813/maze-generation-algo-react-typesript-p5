@@ -46,21 +46,9 @@ export default function Header(props: any) {
     </React.Fragment>
   );
 }
-const toolbarItemStyles = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr"
-};
-const appLogoStyles = {
-  padding: ".75rem"
-};
 
 const ToolbarItems = () => {
   return (
-    <div style={toolbarItemStyles}>
-      <div style={appLogoStyles}>
-        <Typography variant="h4">Maze Generator</Typography>
-      </div>
       <ExpandSideBar />
-    </div>
   );
 };

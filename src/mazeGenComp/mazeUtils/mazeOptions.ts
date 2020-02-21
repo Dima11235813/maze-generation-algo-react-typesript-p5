@@ -45,7 +45,7 @@ export class MazeOptions {
         this.updateDynamicValues()
         //Set UI Vars
         //TODO Move to header constants
-        this.windowHeight = window.innerHeight - 100;
+        this.windowHeight = window.innerHeight - 90;
         this.windowWidth = window.innerWidth;
 
     }

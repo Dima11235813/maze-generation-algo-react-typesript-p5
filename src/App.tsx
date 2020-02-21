@@ -26,7 +26,7 @@ const App: React.FC = () => {
   // const mazeContainerRef = useRef(undefined);
 
   let mazeContext: P5_MazeContext = useContext(p5_MazeContext);
-  const { mazeOptionsSetter, mazeOptions, p5_MazeFuncs } = mazeContext!;
+  const { mazeOptions, p5_MazeFuncs } = mazeContext!;
 
   const rerunMaze = () => {
     logger(`Removing sketch.`);
@@ -61,7 +61,7 @@ const App: React.FC = () => {
   };
   const attachEventHandlers = () => {
     window.onresize = function(event: Event) {
-      console.log(`
+      logger(`
         New Widow Width ${window.innerWidth}
         New Window Height ${window.innerHeight}
         `);
@@ -72,9 +72,9 @@ const App: React.FC = () => {
     };
   };
 
-  const handleCellWallWidthPercentChangeInApp = (
-    event: ChangeEvent<HTMLSelectElement>
-  ) => {};
+  // const handleCellWallWidthPercentChangeInApp = (
+  //   event: ChangeEvent<HTMLSelectElement>
+  // ) => {};
   // let dropDownForCellWidthForStrokeCap = <select onChange={handleCellWallStrokeCap}>
   //   {
   //     new Array(numberOfOptionsForStrokeWidth).fill(1).map(item => {
@@ -98,7 +98,7 @@ const App: React.FC = () => {
           <div id="maze-container"></div>
         </div>
       </div>
-      <Footer />
+      {/* <Footer /> */}
     </React.Fragment>
   );
 };

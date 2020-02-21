@@ -93,6 +93,12 @@ export default function SwipeableTemporaryDrawer() {
         className={styles.toggleMazeOptionsUiButton}
         onClick={toggleDrawer("left", true)}
       >
+        <Typography variant="h5">Maze Generator</Typography>
+      </div>
+      <div
+        className={styles.toggleMazeOptionsUiButton}
+        onClick={toggleDrawer("left", true)}
+      >
         <Typography variant="h6">Maze Options</Typography>
       </div>
       <Button onClick={toggleDrawer("right", true)}>Open Right</Button>
