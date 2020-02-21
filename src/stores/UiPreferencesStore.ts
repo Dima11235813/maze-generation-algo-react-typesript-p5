@@ -11,20 +11,28 @@ export class UiPreferencesStore extends CommonStore {
     constructor(store: RootStore) {
         super(store);
     }
-    darkModeEnable: boolean = INVERSE_COLOR_DEFAULT_SETTING
-    inverseColorMode: boolean = false
+    //https://mobx.js.org/refguide/observable-decorator.html
+    @observable darkModeEnable: boolean = INVERSE_COLOR_DEFAULT_SETTING
+    @observable inverseColorMode: boolean = false
 
-    updateDarkModeEnabled = (state: boolean) => {
+    @action updateDarkModeEnabled = (state: boolean) => {
         this.darkModeEnable = state
     }
-    updateInverseColorMode = (state: boolean) => {
+    @action updateInverseColorMode = (state: boolean) => {
         this.inverseColorMode = state
     }
 }
 
-decorate(UiPreferencesStore, {
-    darkModeEnable: observable,
-    inverseColorMode: observable,
-    updateDarkModeEnabled: action,
-    updateInverseColorMode: action
-})
+//THIS pattern requires
+// "emitDecoratorMetadata": true,
+// "experimentalDecorators": true,
+//in tsconfig 
+//TODO research if there's any implication in this decision - the above is easier to write
+//https://stackoverflow.com/questions/38271273/experimental-decorators-warning-in-typescript-compilation
+
+// decorate(UiPreferencesStore, {
+//     darkModeEnable: observable,
+//     inverseColorMode: observable,
+//     updateDarkModeEnabled: action,
+//     updateInverseColorMode: action
+// })
