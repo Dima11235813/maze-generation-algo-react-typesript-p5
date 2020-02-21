@@ -16,7 +16,7 @@ export const MazeBackgroundColorSelectWrapper = () => {
   return (
     <ExpansionPanelWrapper
       panelIsExpanded={panelIsExpandedState.mazeBackgroundColor}
-      name={Labels.CELL_SIZE}
+      name={Labels.MAZE_BACKGROUND_COLOR}
       render={() => (
         <SketchPicker
           color={backgroundColor}
