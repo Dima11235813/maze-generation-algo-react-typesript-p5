@@ -74,7 +74,7 @@ export default function MazeOptionsUiExpansionPanel() {
 
   //Cell wall style state
   const [cellWallStyle, setCellWallStyle] = useState<string>(
-    mazeDefaultOptions.defaultStrokeCapStyle
+    mazeOptions.cellWallStrokeCapStyle
   );
 
   // const inputLabel = React.useRef<HTMLLabelElement>(null);
