@@ -9,6 +9,7 @@ import { CellColorSelectWrapper } from "./MazeOptionsUiExpansionPanel/CellColorS
 import { CellWallColorSelectWrapper } from "./MazeOptionsUiExpansionPanel/CellWallColorSelectWrapper";
 import { MazeBackgroundColorSelectWrapper } from "./MazeOptionsUiExpansionPanel/MazeBackgroundColorSelectWrapper.";
 import { CellWallStyleWrapper } from "./MazeOptionsUiExpansionPanel/CellWallStyleWrapper";
+import InverseColorModeToggle from "../views/AppBarItems/InverseColorModeToggle";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -23,7 +24,11 @@ export default function MazeOptionsUiExpansionPanel() {
   const classes = useStyles();
   return (
     <div className={classes.root}>
-      <ExpansionPanelWrapper panelIsExpanded={false} name={Labels.HEADER} />
+      <ExpansionPanelWrapper panelIsExpanded={false} name={Labels.HEADER}
+        render={() => (
+          <InverseColorModeToggle />
+        )}
+      />
       <CellSizeSliderWrapper />
       <CellWallSizeSliderWrapper />
       <CellColorSelectWrapper />

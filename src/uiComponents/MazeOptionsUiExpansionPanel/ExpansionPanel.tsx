@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export const ExpansionPanelWrapper = (props: ExpansionPanelWrapperProps) => {
-  const { panelIsExpanded, name, children, onPanelStateChange, render = () => {} } = props;
+  const { panelIsExpanded, name, onPanelStateChange, render = () => {} } = props;
   const [expanded, setExpanded] = useState<string | false | true>(panelIsExpanded === true ? name : false);
   const classes = useStyles();
   const handleChange = (panel: string) => (

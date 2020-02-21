@@ -41,7 +41,8 @@ export class Cell {
     getColorBasedOnVisited = () => this.visited * .242 //+ ((stackLength + 1) / 10) //+ ((stackLength + 1) / 10)
     show = (
         mazeOptions: MazeOptions,
-        stackLength: number
+        stackLength: number,
+        inverseColorMode: boolean
     ) => {
         //Before executing show
         //check if anything changed about this cell

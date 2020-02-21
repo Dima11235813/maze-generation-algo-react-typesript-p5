@@ -8,6 +8,8 @@ import {
 import { MazeOptions } from "./mazeGenComp/mazeUtils/mazeOptions";
 import { MazeOptionsSetter } from "./mazeGenComp/mazeUtils/mazeOptionsSetter";
 import App from "./App";
+import { Provider } from "mobx-react";
+import { stores } from "./stores";
 
 export interface P5_MazeState {
   mazeOptions: MazeOptions;
@@ -17,7 +19,11 @@ export const AppWrapper = () => {
   return (
     <p5_MazeContext.Provider value={P5_MazeContextInitialValue}>
       <mazeOptionsUiContext.Provider value={MazeOptionsUiContextInitialValue}>
-        <App />;
+        <Provider {...stores}>
+          <>
+            <App />
+          </>
+        </Provider>
       </mazeOptionsUiContext.Provider>
     </p5_MazeContext.Provider>
   );

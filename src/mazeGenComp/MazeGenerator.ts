@@ -1,6 +1,7 @@
 import { Cell } from "./components/Cell"
 import { logColumnDuringCreation, logRowDuringCreation, logger, loggerJson } from "../utils/loggingUtils"
 import { MazeOptions } from "./mazeUtils/mazeOptions"
+import { stores } from '../stores'
 
 export class MazeGenerator {
 
@@ -74,7 +75,8 @@ export class MazeGenerator {
             //draw each cell in the grid
             this.grid.map(cell => {
                 //show the cell
-                cell.show(mazeOptions, this.stack.length)
+                const {inverseColorMode} = stores.uiPreferencesStore!
+                cell.show(mazeOptions, this.stack.length, inverseColorMode)
 
             })
             if (this.currentCell) {
