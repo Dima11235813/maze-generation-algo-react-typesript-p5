@@ -1,9 +1,11 @@
 import { CellWallPoints } from "./CellWallPoints"
 import { Point } from "./Point"
-import {  logger } from "../../utils/loggingUtils"
+import { logger } from "../../utils/loggingUtils"
 import { getPointValsAtIndex } from "../../utils/gridUtils"
 import { MazeOptions } from "../mazeUtils/mazeOptions"
 import { CellWallOptions } from "../../uiComponents/MazeOptionsUiExpansionPanel/CellWallStyleWrapper"
+import { offsetWidthBy3dProjection, offsetHeightBy3dProjection, getProjectionFor3D } from "../mazeUtils/projectionUtils"
+import { mazeOptionsUiContext } from "../../AppContext"
 
 export class Cell {
     //TOP, RIGHT, BOTTOM, LEFT
@@ -41,7 +43,8 @@ export class Cell {
     show = (
         mazeOptions: MazeOptions,
         stackLength: number,
-        inverseColorMode: boolean
+        inverseColorMode: boolean,
+        use3d: boolean
     ) => {
         //Before executing show
         //check if anything changed about this cell
@@ -51,9 +54,10 @@ export class Cell {
             return
         }
 
-        let xColPointValToDraw = this.column * this._cellWidth
-        let yRowPointValToDraw = this.row * this._cellHeight
-
+        //set up point vals based on 2D or 3D projection 
+        //TODO extract this logic
+        let xyPoint = new Point(this.column * this._cellWidth, this.row * this._cellHeight)
+        let projectedXyPoint = getProjectionFor3D(use3d, xyPoint, mazeOptions)
 
         //set fill based on if visited or not
         if (this.visited) {
@@ -107,11 +111,26 @@ export class Cell {
             // logger(color)
             // this._p.fill(255 / (this.getColorBasedOnVisited()),0, 0, 255)
             this._p.noStroke()
+            const DEFAULT_DISTANCE = 300
+            let x_position = this.visited ? (this.row * this._cellWidth) : (this.row * this._cellWidth) / 2
+            let y_position = this.visited ? (this.column * this._cellWidth) : (this.column * this._cellWidth) / 2
+            let z_position = this.visited ? (this.column + this.row) * 3 : (this.column + this.row) * 3 / 2
+            if (use3d) {
+
+                this._p.push()
+                this._p.translate(projectedXyPoint.x + x_position, projectedXyPoint.y + y_position, DEFAULT_DISTANCE);
+                this._p.box(this._cellWidth, this._cellHeight, this._cellHeight)
+                this._p.pop()
+            }
+            // let newXyMoustPoint = new Point(this._p.mouseX, this._p.mouseY)
+            // const { x, y } = getProjectionFor3D(use3d, newXyMoustPoint, mazeOptions)
+            // this._p.translate(newXyMoustPoint.x , newXyMoustPoint.y)
             this._p.rect(
-                xColPointValToDraw + this.paddingToApplyToLeft,
-                yRowPointValToDraw + this.paddingToApplyToTop,
+                projectedXyPoint.x + this.paddingToApplyToLeft,
+                projectedXyPoint.y + this.paddingToApplyToTop,
                 this._cellWidth,
                 this._cellHeight)
+
         }
         //set wall options 
         //stroke
@@ -120,23 +139,25 @@ export class Cell {
             logger(`Stroke weight is ${newStrokeWeight}`)
             this._p.strokeWeight(newStrokeWeight)
         }
-        //stroke cap style
-        if (mazeOptions.cellWallStrokeCapStyle) {
-            //set stroke style
-            let projectCap = this._p.PROJECT
-            let squareCap = this._p.SQUARE
-            let roundCap = this._p.ROUND
-            logger(`Stroke weight is ${mazeOptions.cellWallStrokeCapStyle}`)
-            switch (mazeOptions.cellWallStrokeCapStyle) {
-                case CellWallOptions.SQUARE:
-                    this._p.strokeCap(squareCap)
-                    break;
-                case CellWallOptions.PROJECT:
-                    this._p.strokeCap(projectCap)
-                    break;
-                case CellWallOptions.ROUND:
-                    this._p.strokeCap(roundCap)
-                    break;
+        if (!use3d) {
+            //stroke cap style
+            if (mazeOptions.cellWallStrokeCapStyle) {
+                //set stroke style
+                let projectCap = this._p.PROJECT
+                let squareCap = this._p.SQUARE
+                let roundCap = this._p.ROUND
+                logger(`Stroke weight is ${mazeOptions.cellWallStrokeCapStyle}`)
+                switch (mazeOptions.cellWallStrokeCapStyle) {
+                    case CellWallOptions.SQUARE:
+                        this._p.strokeCap(squareCap)
+                        break;
+                    case CellWallOptions.PROJECT:
+                        this._p.strokeCap(projectCap)
+                        break;
+                    case CellWallOptions.ROUND:
+                        this._p.strokeCap(roundCap)
+                        break;
+                }
             }
         }
         //wall color
@@ -160,13 +181,13 @@ export class Cell {
 
         //Create 4 points - create point objects
         //point 1 @ x,y
-        let point1 = new Point(xColPointValToDraw, yRowPointValToDraw)
+        let point1 = new Point(projectedXyPoint.x, projectedXyPoint.y)
         //point 2 @ x + width, y
-        let point2 = new Point(xColPointValToDraw + this._cellWidth, yRowPointValToDraw)
+        let point2 = new Point(projectedXyPoint.x + this._cellWidth, projectedXyPoint.y)
         //point 3 @ x + width, y + width
-        let point3 = new Point(xColPointValToDraw + this._cellWidth, yRowPointValToDraw + this._cellHeight)
+        let point3 = new Point(projectedXyPoint.x + this._cellWidth, projectedXyPoint.y + this._cellHeight)
         //point 4 @ x, y + width
-        let point4 = new Point(xColPointValToDraw, yRowPointValToDraw + this._cellHeight)
+        let point4 = new Point(projectedXyPoint.x, projectedXyPoint.y + this._cellHeight)
 
         //Create bools to determine whether to draw each wall
         let drawTop = this.walls[0]
@@ -200,12 +221,13 @@ export class Cell {
             cellWallPoints.endPoint.y + this.paddingToApplyToTop
         )
     }
-    highlight = () => {
+    highlight = (use3d: boolean, mazeOptions: MazeOptions) => {
         var xLength = this.column * this._cellWidth
         var yLength = this.row * this._cellHeight
+        let xyProjectedPoint = getProjectionFor3D(use3d, { x: xLength, y: yLength }, mazeOptions)
         // this._p.noStroke()
         this._p.fill(0, 0, 255 / this.visited + 1, 100)
-        this._p.rect(xLength + this.paddingToApplyToLeft, yLength + this.paddingToApplyToTop, this._cellWidth, this._cellHeight)
+        this._p.rect(xyProjectedPoint.x + this.paddingToApplyToLeft, xyProjectedPoint.y + this.paddingToApplyToTop, this._cellWidth, this._cellHeight)
     }
 
     getRandomNeightborToVisit = (

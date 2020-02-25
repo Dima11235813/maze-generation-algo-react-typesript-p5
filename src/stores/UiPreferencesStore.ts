@@ -14,12 +14,16 @@ export class UiPreferencesStore extends CommonStore {
     //https://mobx.js.org/refguide/observable-decorator.html
     @observable darkModeEnable: boolean = INVERSE_COLOR_DEFAULT_SETTING
     @observable inverseColorMode: boolean = false
+    @observable use3dMode: boolean = true
 
     @action updateDarkModeEnabled = (state: boolean) => {
         this.darkModeEnable = state
     }
     @action updateInverseColorMode = (state: boolean) => {
         this.inverseColorMode = state
+    }
+    @action updateUse3dMode = (state: boolean) => {
+        this.use3dMode = state
     }
 }
 

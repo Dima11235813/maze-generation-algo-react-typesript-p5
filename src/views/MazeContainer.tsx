@@ -4,8 +4,18 @@ import p5 from "p5";
 import { logger, loggerObj } from "../utils/loggingUtils";
 import { storageUtils } from "../utils/storageUtils";
 import { P5_MazeContext, p5_MazeContext } from "../AppContext";
+import { inject, observer } from "mobx-react";
+import { RouterStore } from "mobx-react-router";
+import { UiPreferencesStore } from "../stores/UiPreferencesStore";
 
-const MazeContainer: React.FC = () => {
+interface MazeContainerProps {
+  routerStore?: RouterStore;
+  uiPreferencesStore?: UiPreferencesStore;
+}
+
+const MazeContainer: React.FC<MazeContainerProps> = (
+  props: MazeContainerProps
+) => {
   // const mazeContext = useContext({});
   // let mazeOptions: MazeOptions;
   // let mazeOptionsSetter: MazeOptionsSetter;
@@ -20,20 +30,19 @@ const MazeContainer: React.FC = () => {
 
   let mazeContext: P5_MazeContext = useContext(p5_MazeContext);
   const { mazeOptions, p5_MazeFuncs } = mazeContext!;
+  let mazeContainer;
 
   const rerunMaze = () => {
     logger(`Removing sketch.`);
-    mazeSketch.remove();
+    const { use3dMode } = props.uiPreferencesStore!;
+    //TODO this doesn't work in 3d mode - handle another way
+    if (use3dMode) {
+      mazeContainer = null;
+    } else {
+      mazeSketch.remove();
+    }
     //destroy current sketch
     createMazeSketch();
-  };
-
-  let handleCellWallStrokeCap = (event: ChangeEvent<HTMLSelectElement>) => {
-    let newStrokeCapStyle = event.target.value;
-    mazeOptions.cellWallStrokeCapStyle = newStrokeCapStyle;
-    logger(
-      `New cell wall width percent is ${mazeOptions.cellWallStrokeCapStyle}`
-    );
   };
 
   useEffect(() => {
@@ -44,7 +53,7 @@ const MazeContainer: React.FC = () => {
     sketchHandler = (p: p5) => new MazeGenerator(p, mazeOptions);
     logger("Maze Options:");
     loggerObj(mazeOptions);
-    let mazeContainer = document.getElementById("maze-container");
+    mazeContainer = document.getElementById("maze-container");
     if (mazeContainer) {
       mazeSketch = new p5(sketchHandler, mazeContainer);
       p5_MazeFuncs.resetMaze = () => {
@@ -59,7 +68,7 @@ const MazeContainer: React.FC = () => {
         New Window Height ${window.innerHeight}
         `);
       mazeOptions.windowWidth = window.innerWidth;
-      mazeOptions.windowHeight = window.innerHeight - 65;
+      mazeOptions.windowHeight = window.innerHeight;
       storageUtils.setMazeoptionsInStorage(mazeOptions);
       rerunMaze();
     };
@@ -67,4 +76,7 @@ const MazeContainer: React.FC = () => {
   return <div id="maze-container"></div>;
 };
 
-export default MazeContainer;
+export default inject(
+  "uiPreferencesStore",
+  "routerStore"
+)(observer(MazeContainer));

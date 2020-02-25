@@ -57,49 +57,45 @@ function HideOnScroll(props: any) {
 //    */
 //   window: PropTypes.func
 // };
-{
-  /* <HideOnScroll {...props}> */
-}
-{
-  /* </HideOnScroll> */
-}
 
 export default function Header(props: any) {
   const classes = useStyles();
   return (
     <div className={classes.root}>
       <CssBaseline />
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton
-            edge="start"
-            className={classes.menuButton}
-            color="inherit"
-            aria-label="menu"
-          >
-            <MenuIcon />
-          </IconButton>
-          <ExpandSideBar />
-          <Button color="inherit">
-            <NavLink
-              to={APP_ROUTES.LOGIN}
-              className={styles.NavLink}
-              activeClassName={styles.SelectedLink}
+      <HideOnScroll {...props}>
+        <AppBar >
+          <Toolbar>
+            <IconButton
+              edge="start"
+              className={classes.menuButton}
+              color="inherit"
+              aria-label="menu"
             >
-              {APP_ROUTES.LOGIN}
-            </NavLink>
-          </Button>
-          <Button color="inherit">
-            <NavLink
-              to={APP_ROUTES.MAZE}
-              className={styles.NavLink}
-              activeClassName={styles.SelectedLink}
-            >
-              {APP_ROUTES.MAZE}
-            </NavLink>
-          </Button>
-        </Toolbar>
-      </AppBar>
+              <MenuIcon />
+            </IconButton>
+            <ExpandSideBar />
+            <Button color="inherit">
+              <NavLink
+                to={APP_ROUTES.LOGIN}
+                className={styles.NavLink}
+                activeClassName={styles.SelectedLink}
+              >
+                {APP_ROUTES.LOGIN}
+              </NavLink>
+            </Button>
+            <Button color="inherit">
+              <NavLink
+                to={APP_ROUTES.MAZE}
+                className={styles.NavLink}
+                activeClassName={styles.SelectedLink}
+              >
+                {APP_ROUTES.MAZE}
+              </NavLink>
+            </Button>
+          </Toolbar>
+        </AppBar>
+      </HideOnScroll>
       <Toolbar />
     </div>
   );

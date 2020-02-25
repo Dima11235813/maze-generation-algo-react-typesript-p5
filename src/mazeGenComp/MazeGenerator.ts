@@ -2,9 +2,10 @@ import { Cell } from "./components/Cell"
 import { logColumnDuringCreation, logRowDuringCreation, logger } from "../utils/loggingUtils"
 import { MazeOptions } from "./mazeUtils/mazeOptions"
 import { stores } from '../stores'
+import { getProjectionFor3D } from "./mazeUtils/projectionUtils"
+import { Point } from "./components/Point"
 
 export class MazeGenerator {
-
     //vars to hold current column and row during draw phase
     colIndBeingDrawn?: number
     rowIndBeingDrawn?: number
@@ -18,8 +19,24 @@ export class MazeGenerator {
     //hold reference to current cell in iteration
     currentCell?: Cell
     //TODO Set up builder class for many options handling
-    constructor(p: p5, mazeOptions: MazeOptions) {
+    cam: any
+    theShader: any = undefined
+    use3d: boolean
+    constructor(p: p5, mazeOptions: MazeOptions, use3d?: boolean) {
+        this.use3d = use3d ? use3d : true
+        // p.preload = () => {
+        //     this.theShader = p.loadShader('assets/webcam.vert', 'assets/webvam.frag')
+        // }
         p.setup = () => {
+            //TEMP
+            // if (p.createCapture) {
+            //     this.cam = p.createCapture(p.VIDEO);
+            //     this.cam.size(710, 400);
+
+            //     this.cam.hide();
+            // }
+
+            ///
             mazeOptions.updateDynamicValues()
             const { windowWidth,
                 windowHeight,
@@ -28,7 +45,11 @@ export class MazeGenerator {
                 numberOfColumns,
                 numberOfRows,
                 padding } = mazeOptions
-            p.createCanvas(windowWidth, windowHeight)
+            if (this.use3d) {
+                p.createCanvas(windowWidth, windowHeight, p.WEBGL)
+            } else {
+                p.createCanvas(windowWidth, windowHeight)
+            }
             //set frame rate
             // https://p5js.org/reference/#/p5/frameRate
             p.frameRate(22)
@@ -61,6 +82,31 @@ export class MazeGenerator {
         }
 
         p.draw = () => {
+            //temp
+            // shader() sets the active shader with our shader
+            // https://p5js.org/examples/3d-shader-using-webcam.html
+            // if(this.theShader){
+            //     p.shader(this.theShader);
+            // }
+            const dirY = (p.mouseY / p.height - 0.5) * 4;
+            const dirX = (p.mouseX / p.width - 0.5) * 4;
+            p.directionalLight(204, 204, 204, dirX, dirY, 1);
+            p.background(0);
+
+            // Orange point light on the right
+            p.pointLight(150, 100, 0, 500, 0, 200);
+
+            // Blue directional light from the left
+            p.directionalLight(0, 102, 255, -1, 0, 0);
+
+            // Yellow spotlight from the front
+            p.pointLight(p.mouseX, p.mouseY, 109, 255, 255, 255);
+            // p.rotateY(1.75);
+            // p.rotateX(1.25);
+            // p.rotateX(1.25);
+            p.rotateX(.85);
+
+            ///
             const { numberOfColumns, numberOfRows } = mazeOptions
             // let { r, g, b, a } = mazeOptions.backgroundColor
             let { r, g, b } = mazeOptions.backgroundColor
@@ -83,7 +129,7 @@ export class MazeGenerator {
             //draw each cell in the grid
             this.grid.map(cell => {
                 //show the cell
-                cell.show(mazeOptions, this.stack.length, inverseColorMode)
+                cell.show(mazeOptions, this.stack.length, inverseColorMode, this.use3d)
 
             })
             if (this.currentCell) {
@@ -91,7 +137,7 @@ export class MazeGenerator {
                 this.currentCell.visited += 1
 
                 //highlight the current cell to tell it apart from other visited ones
-                this.currentCell.highlight()
+                this.currentCell.highlight(this.use3d, mazeOptions)
                 //STEP 1
                 //get the random next neightbor cell from the current cell
                 let nextCell

@@ -1,29 +1,32 @@
-import React, { FunctionComponent } from 'react'
-import { observer, inject } from 'mobx-react'
+import React, { FunctionComponent } from "react";
+import { observer, inject } from "mobx-react";
 
-import FormGroup from '@material-ui/core/FormGroup/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormGroup from "@material-ui/core/FormGroup/FormGroup";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
 
 //https://material-ui.com/components/switches/
-import { Switch } from '@material-ui/core';
+import { Switch } from "@material-ui/core";
 
-import { RouterStore } from 'mobx-react-router'
-import { UiPreferencesStore } from '../../stores/UiPreferencesStore';
+import { RouterStore } from "mobx-react-router";
+import { UiPreferencesStore } from "../../stores/UiPreferencesStore";
 
-
-interface InverseColorModeToggleProps {
+interface Use3dModeToggleProps {
   routerStore?: RouterStore;
   uiPreferencesStore?: UiPreferencesStore;
 }
 
-const InverseColorModeToggle: FunctionComponent<InverseColorModeToggleProps> = (props: InverseColorModeToggleProps) => {
-  const { updateInverseColorMode, inverseColorMode } = props.uiPreferencesStore!
+const Use3dModeToggle: FunctionComponent<Use3dModeToggleProps> = (
+  props: Use3dModeToggleProps
+) => {
+  const { updateUse3dMode, use3dMode } = props.uiPreferencesStore!;
 
-  const handleChange = (name: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    let status = event.target.checked
-    console.log("changing inverse color mode to")
-    console.log(status)
-    updateInverseColorMode(status)
+  const handleChange = (name: string) => (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    let status = event.target.checked;
+    console.log("changing inverse color mode to");
+    console.log(status);
+    updateUse3dMode(status);
   };
 
   return (
@@ -31,17 +34,19 @@ const InverseColorModeToggle: FunctionComponent<InverseColorModeToggleProps> = (
       <FormControlLabel
         control={
           <Switch
-            checked={inverseColorMode}
-            onChange={handleChange('checkedB')}
+            checked={use3dMode}
+            onChange={handleChange("checkedB")}
             value="checkedB"
             color="primary"
           />
         }
-        label="Inverse Colors"
+        label="Use 3D"
       />
     </FormGroup>
-  )
-}
+  );
+};
 
-export default inject("uiPreferencesStore", "routerStore")(observer(InverseColorModeToggle));
-
+export default inject(
+  "uiPreferencesStore",
+  "routerStore"
+)(observer(Use3dModeToggle));
