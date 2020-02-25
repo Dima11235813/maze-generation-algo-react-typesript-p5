@@ -1,5 +1,5 @@
 import { Cell } from "./components/Cell"
-import { logColumnDuringCreation, logRowDuringCreation, logger, loggerJson } from "../utils/loggingUtils"
+import { logColumnDuringCreation, logRowDuringCreation, logger } from "../utils/loggingUtils"
 import { MazeOptions } from "./mazeUtils/mazeOptions"
 import { stores } from '../stores'
 
@@ -62,7 +62,8 @@ export class MazeGenerator {
 
         p.draw = () => {
             const { numberOfColumns, numberOfRows } = mazeOptions
-            let { r, g, b, a } = mazeOptions.backgroundColor
+            // let { r, g, b, a } = mazeOptions.backgroundColor
+            let { r, g, b } = mazeOptions.backgroundColor
 
             //set background of canvasw
             // if (a) {

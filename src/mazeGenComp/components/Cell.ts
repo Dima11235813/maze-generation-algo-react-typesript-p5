@@ -1,9 +1,8 @@
 import { CellWallPoints } from "./CellWallPoints"
 import { Point } from "./Point"
-import { logVisitedCell, logger, loggerObj } from "../../utils/loggingUtils"
+import {  logger } from "../../utils/loggingUtils"
 import { getPointValsAtIndex } from "../../utils/gridUtils"
 import { MazeOptions } from "../mazeUtils/mazeOptions"
-import { STROKE_CAP } from "p5"
 import { CellWallOptions } from "../../uiComponents/MazeOptionsUiExpansionPanel/CellWallStyleWrapper"
 
 export class Cell {
@@ -25,8 +24,8 @@ export class Cell {
         private _padding: number,
 
     ) {
-        this.paddingToApplyToLeft = _padding / 2
-        this.paddingToApplyToTop = _padding / 2
+        this.paddingToApplyToLeft = this._padding / 2
+        this.paddingToApplyToTop = this._padding / 2
         //TODO Fix this
         // logger(`Created cell at column #${column} and row #${row}`)
         //i is the column number

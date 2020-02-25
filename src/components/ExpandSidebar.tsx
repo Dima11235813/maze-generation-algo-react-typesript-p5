@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+
 import { makeStyles } from "@material-ui/core/styles";
 import SwipeableDrawer from "@material-ui/core/SwipeableDrawer";
 import Button from "@material-ui/core/Button";
@@ -7,8 +8,9 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Divider from "@material-ui/core/Divider";
-import Typography from "@material-ui/core/Typography";
 
+
+//Matrial icons
 import InboxIcon from "@material-ui/icons/MoveToInbox";
 import MailIcon from "@material-ui/icons/Mail";
 
@@ -45,7 +47,7 @@ export default function SwipeableTemporaryDrawer() {
     ) {
       return;
     }
-
+    
     setState({ ...state, [side]: open });
   };
 
@@ -86,26 +88,24 @@ export default function SwipeableTemporaryDrawer() {
     </div>
   );
   useEffect(() => {
-    const keepMenuOpen = true
-    if(keepMenuOpen){
-      toggleDrawer("right", true)
+    const keepMenuOpen = true;
+    if (keepMenuOpen) {
+      toggleDrawer("right", true);
     }
-  })
+  });
   return (
     <div className={styles.toggleMazeOptionsUi}>
       {/* Make icon instead */}
-      <div
+      {/* <div
         className={styles.toggleMazeOptionsUiButton}
         onClick={toggleDrawer("left", true)}
       >
         <Typography variant="h5">Maze Generator</Typography>
-      </div>
+      </div> */}
       <div
         className={styles.toggleMazeOptionsUiButton}
         onClick={toggleDrawer("left", true)}
-      >
-        <Typography variant="h6">Maze Options</Typography>
-      </div>
+      ></div>
       <Button onClick={toggleDrawer("right", true)}>Open Right</Button>
       {/* <Button onClick={toggleDrawer('top', true)}>Open Top</Button>
       <Button onClick={toggleDrawer('bottom', true)}>Open Bottom</Button> */}

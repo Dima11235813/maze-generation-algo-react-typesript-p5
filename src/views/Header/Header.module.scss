@@ -1,0 +1,10 @@
+.SelectedLink {
+  font-weight: bold;
+}
+.NavLink{
+  text-decoration: none;;
+  color: white;
+  &:hover{
+    color: tan;
+  }
+}

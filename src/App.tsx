@@ -5,14 +5,15 @@ import { createBrowserHistory } from "history";
 import { syncHistoryWithStore } from "mobx-react-router";
 
 //Shared views
-import Header from "./views/Header";
-import Footer from "./views/Footer";
+import Header from "./views/Header/Header";
+// import Footer from "./views/Footer";
 
 import { AppRoutes } from "./AppRoutes";
 import { stores } from "./stores";
 
 const broswerHistory = createBrowserHistory();
 const history = syncHistoryWithStore(broswerHistory, stores.routerStore);
+
 
 class App extends React.Component {
   render() {
