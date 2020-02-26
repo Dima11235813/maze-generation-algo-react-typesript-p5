@@ -25,7 +25,7 @@ export class MazeGenerator {
     theShader: any = undefined
     use3d: boolean
     logOnce: boolean
-    zoomValue: number = 0
+    zoomValue: number = DEFAULT_Z_DISTANCE
     constructor(p: p5, mazeOptions: MazeOptions, use3d?: boolean) {
         this.use3d = use3d ? use3d : true
         // p.preload = () => {
@@ -114,8 +114,8 @@ export class MazeGenerator {
                     console.log(p)
                     this.logOnce = false
                 }
-                let normalizedMouseY = p.mouseY / 2
-                let normalizedMouseX = p.mouseX / 2
+                let normalizedMouseY = p.mouseY - (mazeOptions.windowHeight / 2)
+                let normalizedMouseX = p.mouseX - (mazeOptions.windowWidth / 2)
                 console.log(`
                 X:${p.mouseX}
                 Y:${p.mouseY}
@@ -126,7 +126,7 @@ export class MazeGenerator {
 
                 `)
                 let yTranslate = mazeOptions.view.zoomHeightDiff > mazeOptions.windowHeight ?
-                    normalizedMouseY - (mazeOptions.view.zoomHeightDiff / 6) :
+                    normalizedMouseY - (mazeOptions.view.zoomHeightDiff / 2) :
                     DEFAULT_Z_DISTANCE
                 p.translate(normalizedMouseX, yTranslate, mazeOptions.view.zValue)
             }

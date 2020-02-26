@@ -3,7 +3,7 @@ import { Color } from "../../utils/colorUtils"
 import { mazeDefaultOptions } from "./mazeDefaults";
 import { storageUtils } from "../../utils/storageUtils";
 import { MazeView } from "./MazeView";
-import { MIN_NUMBER_OF_CELLS_HORIZONTALLY } from "../../shared/constants";
+import { MIN_NUMBER_OF_CELLS_HORIZONTALLY, DEFAULT_Z_DISTANCE } from "../../shared/constants";
 
 export class MazeOptions {
     view: MazeView = new MazeView();
@@ -28,7 +28,7 @@ export class MazeOptions {
     smallerSizeOfCellHeightWidth: number = 1
     aspectRatio: number = 1;
     maxStrokeWidth: number = 1
-    padding: number = 1;
+    padding: number = 4;
     numberOfColumns: number = 10;
     numberOfRows: number = 10;
     constructor() {
@@ -51,11 +51,12 @@ export class MazeOptions {
         this.windowHeight = window.innerHeight - 90;
         this.windowWidth = window.innerWidth;
         window.addEventListener("wheel", (event: any) => {
-            const zoomMultiplier = 50
-            const minZoomSetting = Math.floor(
-                this.windowWidth / MIN_NUMBER_OF_CELLS_HORIZONTALLY
+            const zoomMultiplier = 42
+            // const minZoomSetting = Math.floor(
+            //     this.windowWidth / MIN_NUMBER_OF_CELLS_HORIZONTALLY)
+            // const minZoomSetting = DEFAULT_Z_DISTANCE / 10
+            const minZoomSetting = 5
 
-            )
             let userIsZoomingIn = event.wheelDelta > 0
             if (userIsZoomingIn && this.view.zValue < minZoomSetting) {
                 this.view.zValue += zoomMultiplier
@@ -93,10 +94,13 @@ export class MazeOptions {
         this.smallerSizeOfCellHeightWidth = this.calculatedCellHeight > this.calculatedCellWidth ? this.calculatedCellWidth : this.calculatedCellHeight
         this.maxStrokeWidth = this.smallerSizeOfCellHeightWidth / 2;
         //set up number of columns and numberOfRows based on the canvas pixel size and the cell this.windowWidth constants
-        this.padding = Math.floor(this.windowWidth % this.calculatedCellWidth)
         this.numberOfColumns = Math.floor(this.windowWidth / this.calculatedCellWidth)
         this.numberOfRows = Math.floor(this.windowHeight / this.calculatedCellHeight)
         // console.log(`MAZE OPTIONS`)
         // console.log(this)
+        this.padding = .3 * this.cellSize
+
+        //THIS Was a bad idea 
+        // this.padding = Math.floor(this.windowWidth % this.calculatedCellWidth)
     }
 }

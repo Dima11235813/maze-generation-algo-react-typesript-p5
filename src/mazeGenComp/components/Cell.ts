@@ -18,6 +18,12 @@ export class Cell {
     private stackSubractorFromColor: number = 0
     paddingToApplyToLeft: number
     paddingToApplyToTop: number
+    paddingToApplyToDepth: number
+
+    //vertical changes on 3d
+    lastStackLength: number = 0
+    numberOfIncreasesInStack = 0
+    numberOfDecreasesInStack = 0
     constructor(
         public column: any,
         public row: any,
@@ -29,6 +35,7 @@ export class Cell {
     ) {
         this.paddingToApplyToLeft = this._padding / 2
         this.paddingToApplyToTop = this._padding / 2
+        this.paddingToApplyToDepth = this._padding / 2
         //TODO Fix this
         // logger(`Created cell at column #${column} and row #${row}`)
         //i is the column number
@@ -41,6 +48,7 @@ export class Cell {
     //need to calc number o cells and take 5/8s as the max number - to normalize acroos grid sizes
     //make it so that most dominant r, g, b value is oscilated by 250 based on the scope size
     getColorBasedOnVisited = () => this.visited * .242 //+ ((stackLength + 1) / 10) //+ ((stackLength + 1) / 10)
+    zTranslate = 0
     show = (
         mazeOptions: MazeOptions,
         stackLength: number,
@@ -116,10 +124,52 @@ export class Cell {
             let y_position = this.visited ? (this.column * this._cellWidth) : (this.column * this._cellWidth) / 2
             let z_position = this.visited ? (this.column + this.row) * 3 : (this.column + this.row) * 3 / 2
             if (use3d) {
+                let animate = true
 
+
+
+                //keep track if we're going backwards or not
+
+                const STACK_TO_Z_CHANGE_RATIO = 5
+                let goDown = this.lastStackLength > stackLength
+                let goUp = this.lastStackLength < stackLength
+                if (animate) {
+                    if (goDown) {
+                        this.numberOfIncreasesInStack += 1
+                        this.zTranslate = Math.abs(this.numberOfIncreasesInStack * STACK_TO_Z_CHANGE_RATIO)
+                        this.numberOfDecreasesInStack -= 1
+
+                    } else if (goUp) {
+                        this.numberOfDecreasesInStack += 1
+                        this.zTranslate = Math.abs(this.numberOfDecreasesInStack * STACK_TO_Z_CHANGE_RATIO)
+                        this.numberOfIncreasesInStack -= 1
+                    }
+                } else {
+                    if (goDown) {
+                        this.numberOfIncreasesInStack += 1
+                        this.zTranslate = DEFAULT_Z_DISTANCE + (this.numberOfIncreasesInStack * STACK_TO_Z_CHANGE_RATIO)
+                        this.numberOfDecreasesInStack -= 1
+
+                    } else if (goUp) {
+                        this.numberOfDecreasesInStack += 1
+                        this.zTranslate = DEFAULT_Z_DISTANCE - (this.numberOfDecreasesInStack * STACK_TO_Z_CHANGE_RATIO)
+                        this.numberOfIncreasesInStack -= 1
+                    }
+                }
+
+
+
+                
+                this.lastStackLength = stackLength
                 this._p.push()
-                this._p.translate(projectedXyPoint.x, projectedXyPoint.y, DEFAULT_Z_DISTANCE);
-                this._p.box(this._cellWidth, this._cellHeight, this._cellHeight)
+                this._p.translate(
+                    projectedXyPoint.x + this.paddingToApplyToLeft,
+                    projectedXyPoint.y + this.paddingToApplyToTop,
+                    this.zTranslate);
+                this._p.box(
+                    this._cellWidth - (2 * this.paddingToApplyToLeft),
+                    this._cellHeight - (2 * this.paddingToApplyToTop),
+                    this._cellHeight - (2 * this.paddingToApplyToDepth))
                 this._p.pop()
             }
             // let newXyMoustPoint = new Point(this._p.mouseX, this._p.mouseY)
@@ -130,7 +180,6 @@ export class Cell {
                 projectedXyPoint.y + this.paddingToApplyToTop,
                 this._cellWidth,
                 this._cellHeight)
-
         }
         //set wall options 
         //stroke
