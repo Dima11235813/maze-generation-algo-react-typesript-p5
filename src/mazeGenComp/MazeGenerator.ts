@@ -6,6 +6,7 @@ import { getProjectionFor3D } from "./mazeUtils/projectionUtils"
 import { Point } from "./components/Point"
 import { mazeOptionsUiContext } from "../AppContext"
 import { DEFAULT_Z_DISTANCE } from "../shared/constants"
+import img from "../assets/exit.jpg"
 
 export class MazeGenerator {
     //vars to hold current column and row during draw phase
@@ -26,8 +27,11 @@ export class MazeGenerator {
     use3d: boolean
     logOnce: boolean
     zoomValue: number = DEFAULT_Z_DISTANCE
+    img: any
     constructor(p: p5, mazeOptions: MazeOptions, use3d?: boolean) {
         this.use3d = use3d ? use3d : true
+        // this.img = p.loadImage("../../assets/exit.jpg");
+        this.img = p.loadImage(img);
         // p.preload = () => {
         //     this.theShader = p.loadShader('assets/webcam.vert', 'assets/webvam.frag')
         // }
@@ -74,7 +78,8 @@ export class MazeGenerator {
                         p,
                         calculatedCellWidth,
                         calculatedCellHeight,
-                        padding
+                        padding,
+                        this.img
                     )
                     //add the cell to the grid
                     this.grid.push(cell)
@@ -96,7 +101,7 @@ export class MazeGenerator {
                 const dirY = (p.mouseY / p.height - 0.5) * 4;
                 const dirX = (p.mouseX / p.width - 0.5) * 4;
                 p.directionalLight(204, 204, 204, dirX, dirY, 1);
-                p.background(0);
+                p.background(255);
 
                 // Orange point light on the right
                 p.pointLight(150, 100, 0, 500, 0, 200);

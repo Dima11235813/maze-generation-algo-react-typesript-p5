@@ -7,6 +7,7 @@ import { CellWallOptions } from "../../uiComponents/MazeOptionsUiExpansionPanel/
 import { offsetWidthBy3dProjection, offsetHeightBy3dProjection, getProjectionFor3D } from "../mazeUtils/projectionUtils"
 import { mazeOptionsUiContext } from "../../AppContext"
 import { DEFAULT_Z_DISTANCE } from "../../shared/constants"
+import { Image } from "p5"
 
 export class Cell {
     //TOP, RIGHT, BOTTOM, LEFT
@@ -24,6 +25,7 @@ export class Cell {
     lastStackLength: number = 0
     numberOfIncreasesInStack = 0
     numberOfDecreasesInStack = 0
+    potentialExitToMake: boolean = false
     constructor(
         public column: any,
         public row: any,
@@ -31,6 +33,7 @@ export class Cell {
         private _cellWidth: number,
         private _cellHeight: number,
         private _padding: number,
+        private _img: Image
 
     ) {
         this.paddingToApplyToLeft = this._padding / 2
@@ -120,17 +123,18 @@ export class Cell {
             // logger(color)
             // this._p.fill(255 / (this.getColorBasedOnVisited()),0, 0, 255)
             this._p.noStroke()
-            let x_position = this.visited ? (this.row * this._cellWidth) : (this.row * this._cellWidth) / 2
-            let y_position = this.visited ? (this.column * this._cellWidth) : (this.column * this._cellWidth) / 2
-            let z_position = this.visited ? (this.column + this.row) * 3 : (this.column + this.row) * 3 / 2
+            // let x_position = this.visited ? (this.row * this._cellWidth) : (this.row * this._cellWidth) / 2
+            // let y_position = this.visited ? (this.column * this._cellWidth) : (this.column * this._cellWidth) / 2
+            // let z_position = this.visited ? (this.column + this.row) * 3 : (this.column + this.row) * 3 / 2
             if (use3d) {
-                let animate = true
+                let animate = false
+                let animateMirror = true
 
 
 
                 //keep track if we're going backwards or not
 
-                const STACK_TO_Z_CHANGE_RATIO = 5
+                const STACK_TO_Z_CHANGE_RATIO = mazeOptions.cellSize / 4
                 let goDown = this.lastStackLength > stackLength
                 let goUp = this.lastStackLength < stackLength
                 if (animate) {
@@ -147,30 +151,45 @@ export class Cell {
                 } else {
                     if (goDown) {
                         this.numberOfIncreasesInStack += 1
-                        this.zTranslate = DEFAULT_Z_DISTANCE + (this.numberOfIncreasesInStack * STACK_TO_Z_CHANGE_RATIO)
+                        this.zTranslate = this.numberOfIncreasesInStack * STACK_TO_Z_CHANGE_RATIO
                         this.numberOfDecreasesInStack -= 1
 
                     } else if (goUp) {
                         this.numberOfDecreasesInStack += 1
-                        this.zTranslate = DEFAULT_Z_DISTANCE - (this.numberOfDecreasesInStack * STACK_TO_Z_CHANGE_RATIO)
+                        this.zTranslate = this.numberOfDecreasesInStack * STACK_TO_Z_CHANGE_RATIO
                         this.numberOfIncreasesInStack -= 1
                     }
+                }
+                const drawProjectionOfCell = (mirror = false) => {
+                    this._p.push()
+                    this._p.translate(
+                        projectedXyPoint.x + this.paddingToApplyToLeft,
+                        projectedXyPoint.y + this.paddingToApplyToTop,
+                        mirror ? -this.zTranslate : this.zTranslate);
+                    if (this.column + 1 === mazeOptions.numberOfColumns ||
+                        this.row + 1 === mazeOptions.numberOfRows
+                    ) {
+                        this._p.texture(this._img);
+                        this.potentialExitToMake = true
+                    }
+                    this._p.box(
+                        this._cellWidth - (2 * this.paddingToApplyToLeft),
+                        this._cellHeight - (2 * this.paddingToApplyToTop),
+                        this._cellHeight - (2 * this.paddingToApplyToDepth))
+                    this._p.pop()
+
                 }
 
 
 
-                
+
                 this.lastStackLength = stackLength
-                this._p.push()
-                this._p.translate(
-                    projectedXyPoint.x + this.paddingToApplyToLeft,
-                    projectedXyPoint.y + this.paddingToApplyToTop,
-                    this.zTranslate);
-                this._p.box(
-                    this._cellWidth - (2 * this.paddingToApplyToLeft),
-                    this._cellHeight - (2 * this.paddingToApplyToTop),
-                    this._cellHeight - (2 * this.paddingToApplyToDepth))
-                this._p.pop()
+
+                drawProjectionOfCell()
+                if (animateMirror) {
+                    drawProjectionOfCell(true)
+                }
+
             }
             // let newXyMoustPoint = new Point(this._p.mouseX, this._p.mouseY)
             // const { x, y } = getProjectionFor3D(use3d, newXyMoustPoint, mazeOptions)
