@@ -10,15 +10,15 @@ import { Switch } from "@material-ui/core";
 import { RouterStore } from "mobx-react-router";
 import { UiPreferencesStore } from "../../stores/UiPreferencesStore";
 
-interface Use3dModeToggleProps {
+interface InverseColorModeToggleProps {
   routerStore?: RouterStore;
   uiPreferencesStore?: UiPreferencesStore;
 }
 
-const Use3dModeToggle: FunctionComponent<Use3dModeToggleProps> = (
-  props: Use3dModeToggleProps
+const InverseColorModeToggle: FunctionComponent<InverseColorModeToggleProps> = (
+  props: InverseColorModeToggleProps
 ) => {
-  const { updateUse3dMode, use3dMode } = props.uiPreferencesStore!;
+  const { updateInverseColorMode, inverseColorMode } = props.uiPreferencesStore!;
 
   const handleChange = (name: string) => (
     event: React.ChangeEvent<HTMLInputElement>
@@ -26,7 +26,7 @@ const Use3dModeToggle: FunctionComponent<Use3dModeToggleProps> = (
     let status = event.target.checked;
     console.log("changing inverse color mode to");
     console.log(status);
-    updateUse3dMode(status);
+    updateInverseColorMode(status);
   };
 
   return (
@@ -34,13 +34,13 @@ const Use3dModeToggle: FunctionComponent<Use3dModeToggleProps> = (
       <FormControlLabel
         control={
           <Switch
-            checked={use3dMode}
+            checked={inverseColorMode}
             onChange={handleChange("checkedB")}
             value="checkedB"
             color="primary"
           />
         }
-        label="Use 3D"
+        label="Inverse Colors"
       />
     </FormGroup>
   );
@@ -49,4 +49,4 @@ const Use3dModeToggle: FunctionComponent<Use3dModeToggleProps> = (
 export default inject(
   "uiPreferencesStore",
   "routerStore"
-)(observer(Use3dModeToggle));
+)(observer(InverseColorModeToggle));

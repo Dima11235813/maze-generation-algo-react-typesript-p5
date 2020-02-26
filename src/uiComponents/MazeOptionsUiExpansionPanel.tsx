@@ -30,8 +30,8 @@ export default function MazeOptionsUiExpansionPanel() {
         name={Labels.HEADER}
         render={() => (
           <>
-            <Use3dModeToggle />
-            <InverseColorModeToggle />
+            <Use3dModeToggle key="use3d" />
+            <InverseColorModeToggle key="inverseColors"/>
           </>
         )}
       />

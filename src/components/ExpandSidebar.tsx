@@ -1,7 +1,6 @@
-
 import React, { useEffect } from "react";
 
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import SwipeableDrawer from "@material-ui/core/SwipeableDrawer";
 import Button from "@material-ui/core/Button";
 import List from "@material-ui/core/List";
@@ -10,13 +9,30 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Divider from "@material-ui/core/Divider";
 
-
 //Matrial icons
-import InboxIcon from "@material-ui/icons/MoveToInbox";
 import MailIcon from "@material-ui/icons/Mail";
+import InboxIcon from "@material-ui/icons/MoveToInbox";
+import AppIcon from "@material-ui/icons/Apps";
 
 import styles from "./ExpandSidebar.module.scss";
 import MazeOptionsUiExpansionPanel from "../uiComponents/MazeOptionsUiExpansionPanel";
+import IconButton from "@material-ui/core/IconButton";
+import Typography from "@material-ui/core/Typography";
+
+
+const useMenuStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      flexGrow: 1
+    },
+    menuButton: {
+      marginRight: theme.spacing(2)
+    },
+    title: {
+      flexGrow: 1
+    }
+  })
+);
 
 const useStyles = makeStyles({
   list: {
@@ -28,6 +44,7 @@ const useStyles = makeStyles({
 });
 
 export default function SwipeableTemporaryDrawer() {
+  const menuClassStyles = useMenuStyles();
   const classes = useStyles();
   const [state, setState] = React.useState({
     top: false,
@@ -48,7 +65,7 @@ export default function SwipeableTemporaryDrawer() {
     ) {
       return;
     }
-    
+
     setState({ ...state, [side]: open });
   };
 
@@ -107,7 +124,19 @@ export default function SwipeableTemporaryDrawer() {
         className={styles.toggleMazeOptionsUiButton}
         onClick={toggleDrawer("left", true)}
       ></div>
-      <Button onClick={toggleDrawer("right", true)}>Open Right</Button>
+      <IconButton
+        className={menuClassStyles.menuButton}
+        color="inherit"
+        aria-label="menu"
+      >
+        <AppIcon />
+      </IconButton>
+      <Button onClick={toggleDrawer("left", true)}>
+        <Typography>Left</Typography>
+      </Button>
+      <Button onClick={toggleDrawer("right", true)}>
+        <Typography>Right</Typography>
+      </Button>
       {/* <Button onClick={toggleDrawer('top', true)}>Open Top</Button>
       <Button onClick={toggleDrawer('bottom', true)}>Open Bottom</Button> */}
       <SwipeableDrawer

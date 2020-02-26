@@ -28,9 +28,9 @@ const Use3dModeToggle: FunctionComponent<InverseColorModeToggleProps> = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     let status = event.target.checked;
-    logToConsole(`changing inverse color mode to: ${status}`);
-    p5_MazeFuncs.resetMaze();
+    logToConsole(`changing user 3d mode to: ${status}`);
     updateUse3dMode(status);
+    p5_MazeFuncs.resetMaze();
   };
 
   return (
@@ -38,13 +38,13 @@ const Use3dModeToggle: FunctionComponent<InverseColorModeToggleProps> = (
       <FormControlLabel
         control={
           <Switch
-            checked={use3dMode ? use3dMode : true}
+            checked={use3dMode}
             onChange={handleChange("checkedB")}
             value="checkedB"
             color="primary"
           />
         }
-        label="Inverse Colors"
+        label="Use 3D"
       />
     </FormGroup>
   );

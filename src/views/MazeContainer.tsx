@@ -30,14 +30,19 @@ const MazeContainer: React.FC<MazeContainerProps> = (
 
   let mazeContext: P5_MazeContext = useContext(p5_MazeContext);
   const { mazeOptions, p5_MazeFuncs } = mazeContext!;
-  let mazeContainer;
+  let mazeContainer: HTMLElement | null;
 
+  const { use3dMode } = props.uiPreferencesStore!;
+  const clear3dMaze = () => {
+    if (mazeContainer) {
+      mazeContainer.innerHTML = "";
+    }
+  };
   const rerunMaze = () => {
     logger(`Removing sketch.`);
-    const { use3dMode } = props.uiPreferencesStore!;
     //TODO this doesn't work in 3d mode - handle another way
     if (use3dMode) {
-      mazeContainer = null;
+      clear3dMaze();
     } else {
       mazeSketch.remove();
     }
@@ -46,14 +51,18 @@ const MazeContainer: React.FC<MazeContainerProps> = (
   };
 
   useEffect(() => {
+    mazeContainer = document.getElementById("maze-container");
     attachEventHandlers();
     createMazeSketch();
+    //TODO Only make this happen when you leave the route
+    return () => {
+      clear3dMaze()
+    }
   });
   const createMazeSketch = () => {
-    sketchHandler = (p: p5) => new MazeGenerator(p, mazeOptions);
+    sketchHandler = (p: p5) => new MazeGenerator(use3dMode, p, mazeOptions);
     logger("Maze Options:");
     loggerObj(mazeOptions);
-    mazeContainer = document.getElementById("maze-container");
     if (mazeContainer) {
       mazeSketch = new p5(sketchHandler, mazeContainer);
       p5_MazeFuncs.resetMaze = () => {

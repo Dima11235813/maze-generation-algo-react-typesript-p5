@@ -52,6 +52,9 @@ export class Cell {
     //make it so that most dominant r, g, b value is oscilated by 250 based on the scope size
     getColorBasedOnVisited = () => this.visited * .242 //+ ((stackLength + 1) / 10) //+ ((stackLength + 1) / 10)
     zTranslate = 0
+    depthAdjustment = 0.0;
+    depthOscillInc = 20
+    radialInc = this._p.TWO_PI / this.depthOscillInc;
     show = (
         mazeOptions: MazeOptions,
         stackLength: number,
@@ -127,7 +130,7 @@ export class Cell {
             // let y_position = this.visited ? (this.column * this._cellWidth) : (this.column * this._cellWidth) / 2
             // let z_position = this.visited ? (this.column + this.row) * 3 : (this.column + this.row) * 3 / 2
             if (use3d) {
-                let animate = false
+                let animate = true
                 let animateMirror = true
 
 
@@ -172,11 +175,22 @@ export class Cell {
                         this._p.texture(this._img);
                         this.potentialExitToMake = true
                     }
+                    let multiplier = Math.floor(10 * Math.abs(this._p.sin(this.depthAdjustment))) / 10
                     this._p.box(
                         this._cellWidth - (2 * this.paddingToApplyToLeft),
                         this._cellHeight - (2 * this.paddingToApplyToTop),
-                        this._cellHeight - (2 * this.paddingToApplyToDepth))
+                        multiplier * this._cellHeight - (2 * this.paddingToApplyToDepth))
                     this._p.pop()
+                    // console.log(`Dpth adjustment${this.depthAdjustment} 
+                    // 2P${this.radialInc * this.depthOscillInc}
+                    // should be 2 pie`)
+                    if(this.depthAdjustment < this._p.TWO_PI){
+
+                        this.depthAdjustment = this.depthAdjustment + this.radialInc
+                    }else if(this.depthAdjustment > -this._p.TWO_PI) {
+                        this.depthAdjustment = this.depthAdjustment - this.radialInc
+
+                    }
 
                 }
 

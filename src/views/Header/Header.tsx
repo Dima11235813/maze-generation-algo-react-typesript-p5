@@ -74,7 +74,6 @@ export default function Header(props: any) {
             >
               <MenuIcon />
             </IconButton>
-            <ExpandSideBar />
             <Button color="inherit">
               <NavLink
                 to={APP_ROUTES.LOGIN}
@@ -93,6 +92,7 @@ export default function Header(props: any) {
                 {APP_ROUTES.MAZE}
               </NavLink>
             </Button>
+            <ExpandSideBar />
           </Toolbar>
         </AppBar>
       </HideOnScroll>

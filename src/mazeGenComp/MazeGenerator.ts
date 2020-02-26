@@ -24,12 +24,10 @@ export class MazeGenerator {
     //TODO Set up builder class for many options handling
     cam: any
     theShader: any = undefined
-    use3d: boolean
     logOnce: boolean
     zoomValue: number = DEFAULT_Z_DISTANCE
     img: any
-    constructor(p: p5, mazeOptions: MazeOptions, use3d?: boolean) {
-        this.use3d = use3d ? use3d : true
+    constructor(public use3d: boolean, p: p5, mazeOptions: MazeOptions) {
         // this.img = p.loadImage("../../assets/exit.jpg");
         this.img = p.loadImage(img);
         // p.preload = () => {
@@ -60,7 +58,7 @@ export class MazeGenerator {
             }
             //set frame rate
             // https://p5js.org/reference/#/p5/frameRate
-            p.frameRate(22)
+            p.frameRate()
 
             //set up the grid
             for (var rowNumber = 0; rowNumber < numberOfRows; rowNumber += 1) {
@@ -90,6 +88,7 @@ export class MazeGenerator {
             this.currentCell = this.grid[0]
         }
         this.logOnce = true
+
         p.draw = () => {
             if (this.use3d) {
                 //temp
@@ -98,8 +97,10 @@ export class MazeGenerator {
                 // if(this.theShader){
                 //     p.shader(this.theShader);
                 // }
-                const dirY = (p.mouseY / p.height - 0.5) * 4;
-                const dirX = (p.mouseX / p.width - 0.5) * 4;
+                const mouseX = p.mouseX
+                const mouseY = p.mouseY
+                const dirY = (mouseX / p.height - 0.5) * 4;
+                const dirX = (mouseY / p.width - 0.5) * 4;
                 p.directionalLight(204, 204, 204, dirX, dirY, 1);
                 p.background(255);
 
@@ -110,26 +111,26 @@ export class MazeGenerator {
                 p.directionalLight(0, 102, 255, -1, 0, 0);
 
                 // Yellow spotlight from the front
-                p.pointLight(p.mouseX, p.mouseY, mazeOptions.windowHeight, 255, 255, 255);
+                p.pointLight(mouseY, mouseX, mazeOptions.windowHeight, 255, 255, 255);
                 // p.rotateY(1.75);
                 // p.rotateX(1.25);
                 // p.rotateX(1.25);
                 p.rotateX(p.PI / 3);
                 if (this.logOnce) {
-                    console.log(p)
+                    // console.log(p)
                     this.logOnce = false
                 }
-                let normalizedMouseY = p.mouseY - (mazeOptions.windowHeight / 2)
-                let normalizedMouseX = p.mouseX - (mazeOptions.windowWidth / 2)
-                console.log(`
-                X:${p.mouseX}
-                Y:${p.mouseY}
-                Normalized
-                X:${normalizedMouseX}
-                Y:${normalizedMouseY}
-                Window Height: ${mazeOptions.windowHeight}
+                let normalizedMouseY = mouseX - (mazeOptions.windowHeight / 2)
+                let normalizedMouseX = mouseY - (mazeOptions.windowWidth / 2)
+                // console.log(`
+                // X:${mouseY}
+                // Y:${mouseX}
+                // Normalized
+                // X:${normalizedMouseX}
+                // Y:${normalizedMouseY}
+                // Window Height: ${mazeOptions.windowHeight}
 
-                `)
+                // `)
                 let yTranslate = mazeOptions.view.zoomHeightDiff > mazeOptions.windowHeight ?
                     normalizedMouseY - (mazeOptions.view.zoomHeightDiff / 2) :
                     DEFAULT_Z_DISTANCE
