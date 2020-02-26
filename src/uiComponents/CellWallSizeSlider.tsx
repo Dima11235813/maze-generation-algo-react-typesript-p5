@@ -9,6 +9,7 @@ import FormatSize from "@material-ui/icons/FormatSize";
 //Maze Config
 import { MazeOptionsSetter } from "../mazeGenComp/mazeUtils/mazeOptionsSetter";
 import { Labels } from "../shared/labels";
+import { logToConsole } from "../shared/logger";
 
 interface CellWallSizeSlider {
   mazeOptionsSetter: MazeOptionsSetter;
@@ -61,7 +62,7 @@ const CellWallSizeSlider = (props: CellWallSizeSlider) => {
     }
   };
 
-  console.log(`
+  logToConsole(`
     Cell Wall Size Slider render with props:
     minStrokeWidth ${minStrokeWidth}
     maxStrokeWidth ${maxStrokeWidth}

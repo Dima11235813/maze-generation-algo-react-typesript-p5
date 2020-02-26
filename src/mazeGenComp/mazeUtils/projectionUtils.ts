@@ -45,6 +45,6 @@ export const getProjectionFor3D = (use3d: boolean, point: Point, mazeOptions: Ma
         yRowPointValToDraw = y_value
     }
     let pointToReturn = new Point(xColPointValToDraw, yRowPointValToDraw)
-    console.log(pointToReturn)
+    // console.log(pointToReturn)
     return pointToReturn
 }

@@ -10,6 +10,7 @@ import { Switch } from "@material-ui/core";
 import { RouterStore } from "mobx-react-router";
 import { UiPreferencesStore } from "../../stores/UiPreferencesStore";
 import { p5_MazeContext } from "../../AppContext";
+import { logToConsole, logObjToConsole } from "../../shared/logger";
 
 interface InverseColorModeToggleProps {
   routerStore?: RouterStore;
@@ -27,8 +28,7 @@ const Use3dModeToggle: FunctionComponent<InverseColorModeToggleProps> = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     let status = event.target.checked;
-    console.log("changing inverse color mode to");
-    console.log(status);
+    logToConsole(`changing inverse color mode to: ${status}`);
     p5_MazeFuncs.resetMaze();
     updateUse3dMode(status);
   };

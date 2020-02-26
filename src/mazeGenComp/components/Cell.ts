@@ -6,6 +6,7 @@ import { MazeOptions } from "../mazeUtils/mazeOptions"
 import { CellWallOptions } from "../../uiComponents/MazeOptionsUiExpansionPanel/CellWallStyleWrapper"
 import { offsetWidthBy3dProjection, offsetHeightBy3dProjection, getProjectionFor3D } from "../mazeUtils/projectionUtils"
 import { mazeOptionsUiContext } from "../../AppContext"
+import { DEFAULT_Z_DISTANCE } from "../../shared/constants"
 
 export class Cell {
     //TOP, RIGHT, BOTTOM, LEFT
@@ -111,14 +112,13 @@ export class Cell {
             // logger(color)
             // this._p.fill(255 / (this.getColorBasedOnVisited()),0, 0, 255)
             this._p.noStroke()
-            const DEFAULT_DISTANCE = 300
             let x_position = this.visited ? (this.row * this._cellWidth) : (this.row * this._cellWidth) / 2
             let y_position = this.visited ? (this.column * this._cellWidth) : (this.column * this._cellWidth) / 2
             let z_position = this.visited ? (this.column + this.row) * 3 : (this.column + this.row) * 3 / 2
             if (use3d) {
 
                 this._p.push()
-                this._p.translate(projectedXyPoint.x + x_position, projectedXyPoint.y + y_position, DEFAULT_DISTANCE);
+                this._p.translate(projectedXyPoint.x, projectedXyPoint.y, DEFAULT_Z_DISTANCE);
                 this._p.box(this._cellWidth, this._cellHeight, this._cellHeight)
                 this._p.pop()
             }

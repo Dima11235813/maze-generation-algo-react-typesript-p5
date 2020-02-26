@@ -2,8 +2,11 @@
 import { Color } from "../../utils/colorUtils"
 import { mazeDefaultOptions } from "./mazeDefaults";
 import { storageUtils } from "../../utils/storageUtils";
+import { MazeView } from "./MazeView";
+import { MIN_NUMBER_OF_CELLS_HORIZONTALLY } from "../../shared/constants";
 
 export class MazeOptions {
+    view: MazeView = new MazeView();
     //SCENE
     backgroundColor: Color;
     //CELL COLOR
@@ -47,6 +50,23 @@ export class MazeOptions {
         //TODO Move to header constants
         this.windowHeight = window.innerHeight - 90;
         this.windowWidth = window.innerWidth;
+        window.addEventListener("wheel", (event: any) => {
+            const zoomMultiplier = 50
+            const minZoomSetting = Math.floor(
+                this.windowWidth / MIN_NUMBER_OF_CELLS_HORIZONTALLY
+
+            )
+            let userIsZoomingIn = event.wheelDelta > 0
+            if (userIsZoomingIn && this.view.zValue < minZoomSetting) {
+                this.view.zValue += zoomMultiplier
+            } else {
+                this.view.zValue -= zoomMultiplier
+            }
+            console.log(`
+            zoom to height ratio : ${this.view.zoomHeightDiff}
+            `)
+            this.view.zoomHeightDiff = this.windowHeight - this.view.zValue
+        })
 
     }
     saveOptionsToStorage() {
@@ -57,7 +77,7 @@ export class MazeOptions {
     }
     updateDynamicValues() {
         //DYNAMIC OPTIONS CALC
-        if(this.maxStrokeWidth > this.cellSize){
+        if (this.maxStrokeWidth > this.cellSize) {
             this.maxStrokeWidth = this.cellSize
         }
         let ratioFloat = this.windowWidth / this.windowHeight
@@ -76,7 +96,7 @@ export class MazeOptions {
         this.padding = Math.floor(this.windowWidth % this.calculatedCellWidth)
         this.numberOfColumns = Math.floor(this.windowWidth / this.calculatedCellWidth)
         this.numberOfRows = Math.floor(this.windowHeight / this.calculatedCellHeight)
-        console.log(`MAZE OPTIONS`)
-        console.log(this)
+        // console.log(`MAZE OPTIONS`)
+        // console.log(this)
     }
 }

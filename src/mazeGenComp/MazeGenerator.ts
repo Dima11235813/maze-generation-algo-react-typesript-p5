@@ -4,6 +4,8 @@ import { MazeOptions } from "./mazeUtils/mazeOptions"
 import { stores } from '../stores'
 import { getProjectionFor3D } from "./mazeUtils/projectionUtils"
 import { Point } from "./components/Point"
+import { mazeOptionsUiContext } from "../AppContext"
+import { DEFAULT_Z_DISTANCE } from "../shared/constants"
 
 export class MazeGenerator {
     //vars to hold current column and row during draw phase
@@ -22,6 +24,8 @@ export class MazeGenerator {
     cam: any
     theShader: any = undefined
     use3d: boolean
+    logOnce: boolean
+    zoomValue: number = 0
     constructor(p: p5, mazeOptions: MazeOptions, use3d?: boolean) {
         this.use3d = use3d ? use3d : true
         // p.preload = () => {
@@ -80,31 +84,52 @@ export class MazeGenerator {
             //set current cell as first
             this.currentCell = this.grid[0]
         }
-
+        this.logOnce = true
         p.draw = () => {
-            //temp
-            // shader() sets the active shader with our shader
-            // https://p5js.org/examples/3d-shader-using-webcam.html
-            // if(this.theShader){
-            //     p.shader(this.theShader);
-            // }
-            const dirY = (p.mouseY / p.height - 0.5) * 4;
-            const dirX = (p.mouseX / p.width - 0.5) * 4;
-            p.directionalLight(204, 204, 204, dirX, dirY, 1);
-            p.background(0);
+            if (this.use3d) {
+                //temp
+                // shader() sets the active shader with our shader
+                // https://p5js.org/examples/3d-shader-using-webcam.html
+                // if(this.theShader){
+                //     p.shader(this.theShader);
+                // }
+                const dirY = (p.mouseY / p.height - 0.5) * 4;
+                const dirX = (p.mouseX / p.width - 0.5) * 4;
+                p.directionalLight(204, 204, 204, dirX, dirY, 1);
+                p.background(0);
 
-            // Orange point light on the right
-            p.pointLight(150, 100, 0, 500, 0, 200);
+                // Orange point light on the right
+                p.pointLight(150, 100, 0, 500, 0, 200);
 
-            // Blue directional light from the left
-            p.directionalLight(0, 102, 255, -1, 0, 0);
+                // Blue directional light from the left
+                p.directionalLight(0, 102, 255, -1, 0, 0);
 
-            // Yellow spotlight from the front
-            p.pointLight(p.mouseX, p.mouseY, 109, 255, 255, 255);
-            // p.rotateY(1.75);
-            // p.rotateX(1.25);
-            // p.rotateX(1.25);
-            p.rotateX(.85);
+                // Yellow spotlight from the front
+                p.pointLight(p.mouseX, p.mouseY, mazeOptions.windowHeight, 255, 255, 255);
+                // p.rotateY(1.75);
+                // p.rotateX(1.25);
+                // p.rotateX(1.25);
+                p.rotateX(p.PI / 3);
+                if (this.logOnce) {
+                    console.log(p)
+                    this.logOnce = false
+                }
+                let normalizedMouseY = p.mouseY / 2
+                let normalizedMouseX = p.mouseX / 2
+                console.log(`
+                X:${p.mouseX}
+                Y:${p.mouseY}
+                Normalized
+                X:${normalizedMouseX}
+                Y:${normalizedMouseY}
+                Window Height: ${mazeOptions.windowHeight}
+
+                `)
+                let yTranslate = mazeOptions.view.zoomHeightDiff > mazeOptions.windowHeight ?
+                    normalizedMouseY - (mazeOptions.view.zoomHeightDiff / 6) :
+                    DEFAULT_Z_DISTANCE
+                p.translate(normalizedMouseX, yTranslate, mazeOptions.view.zValue)
+            }
 
             ///
             const { numberOfColumns, numberOfRows } = mazeOptions
