@@ -7,18 +7,6 @@ import { MIN_NUMBER_OF_CELLS_HORIZONTALLY, DEFAULT_Z_DISTANCE, ZOOM_MULTIPLIER_D
 
 export class MazeOptions {
     view: MazeView = new MazeView();
-    //SCENE
-    backgroundColor: Color;
-    //CELL COLOR
-    cellColor: Color;
-    cellWallColor: Color;
-    //CELL SIZE
-    cellSize: number;
-
-    cellWallSize: number;
-    //CELL WALL SHAPE
-    cellWallStrokeCapStyle: string;
-
     //DYNAMIC SECTION
     //Window 
     windowHeight: number;
@@ -31,18 +19,20 @@ export class MazeOptions {
     padding: number = 4;
     numberOfColumns: number = 10;
     numberOfRows: number = 10;
-    constructor() {
+    constructor(
+        //SCENE
+        public backgroundColor: Color = mazeDefaultOptions.defaultBackgroundColor,
+        //CELL COLOR,
+        public cellColor: Color = mazeDefaultOptions.defaultCellColor,
+        public cellWallColor : Color= mazeDefaultOptions.defaultCellWallColor,
+        //CELL SIZE,
+        public cellSize : number = mazeDefaultOptions.defaultCellSize,
+        public cellWallSize : number = mazeDefaultOptions.defaultCellWallSize,
+        //CELL WALL SHAPE,
+        public cellWallStrokeCapStyle: string = mazeDefaultOptions.defaultStrokeCapStyle,
+    ) {
         //SET UP DEFAULTS FOR MAZE if not using storage
         //SCENE
-        this.backgroundColor = mazeDefaultOptions.defaultBackgroundColor
-        //CELL COLOR
-        this.cellColor = mazeDefaultOptions.defaultCellColor
-        this.cellWallColor = mazeDefaultOptions.defaultCellWallColor
-        //CELL SIZE
-        this.cellSize = mazeDefaultOptions.defaultCellSize //this.windowWidth
-        this.cellWallSize = mazeDefaultOptions.defaultCellWallSize
-        //CELL WALL SHAPE
-        this.cellWallStrokeCapStyle = mazeDefaultOptions.defaultStrokeCapStyle
         //Update any options that were persisted in storage
         this.updateOptionsFromStorage()
         this.updateDynamicValues()

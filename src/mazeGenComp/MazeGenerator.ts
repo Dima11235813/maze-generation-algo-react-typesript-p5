@@ -94,15 +94,8 @@ export class MazeGenerator {
         }
         this.logOnce = true
         //https://p5js.org/reference/#/p5/mouseClicked
-        this.followMouse = true
-        p.mouseClicked = () => {
-            if (this.followMouse === true) {
-                this.followMouse = false;
-            } else {
-                this.followMouse = true
-            }
-        }
-
+        this.followMouse = false
+        p.mouseClicked = () => this.followMouse = !this.followMouse
         p.draw = () => {
             if (this.use3d) {
                 //temp
@@ -150,7 +143,7 @@ export class MazeGenerator {
                 if (this.followMouse) {
                     p.translate(
                         normalizedMouseX,
-                        normalizedMouseY - (mazeOptions.windowHeight / 2 * yTranslate), mazeOptions.view.zValue
+                        normalizedMouseY - (mazeOptions.windowHeight /  2 * yTranslate), mazeOptions.view.zValue
                     )
                 } else {
                     p.translate(

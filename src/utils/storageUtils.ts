@@ -48,17 +48,15 @@ export const storageUtils = {
         //CELL SHAPE STYLE
         let cellWallStrokeCapStyle = localStorage.getItem(mazeDefaultsStorageKeys.cellWallStrokeCapStyleKey)
 
-        //DEFAULT COLOR IF STORAGE FAILS 
-        const defaultIfFail = "255:255:255:1"
 
         //BACKGROUND
         mazeOptions.backgroundColor = colorUtils.fromStringToObj(
-            backgroundColor ? backgroundColor : defaultIfFail
+            backgroundColor ? backgroundColor : mazeDefaultOptions.defaultBackgroundColor.toString()
         )
         //TODO Use defaults class to construct color strings and set util func for that
         //CELL COLOR
-        mazeOptions.cellColor = colorUtils.fromStringToObj(cellColor ? cellColor : defaultIfFail)
-        mazeOptions.cellWallColor = colorUtils.fromStringToObj(cellWallColor ? cellWallColor : defaultIfFail)
+        mazeOptions.cellColor = colorUtils.fromStringToObj(cellColor ? cellColor : mazeDefaultOptions.defaultCellColor.toString())
+        mazeOptions.cellWallColor = colorUtils.fromStringToObj(cellWallColor ? cellWallColor : mazeDefaultOptions.defaultCellWallColor.toString())
         //CELL SHAPE
         mazeOptions.cellSize = parseInt(cellSize ? cellSize : `${mazeDefaultOptions.defaultCellSize}`)
         mazeOptions.cellWallSize = parseInt(cellWallSize ? cellWallSize : `${mazeDefaultOptions.defaultCellWallSize}`)

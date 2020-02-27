@@ -165,9 +165,11 @@ export class Cell {
                 }
                 const drawProjectionOfCell = (mirror = false) => {
                     this._p.push()
+                    //translate to consider shape origin point have central alignment
+                    let xyOffset = mazeOptions.cellSize
                     this._p.translate(
-                        projectedXyPoint.x + this.paddingToApplyToLeft,
-                        projectedXyPoint.y + this.paddingToApplyToTop,
+                        xyOffset + projectedXyPoint.x + this.paddingToApplyToLeft,
+                        xyOffset + projectedXyPoint.y + this.paddingToApplyToTop,
                         mirror ? -this.zTranslate : this.zTranslate);
                     if (this.column + 1 === mazeOptions.numberOfColumns ||
                         this.row + 1 === mazeOptions.numberOfRows

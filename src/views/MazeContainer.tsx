@@ -7,6 +7,7 @@ import { P5_MazeContext, p5_MazeContext } from "../AppContext";
 import { inject, observer } from "mobx-react";
 import { RouterStore } from "mobx-react-router";
 import { UiPreferencesStore } from "../stores/UiPreferencesStore";
+import { logToConsole } from "../shared/logger";
 
 interface MazeContainerProps {
   routerStore?: RouterStore;
@@ -33,30 +34,32 @@ const MazeContainer: React.FC<MazeContainerProps> = (
   let mazeContainer: HTMLElement | null;
 
   const { use3dMode } = props.uiPreferencesStore!;
-  const clear3dMaze = () => {
-    if (mazeContainer) {
-      mazeContainer.innerHTML = "";
-    }
+
+  const clearMaze = () => {
+    logToConsole("Clearing Maze")
+    mazeSketch.remove();
   };
+  //TODO Extract functions into context
   const rerunMaze = () => {
     logger(`Removing sketch.`);
-    //TODO this doesn't work in 3d mode - handle another way
-    if (use3dMode) {
-      clear3dMaze();
-    } else {
-      mazeSketch.remove();
-    }
+     clearMaze()
     //destroy current sketch
+    logToConsole("Creating new sketch")
     createMazeSketch();
   };
 
   useEffect(() => {
     mazeContainer = document.getElementById("maze-container");
+    
+    // //attch maze click
+    // mazeContainer!.addEventListener("click", (event) =>  {
+    //   handleMazeContainerClick(event)
+    // });
     attachEventHandlers();
     createMazeSketch();
     //TODO Only make this happen when you leave the route
     return () => {
-      clear3dMaze()
+      clearMaze()
     }
   });
   const createMazeSketch = () => {

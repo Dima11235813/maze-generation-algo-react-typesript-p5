@@ -1,5 +1,18 @@
 import { Color } from "../../utils/colorUtils"
 
+//SET DEFAULT COLORS FOR MAZE
+export const mazeDefaultOptions: MazeDefaultOptions = {
+    //SCENE
+    defaultBackgroundColor: new Color(113,173,245,1),
+    //CELL COLOR
+    defaultCellColor: new Color(65,117,5,1),
+    defaultCellWallColor: new Color(255, 255, 255, 100),
+    //CELL SIZE
+    defaultCellSize: 40,
+    defaultCellWallSize: 1,
+    //CELL WALL SHAPE
+    defaultStrokeCapStyle: "ROUND",
+}
 export interface MazeDefaultOptions {
 
     defaultBackgroundColor: Color,
@@ -11,18 +24,4 @@ export interface MazeDefaultOptions {
     defaultCellWallSize: number,
     //CELL WALL SHAPE
     defaultStrokeCapStyle: string,
-}
-
-//SET DEFAULT COLORS FOR MAZE
-export const mazeDefaultOptions: MazeDefaultOptions = {
-    //SCENE
-    defaultBackgroundColor: new Color(145, 101, 100, 100),
-    //CELL COLOR
-    defaultCellColor: new Color(9, 170, 121, 100),
-    defaultCellWallColor: new Color(255, 255, 255, 100),
-    //CELL SIZE
-    defaultCellSize: 40,
-    defaultCellWallSize: 1,
-    //CELL WALL SHAPE
-    defaultStrokeCapStyle: "ROUND",
 }
