@@ -1,13 +1,15 @@
-import { CellWallPoints } from "./CellWallPoints"
-import { Point } from "./Point"
-import { logger } from "../../utils/loggingUtils"
-import { getPointValsAtIndex } from "../../utils/gridUtils"
-import { MazeOptions } from "../mazeUtils/mazeOptions"
-import { CellWallOptions } from "../../uiComponents/MazeOptionsUiExpansionPanel/CellWallStyleWrapper"
-import { offsetWidthBy3dProjection, offsetHeightBy3dProjection, getProjectionFor3D } from "../mazeUtils/projectionUtils"
-import { mazeOptionsUiContext } from "../../AppContext"
-import { DEFAULT_Z_DISTANCE } from "../../shared/constants"
+import { CellWallPoints } from "../CellWallPoints"
+import { Point } from "../Point"
+import { logger } from "../../../utils/loggingUtils"
+import { getPointValsAtIndex } from "../../../utils/gridUtils"
+import { MazeOptions } from "../../mazeUtils/mazeOptions"
+import { CellWallOptions } from "../../../uiComponents/MazeOptionsUiExpansionPanel/CellWallStyleWrapper"
+import { offsetWidthBy3dProjection, offsetHeightBy3dProjection, getProjectionFor3D } from "../../mazeUtils/projectionUtils"
+import { mazeOptionsUiContext } from "../../../AppContext"
+import { DEFAULT_Z_DISTANCE } from "../../../shared/constants"
 import { Image } from "p5"
+import { ShowWallIndicator } from "./ShowWallIndicator"
+import { DrawDepthAnimation } from "./DrawDepthAnimation"
 
 export class Cell {
     //TOP, RIGHT, BOTTOM, LEFT
@@ -58,7 +60,7 @@ export class Cell {
         stackLength: number,
         inverseColorMode: boolean,
         use3d: boolean,
-        sineOffsetForDepth: number,
+        sineOffsetForDepth: number
     ) => {
         this.depthOffset = sineOffsetForDepth * 1
         //Before executing show
@@ -140,6 +142,7 @@ export class Cell {
                 const STACK_TO_Z_CHANGE_RATIO = mazeOptions.cellSize / 4
                 let goDown = this.lastStackLength > stackLength
                 let goUp = this.lastStackLength < stackLength
+                // this.cellDepthAnimations.
                 if (animate) {
                     if (goDown) {
                         this.numberOfIncreasesInStack += 1
@@ -189,9 +192,6 @@ export class Cell {
 
 
                 }
-
-
-
 
                 this.lastStackLength = stackLength
 
@@ -268,26 +268,39 @@ export class Cell {
         let point4 = new Point(projectedXyPoint.x, projectedXyPoint.y + this._cellHeight)
 
         //Create bools to determine whether to draw each wall
-        let drawTop = this.walls[0]
-        let drawRight = this.walls[1]
-        let drawBottom = this.walls[2]
-        let drawLeft = this.walls[3]
+        let showWallIndicator: ShowWallIndicator = {
+            drawTop: this.walls[0],
+            drawRight: this.walls[1],
+            drawBottom: this.walls[2],
+            drawLeft: this.walls[3],
+        }
 
-        if (drawTop) {
+        if (showWallIndicator.drawTop) {
             let pointsToDrawWallBetween = new CellWallPoints(point1, point2)
             this._drawCellWalls(pointsToDrawWallBetween)
         }
-        if (drawRight) {
+        if (showWallIndicator.drawRight) {
             let pointsToDrawWallBetween = new CellWallPoints(point2, point3)
             this._drawCellWalls(pointsToDrawWallBetween)
         }
-        if (drawBottom) {
+        if (showWallIndicator.drawBottom) {
             let pointsToDrawWallBetween = new CellWallPoints(point3, point4)
             this._drawCellWalls(pointsToDrawWallBetween)
         }
-        if (drawLeft) {
+        if (showWallIndicator.drawLeft) {
             let pointsToDrawWallBetween = new CellWallPoints(point4, point1)
             this._drawCellWalls(pointsToDrawWallBetween)
+        }
+        if (use3d) {
+            let drawDepthAnimation = new DrawDepthAnimation(
+                mazeOptions,
+                showWallIndicator,
+                this._p,
+                this.column, 
+                this._cellWidth, 
+                this.row, 
+                this._cellHeight
+            )
         }
 
     }
@@ -299,6 +312,28 @@ export class Cell {
             cellWallPoints.endPoint.y + this.paddingToApplyToTop
         )
     }
+    // private _drawCellWallsWithDepth = (cellWallWithDepthPoints: CellWallWithDepthPoints) => {
+    //         this._p.push()
+    //         //translate to consider shape origin point have central alignment
+    //         let xyOffset = mazeOptions.cellSize
+    //         const cellWallsWithDepthX = mazeOptions.cellSize,
+    //             cellWallsWithDepthY = mazeOptions.cellSize,
+    //             cellWallsWithDepthZ = mazeOptions.cellSize
+    //         this._p.translate(
+    //             cellWallsWithDepthX, cellWallsWithDepthY, cellWallsWithDepthZ);
+    //         if (this.column + 1 === mazeOptions.numberOfColumns ||
+    //             this.row + 1 === mazeOptions.numberOfRows
+    //         ) {
+    //             this._p.texture(this._img);
+    //             this.potentialExitToMake = true
+    //         }
+    //         // let multiplier = Math.floor(10 * Math.abs(this._p.sin(this.depthOffset))) / 10
+    //         this._p.box(
+    //             this._cellWidth - (2 * this.paddingToApplyToLeft),
+    //             this._cellHeight - (2 * this.paddingToApplyToTop),
+    //             this._cellHeight - (2 * this.paddingToApplyToDepth))
+    //         this._p.pop()
+    // }
     highlight = (use3d: boolean, mazeOptions: MazeOptions) => {
         var xLength = this.column * this._cellWidth
         var yLength = this.row * this._cellHeight

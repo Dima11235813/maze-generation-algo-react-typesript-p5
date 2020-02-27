@@ -7,3 +7,4 @@ export const MIN_NUMBER_OF_CELLS_HORIZONTALLY = 9
 //3D Related
 export const DEFAULT_Z_DISTANCE = 300
 export const ZOOM_MULTIPLIER_DEFAULT = 150
+export const CELL_WALL_WITH_DEPTH_Z_VALUE = 15

@@ -1,4 +1,5 @@
-import { Cell } from "./components/Cell"
+import p5 from "p5";
+import { Cell } from "./components/Cell/Cell"
 import { logColumnDuringCreation, logRowDuringCreation, logger } from "../utils/loggingUtils"
 import { MazeOptions } from "./mazeUtils/mazeOptions"
 import { stores } from '../stores'
