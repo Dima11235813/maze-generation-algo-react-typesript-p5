@@ -2,6 +2,7 @@ import p5 from "p5";
 import { ShowWallIndicator } from "./ShowWallIndicator";
 import { MazeOptions } from "../../mazeUtils/mazeOptions";
 import { CELL_WALL_WITH_DEPTH_Z_VALUE } from "../../../shared/constants";
+import { invertColors } from "../../../utils/colorUtils";
 
 export class DrawDepthAnimation {
     constructor(
@@ -68,7 +69,9 @@ export class DrawDepthAnimation {
         //TODO Extract color inverter from cell and use here
         // let { r, g, b, a } = this._mazeOptions.cellWallColor
         // this._p.fill(r, g, b, a)
-        this._p.fill(255, 255, 255)
+        // this._p.fill(155, 155, 155)
+        let { r, g, b, a } = invertColors(this._mazeOptions.cellWallColor)
+        this._p.fill(r, g, b)
         //translate to consider shape origin point have central alignment
         this._p.translate(
             xTranslate - (this._mazeOptions.windowWidth / 2),

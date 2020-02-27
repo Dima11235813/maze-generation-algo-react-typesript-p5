@@ -10,6 +10,7 @@ import { DEFAULT_Z_DISTANCE } from "../../../shared/constants"
 import { Image } from "p5"
 import { ShowWallIndicator } from "./ShowWallIndicator"
 import { DrawDepthAnimation } from "./DrawDepthAnimation"
+import { invertColors } from "../../../utils/colorUtils"
 
 export class Cell {
     //TOP, RIGHT, BOTTOM, LEFT
@@ -239,7 +240,7 @@ export class Cell {
             }
         }
         //wall color
-        let { r, g, b, a } = mazeOptions.cellWallColor
+        let { r, g, b, a } = invertColors(mazeOptions.cellWallColor)
 
         //apply color negative if selected
         if (inverseColorMode) {
@@ -296,9 +297,9 @@ export class Cell {
                 mazeOptions,
                 showWallIndicator,
                 this._p,
-                this.column, 
-                this._cellWidth, 
-                this.row, 
+                this.column,
+                this._cellWidth,
+                this.row,
                 this._cellHeight
             )
         }

@@ -40,6 +40,14 @@ export class ColorUtils {
     }
 }
 
+export const invertColors = (color: Color) => {
+    return new Color(
+        255 - color.r,
+        255 - color.g,
+        255 - color.b,
+    )
+}
+
 export class Color {
     // public r?: number;
     // public g?: number;
