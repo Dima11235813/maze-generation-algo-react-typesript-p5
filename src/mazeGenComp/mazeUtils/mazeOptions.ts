@@ -3,7 +3,7 @@ import { Color } from "../../utils/colorUtils"
 import { mazeDefaultOptions } from "./mazeDefaults";
 import { storageUtils } from "../../utils/storageUtils";
 import { MazeView } from "./MazeView";
-import { MIN_NUMBER_OF_CELLS_HORIZONTALLY, DEFAULT_Z_DISTANCE } from "../../shared/constants";
+import { MIN_NUMBER_OF_CELLS_HORIZONTALLY, DEFAULT_Z_DISTANCE, ZOOM_MULTIPLIER_DEFAULT } from "../../shared/constants";
 
 export class MazeOptions {
     view: MazeView = new MazeView();
@@ -51,21 +51,13 @@ export class MazeOptions {
         this.windowHeight = window.innerHeight - 90;
         this.windowWidth = window.innerWidth;
         window.addEventListener("wheel", (event: any) => {
-            const zoomMultiplier = 42
-            // const minZoomSetting = Math.floor(
-            //     this.windowWidth / MIN_NUMBER_OF_CELLS_HORIZONTALLY)
-            // const minZoomSetting = DEFAULT_Z_DISTANCE / 10
-            const minZoomSetting = 5
-
+            const minZoomSetting = 0
             let userIsZoomingIn = event.wheelDelta > 0
             if (userIsZoomingIn && this.view.zValue < minZoomSetting) {
-                this.view.zValue += zoomMultiplier
+                this.view.zValue += ZOOM_MULTIPLIER_DEFAULT
             } else {
-                this.view.zValue -= zoomMultiplier
+                this.view.zValue -= ZOOM_MULTIPLIER_DEFAULT
             }
-            console.log(`
-            zoom to height ratio : ${this.view.zoomHeightDiff}
-            `)
             this.view.zoomHeightDiff = this.windowHeight - this.view.zValue
         })
 

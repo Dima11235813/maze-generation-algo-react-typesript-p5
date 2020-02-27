@@ -5,5 +5,5 @@ export const CELL_SIZE_INCREMENT_INTERVAL = 1
 export const MIN_NUMBER_OF_CELLS_HORIZONTALLY = 9
 
 //3D Related
-
 export const DEFAULT_Z_DISTANCE = 300
+export const ZOOM_MULTIPLIER_DEFAULT = 150

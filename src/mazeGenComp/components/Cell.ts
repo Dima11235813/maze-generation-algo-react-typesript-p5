@@ -52,15 +52,15 @@ export class Cell {
     //make it so that most dominant r, g, b value is oscilated by 250 based on the scope size
     getColorBasedOnVisited = () => this.visited * .242 //+ ((stackLength + 1) / 10) //+ ((stackLength + 1) / 10)
     zTranslate = 0
-    depthAdjustment = 0.0;
-    depthOscillInc = 20
-    radialInc = this._p.TWO_PI / this.depthOscillInc;
+    depthOffset = 0
     show = (
         mazeOptions: MazeOptions,
         stackLength: number,
         inverseColorMode: boolean,
-        use3d: boolean
+        use3d: boolean,
+        sineOffsetForDepth: number,
     ) => {
+        this.depthOffset = sineOffsetForDepth * 1
         //Before executing show
         //check if anything changed about this cell
 
@@ -175,22 +175,16 @@ export class Cell {
                         this._p.texture(this._img);
                         this.potentialExitToMake = true
                     }
-                    let multiplier = Math.floor(10 * Math.abs(this._p.sin(this.depthAdjustment))) / 10
+                    // let multiplier = Math.floor(10 * Math.abs(this._p.sin(this.depthOffset))) / 10
                     this._p.box(
                         this._cellWidth - (2 * this.paddingToApplyToLeft),
                         this._cellHeight - (2 * this.paddingToApplyToTop),
-                        multiplier * this._cellHeight - (2 * this.paddingToApplyToDepth))
+                        this._cellHeight - (2 * this.paddingToApplyToDepth))
                     this._p.pop()
-                    // console.log(`Dpth adjustment${this.depthAdjustment} 
+                    // console.log(`Dpth adjustment${this.depthOffset} 
                     // 2P${this.radialInc * this.depthOscillInc}
                     // should be 2 pie`)
-                    if(this.depthAdjustment < this._p.TWO_PI){
 
-                        this.depthAdjustment = this.depthAdjustment + this.radialInc
-                    }else if(this.depthAdjustment > -this._p.TWO_PI) {
-                        this.depthAdjustment = this.depthAdjustment - this.radialInc
-
-                    }
 
                 }
 

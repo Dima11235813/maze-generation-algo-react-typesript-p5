@@ -27,6 +27,11 @@ export class MazeGenerator {
     logOnce: boolean
     zoomValue: number = DEFAULT_Z_DISTANCE
     img: any
+    followMouse: boolean
+    depthOscillInc = 25
+    sineOffsetForDepth: any = 0.0
+    sineOffsetForDepthBound: any = 68
+    sineOffsetInterval: any = .4
     constructor(public use3d: boolean, p: p5, mazeOptions: MazeOptions) {
         // this.img = p.loadImage("../../assets/exit.jpg");
         this.img = p.loadImage(img);
@@ -88,6 +93,15 @@ export class MazeGenerator {
             this.currentCell = this.grid[0]
         }
         this.logOnce = true
+        //https://p5js.org/reference/#/p5/mouseClicked
+        this.followMouse = true
+        p.mouseClicked = () => {
+            if (this.followMouse === true) {
+                this.followMouse = false;
+            } else {
+                this.followMouse = true
+            }
+        }
 
         p.draw = () => {
             if (this.use3d) {
@@ -101,11 +115,12 @@ export class MazeGenerator {
                 const mouseY = p.mouseY
                 const dirY = (mouseX / p.height - 0.5) * 4;
                 const dirX = (mouseY / p.width - 0.5) * 4;
-                p.directionalLight(204, 204, 204, dirX, dirY, 1);
+                // p.ambientLight(255);
+                // p.directionalLight(204, 204, 204, dirX, dirY, 1);
                 p.background(255);
 
                 // Orange point light on the right
-                p.pointLight(150, 100, 0, 500, 0, 200);
+                p.pointLight(255, 255, 255, 0, 0, 600);
 
                 // Blue directional light from the left
                 p.directionalLight(0, 102, 255, -1, 0, 0);
@@ -120,8 +135,8 @@ export class MazeGenerator {
                     // console.log(p)
                     this.logOnce = false
                 }
-                let normalizedMouseY = mouseX - (mazeOptions.windowHeight / 2)
-                let normalizedMouseX = mouseY - (mazeOptions.windowWidth / 2)
+                let normalizedMouseX = mouseX - (mazeOptions.windowWidth / 2)
+                let normalizedMouseY = mouseY - (mazeOptions.windowHeight / 2)
                 // console.log(`
                 // X:${mouseY}
                 // Y:${mouseX}
@@ -131,10 +146,19 @@ export class MazeGenerator {
                 // Window Height: ${mazeOptions.windowHeight}
 
                 // `)
-                let yTranslate = mazeOptions.view.zoomHeightDiff > mazeOptions.windowHeight ?
-                    normalizedMouseY - (mazeOptions.view.zoomHeightDiff / 2) :
-                    DEFAULT_Z_DISTANCE
-                p.translate(normalizedMouseX, yTranslate, mazeOptions.view.zValue)
+                let yTranslate = mazeOptions.view.zoomHeightDiff / mazeOptions.windowHeight
+                if (this.followMouse) {
+                    p.translate(
+                        normalizedMouseX,
+                        normalizedMouseY - (mazeOptions.windowHeight / 2 * yTranslate), mazeOptions.view.zValue
+                    )
+                } else {
+                    p.translate(
+                        0,
+                        0 - (mazeOptions.windowHeight / 2 * yTranslate),
+                        mazeOptions.view.zValue
+                    )
+                }
             }
 
             ///
@@ -158,10 +182,22 @@ export class MazeGenerator {
             // }
             // p.background(151)
             //draw each cell in the grid
+            let increasing = true
             this.grid.map(cell => {
                 //show the cell
-                cell.show(mazeOptions, this.stack.length, inverseColorMode, this.use3d)
-
+                cell.show(mazeOptions, this.stack.length, inverseColorMode, this.use3d, this.sineOffsetForDepth)
+                if (increasing) {
+                    this.sineOffsetForDepth += this.sineOffsetInterval
+                    if(this.sineOffsetForDepth >= this.sineOffsetForDepthBound){
+                        increasing = false
+                    }
+                // } else if (this.sineOffsetForDepth >= -p.TWO_PI) {
+                } if (!increasing) {
+                    this.sineOffsetForDepth -= this.sineOffsetInterval
+                    if(this.sineOffsetForDepth <= -this.sineOffsetForDepthBound){
+                        increasing = true
+                    }
+                }
             })
             if (this.currentCell) {
                 //set current cell as visited
