@@ -36,21 +36,21 @@ const MazeContainer: React.FC<MazeContainerProps> = (
   const { use3dMode } = props.uiPreferencesStore!;
 
   const clearMaze = () => {
-    logToConsole("Clearing Maze")
+    logToConsole("Clearing Maze");
     mazeSketch.remove();
   };
   //TODO Extract functions into context
   const rerunMaze = () => {
     logger(`Removing sketch.`);
-     clearMaze()
+    clearMaze();
     //destroy current sketch
-    logToConsole("Creating new sketch")
+    logToConsole("Creating new sketch");
     createMazeSketch();
   };
 
   useEffect(() => {
     mazeContainer = document.getElementById("maze-container");
-    
+
     // //attch maze click
     // mazeContainer!.addEventListener("click", (event) =>  {
     //   handleMazeContainerClick(event)
@@ -59,11 +59,13 @@ const MazeContainer: React.FC<MazeContainerProps> = (
     createMazeSketch();
     //TODO Only make this happen when you leave the route
     return () => {
-      clearMaze()
-    }
+      clearMaze();
+    };
   });
+  let mazeIsActive = true
   const createMazeSketch = () => {
-    sketchHandler = (p: p5) => new MazeGenerator(use3dMode, p, mazeOptions);
+    sketchHandler = (p: p5) =>
+      new MazeGenerator(use3dMode, mazeIsActive, p, mazeOptions);
     logger("Maze Options:");
     loggerObj(mazeOptions);
     if (mazeContainer) {
@@ -73,6 +75,7 @@ const MazeContainer: React.FC<MazeContainerProps> = (
       };
     }
   };
+  const clickHandler = () => mazeIsActive = !mazeIsActive
   const attachEventHandlers = () => {
     window.onresize = function(event: Event) {
       logger(`
@@ -85,7 +88,12 @@ const MazeContainer: React.FC<MazeContainerProps> = (
       rerunMaze();
     };
   };
-  return <div id="maze-container"></div>;
+  return (
+    <div>
+      <div id="maze-container"></div>;
+      <button onClick={clickHandler}>PAUSE</button>
+    </div>
+  );
 };
 
 export default inject(

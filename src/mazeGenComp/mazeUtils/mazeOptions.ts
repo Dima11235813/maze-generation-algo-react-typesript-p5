@@ -16,7 +16,7 @@ export class MazeOptions {
     smallerSizeOfCellHeightWidth: number = 1
     aspectRatio: number = 1;
     maxStrokeWidth: number = 1
-    padding: number = 4;
+    padding: number = 1;
     numberOfColumns: number = 10;
     numberOfRows: number = 10;
     constructor(

@@ -33,7 +33,7 @@ export class MazeGenerator {
     sineOffsetForDepth: any = 0.0
     sineOffsetForDepthBound: any = 68
     sineOffsetInterval: any = .4
-    constructor(public use3d: boolean, p: p5, mazeOptions: MazeOptions) {
+    constructor(public use3d: boolean, public mazeIsActive: boolean, p: p5, mazeOptions: MazeOptions) {
         // this.img = p.loadImage("../../assets/exit.jpg");
         this.img = p.loadImage(img);
         // p.preload = () => {
@@ -64,7 +64,7 @@ export class MazeGenerator {
             }
             //set frame rate
             // https://p5js.org/reference/#/p5/frameRate
-            p.frameRate()
+            p.frameRate(30)
 
             //set up the grid
             for (var rowNumber = 0; rowNumber < numberOfRows; rowNumber += 1) {
@@ -219,7 +219,9 @@ export class MazeGenerator {
                     //if no visitable neighbors exist then pop a cell from the stack and check its neighbors in the next iteration
                     nextCell = this.stack.pop()
                 }
-                this.currentCell = nextCell
+                if(mazeIsActive){
+                    this.currentCell = nextCell
+                }
             }
         }
     }
