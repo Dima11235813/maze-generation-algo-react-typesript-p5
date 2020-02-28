@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
 
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import SwipeableDrawer from "@material-ui/core/SwipeableDrawer";
@@ -18,6 +18,9 @@ import styles from "./ExpandSidebar.module.scss";
 import MazeOptionsUiExpansionPanel from "../uiComponents/MazeOptionsUiExpansionPanel";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
+import { inject, observer } from "mobx-react";
+import { UiPreferencesStore } from "../stores/UiPreferencesStore";
+import { RouterStore } from "mobx-react-router";
 
 
 const useMenuStyles = makeStyles((theme: Theme) =>
@@ -36,14 +39,19 @@ const useMenuStyles = makeStyles((theme: Theme) =>
 
 const useStyles = makeStyles({
   list: {
-    width: Math.floor(window.innerWidth / 5)
+    width: Math.floor(window.innerWidth / 2)
   },
   fullList: {
     width: "auto"
   }
 });
+interface ExpandSideBarProps {
+  routerStore?: RouterStore;
+  uiPreferencesStore?: UiPreferencesStore;
+}
 
-export default function SwipeableTemporaryDrawer() {
+
+const ExpandSideBar = (props: ExpandSideBarProps) =>  {
   const menuClassStyles = useMenuStyles();
   const classes = useStyles();
   const [state, setState] = React.useState({
@@ -52,11 +60,13 @@ export default function SwipeableTemporaryDrawer() {
     bottom: false,
     right: false
   });
-
+  const { toggleMazeOptionsIsOpen, mazeOptionsIsOpen } = props.uiPreferencesStore!
   type DrawerSide = "top" | "left" | "bottom" | "right";
   const toggleDrawer = (side: DrawerSide, open: boolean) => (
     event: React.KeyboardEvent | React.MouseEvent
   ) => {
+    console.log(`Maze options menu is open: ${mazeOptionsIsOpen}`)
+    toggleMazeOptionsIsOpen()
     if (
       event &&
       event.type === "keydown" &&
@@ -176,3 +186,8 @@ export default function SwipeableTemporaryDrawer() {
     </div>
   );
 }
+
+export default inject(
+  "uiPreferencesStore",
+  "routerStore"
+)(observer(ExpandSideBar));

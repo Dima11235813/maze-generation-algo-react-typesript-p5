@@ -74,24 +74,24 @@ export default function Header(props: any) {
             >
               <MenuIcon />
             </IconButton>
-            <Button color="inherit">
-              <NavLink
-                to={APP_ROUTES.LOGIN}
-                className={styles.NavLink}
-                activeClassName={styles.SelectedLink}
-              >
-                {APP_ROUTES.LOGIN}
-              </NavLink>
-            </Button>
-            <Button color="inherit">
-              <NavLink
-                to={APP_ROUTES.MAZE}
-                className={styles.NavLink}
-                activeClassName={styles.SelectedLink}
-              >
-                {APP_ROUTES.MAZE}
-              </NavLink>
-            </Button>
+            <NavLink
+              to={APP_ROUTES.LOGIN}
+              className={styles.NavLink}
+              activeClassName={styles.SelectedLink}
+            >
+              {APP_ROUTES.LOGIN.toUpperCase()}
+            </NavLink>
+            {/* <Button color="inherit">
+            </Button> */}
+            <NavLink
+              to={APP_ROUTES.MAZE}
+              className={styles.NavLink}
+              activeClassName={styles.SelectedLink}
+            >
+              {APP_ROUTES.MAZE.toUpperCase()}
+            </NavLink>
+            {/* <Button color="inherit">
+            </Button> */}
             <ExpandSideBar />
           </Toolbar>
         </AppBar>

@@ -35,11 +35,13 @@ export class MazeGenerator {
     sineOffsetForDepthBound: any = 68
     sineOffsetInterval: any = .4
     constructor(
-        public use3d: boolean, 
-        public mazeIsActive: boolean, 
+        public mazeOptionsIsOpen: boolean,
+        public use3d: boolean,
+        public mazeIsActive: boolean,
         public frameRate: number,
-        public p: p5, 
-        public mazeOptions: MazeOptions) {
+        public p: p5,
+        public mazeOptions: MazeOptions,
+    ) {
         // this.img = p.loadImage("../../assets/exit.jpg");
         this.img = p.loadImage(img);
         // p.preload = () => {
@@ -103,10 +105,15 @@ export class MazeGenerator {
         this.logOnce = true
         //https://p5js.org/reference/#/p5/mouseClicked
         this.followMouse = false
-        p.mouseClicked = () => this.followMouse = !this.followMouse
+        p.mouseClicked = () => {
+            //Only toggle to follow mouse if click happens when menu is closed
+            if (!this.mazeOptionsIsOpen) {
+                this.followMouse = !this.followMouse
+            }
+        }
         p.draw = () => {
             this.setFrameRate()
-            console.log(`Frame rate ${p.frameRate()} passed frame rate is ${this.frameRate}`)
+            // console.log(`Frame rate ${p.frameRate()} passed frame rate is ${this.frameRate}`)
             if (this.use3d) {
                 //temp
                 // shader() sets the active shader with our shader
@@ -141,7 +148,9 @@ export class MazeGenerator {
                 let normalizedMouseX = mouseX - (mazeOptions.windowWidth / 2)
                 let normalizedMouseY = mouseY - (mazeOptions.windowHeight / 2)
                 let yTranslate = mazeOptions.view.zoomHeightDiff / mazeOptions.windowHeight
-                if (this.followMouse) {
+                
+                //Only follow mouse if maze options aren't open
+                if (this.followMouse && !this.mazeOptionsIsOpen) {
                     p.translate(
                         normalizedMouseX,
                         normalizedMouseY - (mazeOptions.windowHeight / 2 * yTranslate), mazeOptions.view.zValue

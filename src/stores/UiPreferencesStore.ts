@@ -15,6 +15,7 @@ export class UiPreferencesStore extends CommonStore {
     @observable darkModeEnable: boolean = INVERSE_COLOR_DEFAULT_SETTING
     @observable inverseColorMode: boolean = false
     @observable use3dMode: boolean = true
+    @observable mazeOptionsIsOpen: boolean = false
 
     @action updateDarkModeEnabled = (state: boolean) => {
         this.darkModeEnable = state
@@ -24,6 +25,9 @@ export class UiPreferencesStore extends CommonStore {
     }
     @action updateUse3dMode = (state: boolean) => {
         this.use3dMode = state
+    }
+    @action toggleMazeOptionsIsOpen = () => {
+        this.mazeOptionsIsOpen = !this.mazeOptionsIsOpen
     }
 }
 

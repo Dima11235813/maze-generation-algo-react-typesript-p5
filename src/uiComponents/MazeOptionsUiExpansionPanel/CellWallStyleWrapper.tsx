@@ -47,7 +47,7 @@ export const CellWallStyleWrapper = () => {
           onChange={handleSelectCellWallStyleChange}
         >
           {Object.values(CellWallOptions).map((cellWallOption: string) => (
-            <MenuItem value={cellWallOption}>{cellWallOption}</MenuItem>
+            <MenuItem key={cellWallOption} value={cellWallOption}>{cellWallOption}</MenuItem>
           ))}
         </Select>
       )}
