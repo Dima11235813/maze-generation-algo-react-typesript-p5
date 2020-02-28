@@ -31,6 +31,7 @@ interface PanelIsExpandedState {
     cellWallColor: boolean;
     mazeBackgroundColor: boolean;
     cellWallStyle: boolean;
+    frameRate: boolean;
 }
 const panelIsExpandedState: PanelIsExpandedState = {
     cellSize: true,
@@ -39,6 +40,7 @@ const panelIsExpandedState: PanelIsExpandedState = {
     cellWallColor: false,
     mazeBackgroundColor: false,
     cellWallStyle: true,
+    frameRate: false
 }
 export interface MazeOptionsUiContext {
     panelIsExpandedState: PanelIsExpandedState

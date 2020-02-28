@@ -11,6 +11,7 @@ import { MazeBackgroundColorSelectWrapper } from "./MazeOptionsUiExpansionPanel/
 import { CellWallStyleWrapper } from "./MazeOptionsUiExpansionPanel/CellWallStyleWrapper";
 import InverseColorModeToggle from "../views/AppBarItems/InverseColorModeToggle";
 import Use3dModeToggle from "../views/AppBarItems/Use3dModeToggle";
+import { FrameRateSliderWrapper } from "./MazeOptionsUiExpansionPanel/NumberBasedSelections/FrameRateSliderWrapper";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -35,6 +36,7 @@ export default function MazeOptionsUiExpansionPanel() {
           </>
         )}
       />
+      <FrameRateSliderWrapper />
       <CellSizeSliderWrapper />
       <CellWallSizeSliderWrapper />
       <CellColorSelectWrapper />

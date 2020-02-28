@@ -5,9 +5,10 @@ import { MazeOptions } from "./mazeUtils/mazeOptions"
 import { stores } from '../stores'
 import { getProjectionFor3D } from "./mazeUtils/projectionUtils"
 import { Point } from "./components/Point"
-import { mazeOptionsUiContext } from "../AppContext"
+import { mazeOptionsUiContext, p5_MazeContext } from "../AppContext"
 import { DEFAULT_Z_DISTANCE } from "../shared/constants"
 import img from "../assets/exit.jpg"
+import { useContext } from "react";
 
 export class MazeGenerator {
     //vars to hold current column and row during draw phase
@@ -33,7 +34,12 @@ export class MazeGenerator {
     sineOffsetForDepth: any = 0.0
     sineOffsetForDepthBound: any = 68
     sineOffsetInterval: any = .4
-    constructor(public use3d: boolean, public mazeIsActive: boolean, p: p5, mazeOptions: MazeOptions) {
+    constructor(
+        public use3d: boolean, 
+        public mazeIsActive: boolean, 
+        public frameRate: number,
+        public p: p5, 
+        public mazeOptions: MazeOptions) {
         // this.img = p.loadImage("../../assets/exit.jpg");
         this.img = p.loadImage(img);
         // p.preload = () => {
@@ -49,7 +55,7 @@ export class MazeGenerator {
             // }
 
             ///
-            mazeOptions.updateDynamicValues()
+            this.mazeOptions.updateDynamicValues()
             const { windowWidth,
                 windowHeight,
                 calculatedCellHeight,
@@ -64,7 +70,8 @@ export class MazeGenerator {
             }
             //set frame rate
             // https://p5js.org/reference/#/p5/frameRate
-            p.frameRate(30)
+            //https://www.geeksforgeeks.org/p5-js-framerate-function/
+            this.setFrameRate()
 
             //set up the grid
             for (var rowNumber = 0; rowNumber < numberOfRows; rowNumber += 1) {
@@ -98,6 +105,8 @@ export class MazeGenerator {
         this.followMouse = false
         p.mouseClicked = () => this.followMouse = !this.followMouse
         p.draw = () => {
+            this.setFrameRate()
+            console.log(`Frame rate ${p.frameRate()} passed frame rate is ${this.frameRate}`)
             if (this.use3d) {
                 //temp
                 // shader() sets the active shader with our shader
@@ -131,20 +140,11 @@ export class MazeGenerator {
                 }
                 let normalizedMouseX = mouseX - (mazeOptions.windowWidth / 2)
                 let normalizedMouseY = mouseY - (mazeOptions.windowHeight / 2)
-                // console.log(`
-                // X:${mouseY}
-                // Y:${mouseX}
-                // Normalized
-                // X:${normalizedMouseX}
-                // Y:${normalizedMouseY}
-                // Window Height: ${mazeOptions.windowHeight}
-
-                // `)
                 let yTranslate = mazeOptions.view.zoomHeightDiff / mazeOptions.windowHeight
                 if (this.followMouse) {
                     p.translate(
                         normalizedMouseX,
-                        normalizedMouseY - (mazeOptions.windowHeight /  2 * yTranslate), mazeOptions.view.zValue
+                        normalizedMouseY - (mazeOptions.windowHeight / 2 * yTranslate), mazeOptions.view.zValue
                     )
                 } else {
                     p.translate(
@@ -182,13 +182,13 @@ export class MazeGenerator {
                 cell.show(mazeOptions, this.stack.length, inverseColorMode, this.use3d, this.sineOffsetForDepth)
                 if (increasing) {
                     this.sineOffsetForDepth += this.sineOffsetInterval
-                    if(this.sineOffsetForDepth >= this.sineOffsetForDepthBound){
+                    if (this.sineOffsetForDepth >= this.sineOffsetForDepthBound) {
                         increasing = false
                     }
-                // } else if (this.sineOffsetForDepth >= -p.TWO_PI) {
+                    // } else if (this.sineOffsetForDepth >= -p.TWO_PI) {
                 } if (!increasing) {
                     this.sineOffsetForDepth -= this.sineOffsetInterval
-                    if(this.sineOffsetForDepth <= -this.sineOffsetForDepthBound){
+                    if (this.sineOffsetForDepth <= -this.sineOffsetForDepthBound) {
                         increasing = true
                     }
                 }
@@ -219,12 +219,13 @@ export class MazeGenerator {
                     //if no visitable neighbors exist then pop a cell from the stack and check its neighbors in the next iteration
                     nextCell = this.stack.pop()
                 }
-                if(mazeIsActive){
+                if (mazeIsActive) {
                     this.currentCell = nextCell
                 }
             }
         }
     }
+    setFrameRate = () => this.p.frameRate(this.frameRate)
     removeWalls = (currentCell: Cell, nextCell: Cell) => {
         //if the current cell and the next cell share the same index column
         //it means they're above current is above next or visa versa

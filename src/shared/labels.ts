@@ -5,5 +5,7 @@ export enum Labels {
     CELL_COLOR = "Cell Color",
     CELL_WALL_COLOR = "Cell Wall Color",
     MAZE_BACKGROUND_COLOR = "Maze Background Color",
-    CELL_WALL_STYLE = "Cell Wall Style"
+    CELL_WALL_STYLE = "Cell Wall Style",
+    //Rendering
+    FRAME_RATE = "Frame Rate"
 }

@@ -16,7 +16,9 @@ export const mazeDefaultsStorageKeys = {
     cellSizeKey: "cellSizeKey",
     cellWallSizeKey: "cellWallSizeKey",
     //CELL WALL SHAPE
-    cellWallStrokeCapStyleKey: "cellWallStrokeCapStyleKey"
+    cellWallStrokeCapStyleKey: "cellWallStrokeCapStyleKey",
+    //Render
+    frameRateKey: "frameRateKey"
 }
 
 
@@ -33,6 +35,9 @@ export const storageUtils = {
         localStorage.setItem(mazeDefaultsStorageKeys.cellWallSizeKey, mazeOptions.cellWallSize.toString())
         //CELL SHAPE STYLE
         localStorage.setItem(mazeDefaultsStorageKeys.cellWallStrokeCapStyleKey, mazeOptions.cellWallStrokeCapStyle)
+        //Frame Rate
+        localStorage.setItem(mazeDefaultsStorageKeys.frameRateKey, mazeOptions.frameRate.toString())
+
     },
     updateMazeOptionsFromStorage: (mazeOptions: MazeOptions) => {
         let colorUtils = new ColorUtils()
@@ -47,6 +52,8 @@ export const storageUtils = {
         let cellWallSize = localStorage.getItem(mazeDefaultsStorageKeys.cellWallSizeKey)
         //CELL SHAPE STYLE
         let cellWallStrokeCapStyle = localStorage.getItem(mazeDefaultsStorageKeys.cellWallStrokeCapStyleKey)
+        //Render
+        let frameRate = localStorage.getItem(mazeDefaultsStorageKeys.frameRateKey)
 
 
         //BACKGROUND
@@ -62,6 +69,7 @@ export const storageUtils = {
         mazeOptions.cellWallSize = parseInt(cellWallSize ? cellWallSize : `${mazeDefaultOptions.defaultCellWallSize}`)
         //CELL SHAPE STYLE
         mazeOptions.cellWallStrokeCapStyle = cellWallStrokeCapStyle ? cellWallStrokeCapStyle : `${mazeDefaultOptions.defaultStrokeCapStyle}`
-        //TODO Do I need to return the options
+        //Render
+        mazeOptions.frameRate = parseInt(frameRate ? frameRate : `${mazeDefaultOptions.frameRate}`)
     }
 }

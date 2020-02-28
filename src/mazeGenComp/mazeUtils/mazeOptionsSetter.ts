@@ -60,4 +60,9 @@ export class MazeOptionsSetter {
         //   );
 
     }
+    handleFrameRateChange = (rate: number) => {
+        this._mazeOptions.frameRate = Math.floor(rate)
+        localStorage.setItem(mazeDefaultsStorageKeys.frameRateKey, rate.toString())
+        logger(`New frame rate is ${this._mazeOptions.cellSize}`)
+    }
 }

@@ -63,9 +63,12 @@ const MazeContainer: React.FC<MazeContainerProps> = (
     };
   });
   let mazeIsActive = true
+  let context = useContext(p5_MazeContext)
   const createMazeSketch = () => {
+    const { mazeOptions } = context
+    const { frameRate } = mazeOptions
     sketchHandler = (p: p5) =>
-      new MazeGenerator(use3dMode, mazeIsActive, p, mazeOptions);
+      new MazeGenerator(use3dMode, mazeIsActive, frameRate, p, mazeOptions);
     logger("Maze Options:");
     loggerObj(mazeOptions);
     if (mazeContainer) {
@@ -77,7 +80,7 @@ const MazeContainer: React.FC<MazeContainerProps> = (
   };
   const clickHandler = () => mazeIsActive = !mazeIsActive
   const attachEventHandlers = () => {
-    window.onresize = function(event: Event) {
+    window.onresize = function (event: Event) {
       logger(`
         New Widow Width ${window.innerWidth}
         New Window Height ${window.innerHeight}

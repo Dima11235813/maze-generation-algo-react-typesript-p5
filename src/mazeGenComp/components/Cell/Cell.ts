@@ -170,7 +170,7 @@ export class Cell {
                 const drawProjectionOfCell = (mirror = false) => {
                     this._p.push()
                     //translate to consider shape origin point have central alignment
-                    let xyOffset = mazeOptions.cellSize
+                    let xyOffset = mazeOptions.cellSize / 2
                     this._p.translate(
                         xyOffset + projectedXyPoint.x + this.paddingToApplyToLeft,
                         xyOffset + projectedXyPoint.y + this.paddingToApplyToTop,

@@ -19,6 +19,7 @@ export class MazeOptions {
     padding: number = 1;
     numberOfColumns: number = 10;
     numberOfRows: number = 10;
+    //rendering
     constructor(
         //SCENE
         public backgroundColor: Color = mazeDefaultOptions.defaultBackgroundColor,
@@ -30,6 +31,7 @@ export class MazeOptions {
         public cellWallSize : number = mazeDefaultOptions.defaultCellWallSize,
         //CELL WALL SHAPE,
         public cellWallStrokeCapStyle: string = mazeDefaultOptions.defaultStrokeCapStyle,
+        public frameRate: number = mazeDefaultOptions.frameRate
     ) {
         //SET UP DEFAULTS FOR MAZE if not using storage
         //SCENE
