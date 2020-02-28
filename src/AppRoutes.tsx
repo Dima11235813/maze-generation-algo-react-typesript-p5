@@ -8,6 +8,7 @@ import LoginView from "./views/Login/LoginView";
 
 //
 import { APP_ROUTES } from "./utils/routeUtils";
+import { errorHandler } from "./errorHandler";
 
 const accountRoute = `/${APP_ROUTES.ACCOUNT}`;
 const loginRoute = `/${APP_ROUTES.LOGIN}`;
@@ -15,7 +16,11 @@ const mazeRoute = `/${APP_ROUTES.MAZE}`;
 
 export function AppRoutes() {
   return [
-    <Route key="" exact path="/" component={Home} />,
+    <Route key="" exact path="/" render={() => {
+      console.log('tiggering error')
+      errorHandler.report(`User tried to click on the home page but that component isn't developed, click maze instead next time, genius!`)
+      return <Home/>
+    }} />,
     <Route key={mazeRoute} exact path={mazeRoute} component={MazeContainer} />,
     <Route key={loginRoute} exact path={loginRoute} component={LoginView} />,
     <Route key={accountRoute} exact path={accountRoute} component={Home} />

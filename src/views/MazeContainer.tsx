@@ -65,6 +65,7 @@ const MazeContainer: React.FC<MazeContainerProps> = (
   let mazeIsActive = true
   let context = useContext(p5_MazeContext)
   const createMazeSketch = () => {
+
     const { mazeOptions } = context
     const { frameRate } = mazeOptions
     sketchHandler = (p: p5) =>

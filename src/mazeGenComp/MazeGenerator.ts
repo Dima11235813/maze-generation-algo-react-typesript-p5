@@ -136,7 +136,7 @@ export class MazeGenerator {
                 p.directionalLight(0, 102, 255, -1, 0, 0);
 
                 // Yellow spotlight from the front
-                p.pointLight(mouseY, mouseX, mazeOptions.windowHeight, 255, 255, 255);
+                p.pointLight(mouseX, mouseY, mazeOptions.windowHeight, 255, 255, 255);
                 // p.rotateY(1.75);
                 // p.rotateX(1.25);
                 // p.rotateX(1.25);
@@ -162,6 +162,7 @@ export class MazeGenerator {
                         mazeOptions.view.zValue
                     )
                 }
+
             }
 
             ///

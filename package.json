@@ -44,6 +44,7 @@
     "react-scripts": "3.1.2",
     "react-select": "^3.0.8",
     "react-simple-range": "^1.6.0",
+    "stackdriver-errors-js": "^0.8.0",
     "typescript": "3.6.3"
   },
   "scripts": {
