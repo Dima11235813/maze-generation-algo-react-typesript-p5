@@ -8,8 +8,6 @@ import { Point } from "./components/Point"
 import { mazeOptionsUiContext, p5_MazeContext } from "../AppContext"
 import { DEFAULT_Z_DISTANCE } from "../shared/constants"
 import img from "../assets/exit.jpg"
-import { useContext } from "react";
-import { MazeViews } from "../stores/MazeViewStore";
 
 export class MazeGenerator {
     //vars to hold current column and row during draw phase
@@ -37,7 +35,7 @@ export class MazeGenerator {
     sineOffsetInterval: any = .4
     constructor(
         public mazeOptionsIsOpen: boolean,
-        public mazeView: MazeViews,
+        public mazeView: number,
         public use3d: boolean,
         public animateMirror: boolean,
         public mazeIsActive: boolean,
@@ -134,6 +132,7 @@ export class MazeGenerator {
 
                 // Orange point light on the right
                 p.pointLight(255, 255, 255, 0, 0, 600);
+                p.pointLight(255, 255, 255, 0, 0, -600);
 
                 // Blue directional light from the left
                 p.directionalLight(0, 102, 255, -1, 0, 0);
@@ -143,17 +142,14 @@ export class MazeGenerator {
                 // p.rotateY(1.75);
                 // p.rotateX(1.25);
                 // p.rotateX(1.25);
-                switch (mazeView) {
-                    case MazeViews.MAIN:
-                        p.rotateX(p.PI);
-                    case MazeViews.ONE_HALF:
-                        p.rotateX(p.PI / 2);
-                    case MazeViews.ONE_THIRD:
-                        p.rotateX(p.PI / 3);
-                    case MazeViews.ONE_FOURTH:
-                        p.rotateX(p.PI / 4);
-                    default:
-                        p.rotateX(p.PI / 3);
+                let viewRotation = 0
+                if (mazeView === 0) {
+                    p.rotateX(p.PI / 3);
+                } else {
+                    // let viewRotation = (p.PI / ((mazeView / p.PI))% p.PI)
+                    let viewRotation = p.sin(mazeView * 30) * p.PI
+                    console.log(viewRotation)
+                    p.rotateX(viewRotation);
                 }
                 let normalizedMouseX = mouseX - (mazeOptions.windowWidth / 2)
                 let normalizedMouseY = mouseY - (mazeOptions.windowHeight / 2)
@@ -163,7 +159,10 @@ export class MazeGenerator {
                 if (this.followMouse && !this.mazeOptionsIsOpen) {
                     p.translate(
                         normalizedMouseX,
-                        normalizedMouseY - (mazeOptions.windowHeight / 2 * yTranslate), mazeOptions.view.zValue
+                        viewRotation > 0 ?
+                            normalizedMouseY - (mazeOptions.windowHeight / 2 * yTranslate) :
+                            -normalizedMouseY - (mazeOptions.windowHeight / 2 * yTranslate)
+                        , mazeOptions.view.zValue
                     )
                 } else {
                     p.translate(

@@ -2,21 +2,11 @@ import { action, observable } from 'mobx';
 import { CommonStore } from "./CommonStore"
 import { RootStore } from "./RootStore";
 
-export enum MazeViews {
-    MAIN,
-    ONE_HALF,
-    ONE_THIRD,
-    ONE_FOURTH,
-    ONE_FIFTH,
-    FOLLOW,
-    BIRDS_EYE,
-}
-
 export class MazeViewStore extends CommonStore {
     constructor(store: RootStore) {
         super(store);
     }
-    @observable mazeView: MazeViews = MazeViews.MAIN
+    @observable mazeView: number = 0
 
     @action changeView = () => {
         this.mazeView++
