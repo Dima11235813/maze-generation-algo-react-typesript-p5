@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 // import PropTypes from "prop-types";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -15,10 +15,17 @@ import MenuIcon from "@material-ui/icons/Menu";
 //Components
 import ExpandSideBar from "../../components/ExpandSidebar";
 import { NavLink } from "react-router-dom";
-import { APP_ROUTES } from "../../utils/routeUtils";
+import { APP_ROUTES, MAIN_MENU_OPTIONS } from "../../utils/routeUtils";
 import { makeStyles, createStyles, Theme, Button } from "@material-ui/core";
 
 import styles from "./Header.module.scss";
+import { mazeOptionsUiContext, p5_MazeContext } from "../../AppContext";
+import { MazeViewStore } from "../../stores/MazeViewStore";
+import { inject, observer } from "mobx-react";
+
+interface HeaderProps {
+  mazeViewStore?: MazeViewStore;
+}
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -58,13 +65,16 @@ function HideOnScroll(props: any) {
 //   window: PropTypes.func
 // };
 
-export default function Header(props: any) {
+const Header = (props: HeaderProps) => {
   const classes = useStyles();
+  const mazeContext = useContext(p5_MazeContext);
+  const { p5_MazeFuncs } = mazeContext;
+  const { changeView } = props.mazeViewStore!;
   return (
     <div className={classes.root}>
       <CssBaseline />
       <HideOnScroll {...props}>
-        <AppBar >
+        <AppBar>
           <Toolbar>
             <IconButton
               edge="start"
@@ -81,8 +91,6 @@ export default function Header(props: any) {
             >
               {APP_ROUTES.LOGIN.toUpperCase()}
             </NavLink>
-            {/* <Button color="inherit">
-            </Button> */}
             <NavLink
               to={APP_ROUTES.MAZE}
               className={styles.NavLink}
@@ -90,8 +98,19 @@ export default function Header(props: any) {
             >
               {APP_ROUTES.MAZE.toUpperCase()}
             </NavLink>
-            {/* <Button color="inherit">
-            </Button> */}
+            <Button
+              onClick={() => {
+                changeView();
+              }}
+              color="inherit"
+            >
+              <Typography>
+                {MAIN_MENU_OPTIONS.ENABLE_FOLLOW_CELL_CREATOR}
+              </Typography>
+            </Button>
+            <Button color="inherit">
+              <Typography>{MAIN_MENU_OPTIONS.SAVE}</Typography>
+            </Button>
             <ExpandSideBar />
           </Toolbar>
         </AppBar>
@@ -99,4 +118,5 @@ export default function Header(props: any) {
       <Toolbar />
     </div>
   );
-}
+};
+export default inject("mazeViewStore")(observer(Header));

@@ -11,6 +11,7 @@ export interface P5_MazeContext {
 }
 export interface P5_MazeFuncs {
     resetMaze: Function,
+    changeView: Function,
 }
 let mazeOptions = new MazeOptions();
 let mazeOptionsSetter = new MazeOptionsSetter(mazeOptions);
@@ -18,7 +19,8 @@ export const P5_MazeContextInitialValue: P5_MazeContext = {
     mazeOptions,
     mazeOptionsSetter,
     p5_MazeFuncs: {
-        resetMaze: () => { }
+        resetMaze: () => { },
+        changeView: () => { }
     }
 }
 

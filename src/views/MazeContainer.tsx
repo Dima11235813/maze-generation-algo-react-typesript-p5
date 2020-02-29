@@ -8,10 +8,12 @@ import { inject, observer } from "mobx-react";
 import { RouterStore } from "mobx-react-router";
 import { UiPreferencesStore } from "../stores/UiPreferencesStore";
 import { logToConsole } from "../shared/logger";
+import { MazeViewStore } from "../stores/MazeViewStore";
 
 interface MazeContainerProps {
   routerStore?: RouterStore;
   uiPreferencesStore?: UiPreferencesStore;
+  mazeViewStore?: MazeViewStore;
 }
 
 const MazeContainer: React.FC<MazeContainerProps> = (
@@ -38,6 +40,7 @@ const MazeContainer: React.FC<MazeContainerProps> = (
     mazeOptionsIsOpen,
     animateMirror
   } = props.uiPreferencesStore!;
+  const { mazeView } = props.mazeViewStore!;
 
   const clearMaze = () => {
     logToConsole("Clearing Maze");
@@ -67,13 +70,12 @@ const MazeContainer: React.FC<MazeContainerProps> = (
     };
   });
   let mazeIsActive = true;
-  let context = useContext(p5_MazeContext);
   const createMazeSketch = () => {
-    const { mazeOptions } = context;
     const { frameRate } = mazeOptions;
     sketchHandler = (p: p5) =>
       new MazeGenerator(
         mazeOptionsIsOpen,
+        mazeView, 
         use3dMode,
         animateMirror,
         mazeIsActive,
@@ -90,7 +92,7 @@ const MazeContainer: React.FC<MazeContainerProps> = (
       };
     }
   };
-  const clickHandler = () => (mazeIsActive = !mazeIsActive);
+  // const clickHandler = () => (mazeIsActive = !mazeIsActive);
   const attachEventHandlers = () => {
     window.onresize = function(event: Event) {
       logger(`
@@ -112,5 +114,6 @@ const MazeContainer: React.FC<MazeContainerProps> = (
 
 export default inject(
   "uiPreferencesStore",
-  "routerStore"
+  "routerStore",
+  "mazeViewStore"
 )(observer(MazeContainer));

@@ -139,7 +139,7 @@ const ExpandSideBar = (props: ExpandSideBarProps) =>  {
         color="inherit"
         aria-label="menu"
       >
-        <AppIcon />
+        {/* <AppIcon /> */}
       </IconButton>
       <Button onClick={toggleDrawer("left", true)}>
         <Typography>Left</Typography>

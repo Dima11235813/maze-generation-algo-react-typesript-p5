@@ -32,7 +32,6 @@ export class LoginView extends React.PureComponent<
     return (
       <Mutation<LoginMutation, LoginMutationVariables>
         update={(cache, { data }) => {
-          debugger
           if (!data || !data.login) {
             return;
           }
@@ -47,7 +46,6 @@ export class LoginView extends React.PureComponent<
         {(mutate, { client }) => (
           <LoginForm
             onSubmit={async (data: any) => {
-              debugger;
               // optional reset cache
               await client!.resetStore();
               const response = await mutate({

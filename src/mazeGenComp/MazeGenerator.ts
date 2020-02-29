@@ -9,6 +9,7 @@ import { mazeOptionsUiContext, p5_MazeContext } from "../AppContext"
 import { DEFAULT_Z_DISTANCE } from "../shared/constants"
 import img from "../assets/exit.jpg"
 import { useContext } from "react";
+import { MazeViews } from "../stores/MazeViewStore";
 
 export class MazeGenerator {
     //vars to hold current column and row during draw phase
@@ -36,6 +37,7 @@ export class MazeGenerator {
     sineOffsetInterval: any = .4
     constructor(
         public mazeOptionsIsOpen: boolean,
+        public mazeView: MazeViews,
         public use3d: boolean,
         public animateMirror: boolean,
         public mazeIsActive: boolean,
@@ -141,15 +143,22 @@ export class MazeGenerator {
                 // p.rotateY(1.75);
                 // p.rotateX(1.25);
                 // p.rotateX(1.25);
-                p.rotateX(p.PI / 3);
-                if (this.logOnce) {
-                    // console.log(p)
-                    this.logOnce = false
+                switch (mazeView) {
+                    case MazeViews.MAIN:
+                        p.rotateX(p.PI);
+                    case MazeViews.ONE_HALF:
+                        p.rotateX(p.PI / 2);
+                    case MazeViews.ONE_THIRD:
+                        p.rotateX(p.PI / 3);
+                    case MazeViews.ONE_FOURTH:
+                        p.rotateX(p.PI / 4);
+                    default:
+                        p.rotateX(p.PI / 3);
                 }
                 let normalizedMouseX = mouseX - (mazeOptions.windowWidth / 2)
                 let normalizedMouseY = mouseY - (mazeOptions.windowHeight / 2)
                 let yTranslate = mazeOptions.view.zoomHeightDiff / mazeOptions.windowHeight
-                
+
                 //Only follow mouse if maze options aren't open
                 if (this.followMouse && !this.mazeOptionsIsOpen) {
                     p.translate(
