@@ -143,14 +143,17 @@ export class MazeGenerator {
                 // p.rotateX(1.25);
                 // p.rotateX(1.25);
                 let viewRotation = 0
+                p.angleMode(p.RADIANS)
+                // p.angleMode(p.DEGREES)
                 if (mazeView === 0) {
-                    p.rotateX(p.PI / 3);
+                    p.rotateX(p.PI / 3)
+                    // p.rotateX(66);
                 } else {
-                    // let viewRotation = (p.PI / ((mazeView / p.PI))% p.PI)
-                    let viewRotation = p.sin(mazeView * 30) * p.PI
-                    console.log(viewRotation)
+                    // viewRotation = (p.PI / (((mazeView + 2 % 9) / p.PI)))
+                    viewRotation = p.sin((mazeView % 6) * 30) * p.PI
                     p.rotateX(viewRotation);
                 }
+                console.log(`View Rotation ${viewRotation}`)
                 let normalizedMouseX = mouseX - (mazeOptions.windowWidth / 2)
                 let normalizedMouseY = mouseY - (mazeOptions.windowHeight / 2)
                 let yTranslate = mazeOptions.view.zoomHeightDiff / mazeOptions.windowHeight
@@ -159,9 +162,10 @@ export class MazeGenerator {
                 if (this.followMouse && !this.mazeOptionsIsOpen) {
                     p.translate(
                         normalizedMouseX,
-                        viewRotation > 0 ?
-                            normalizedMouseY - (mazeOptions.windowHeight / 2 * yTranslate) :
-                            -normalizedMouseY - (mazeOptions.windowHeight / 2 * yTranslate)
+                        (viewRotation > -1.8 && viewRotation < 1.8) ?
+                            // -normalizedMouseY + (mazeOptions.windowHeight / 2 * yTranslate) :
+                            normalizedMouseY :
+                            -normalizedMouseY
                         , mazeOptions.view.zValue
                     )
                 } else {
