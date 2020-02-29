@@ -1,0 +1,49 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders without crashing 1`] = `
+<div
+  className="makeStyles-root-1"
+>
+  <WithStyles(ForwardRef(Grid))
+    alignItems="center"
+    container={true}
+    spacing={2}
+  >
+    <WithStyles(ForwardRef(Grid))
+      item={true}
+    >
+      <FormatSizeIcon />
+    </WithStyles(ForwardRef(Grid))>
+    <WithStyles(ForwardRef(Grid))
+      item={true}
+      xs={true}
+    >
+      <WithStyles(ForwardRef(Slider))
+        aria-labelledby="input-slider"
+        onChange={[Function]}
+        value={5}
+      />
+    </WithStyles(ForwardRef(Grid))>
+    <WithStyles(ForwardRef(Grid))
+      item={true}
+    >
+      <WithStyles(ForwardRef(Input))
+        className="makeStyles-input-2"
+        inputProps={
+          Object {
+            "aria-labelledby": "input-slider",
+            "max": 55.55555555555556,
+            "min": 3,
+            "step": 1,
+            "type": "number",
+          }
+        }
+        margin="dense"
+        onBlur={[Function]}
+        onChange={[Function]}
+        value={5}
+      />
+    </WithStyles(ForwardRef(Grid))>
+  </WithStyles(ForwardRef(Grid))>
+</div>
+`;

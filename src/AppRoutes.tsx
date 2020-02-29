@@ -17,8 +17,7 @@ const mazeRoute = `/${APP_ROUTES.MAZE}`;
 export function AppRoutes() {
   return [
     <Route key="" exact path="/" render={() => {
-      console.log('tiggering error')
-      errorHandler.report(`User tried to click on the home page but that component isn't developed, click maze instead next time, genius!`)
+      //TODO Add page logging for google analytics integration
       return <Home/>
     }} />,
     <Route key={mazeRoute} exact path={mazeRoute} component={MazeContainer} />,

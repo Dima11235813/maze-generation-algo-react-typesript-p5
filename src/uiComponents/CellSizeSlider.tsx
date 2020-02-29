@@ -9,7 +9,7 @@ import FormatSize from "@material-ui/icons/FormatSize";
 import { MazeOptionsSetter } from "../mazeGenComp/mazeUtils/mazeOptionsSetter";
 import { CELL_MIN_SIZE, MIN_NUMBER_OF_CELLS_HORIZONTALLY, CELL_SIZE_INCREMENT_INTERVAL } from "../shared/constants";
 
-interface CellSizeSlider {
+export interface CellSizeSliderProps {
   mazeOptionsSetter: MazeOptionsSetter;
   onSizeChange: Function;
   cellSize: number;
@@ -17,7 +17,7 @@ interface CellSizeSlider {
 
 }
 
-const CellSizeSlider = (props: CellSizeSlider) => {
+const CellSizeSlider = (props: CellSizeSliderProps) => {
   const { mazeOptionsSetter, windowWidth, cellSize, onSizeChange } = props!;
   //cell width rules
   let maxCellSize = windowWidth / MIN_NUMBER_OF_CELLS_HORIZONTALLY;
