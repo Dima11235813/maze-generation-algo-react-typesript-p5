@@ -25,7 +25,6 @@ export class MazeGenerator {
     //TODO Set up builder class for many options handling
     cam: any
     theShader: any = undefined
-    logOnce: boolean
     zoomValue: number = DEFAULT_Z_DISTANCE
     img: any
     followMouse: boolean
@@ -33,6 +32,18 @@ export class MazeGenerator {
     sineOffsetForDepth: any = 0.0
     sineOffsetForDepthBound: any = 68
     sineOffsetInterval: any = .4
+    viewRotation: number;
+    //Metrics
+    currentCellNumber = 0
+    numberOfCells: number = 100
+    intervalForDisplayOfMetrics: number = 40
+    numberOfFramesDrawn: number = 0
+    logMetrics: () => void;
+    mazeGenerationComplete: boolean = false
+    loggedMazeGenCompleteMetrics: boolean;
+    startTime: Date
+    endTime: Date;
+    runTime: number = 0
     constructor(
         public mazeOptionsIsOpen: boolean,
         public mazeView: number,
@@ -43,6 +54,10 @@ export class MazeGenerator {
         public p: p5,
         public mazeOptions: MazeOptions,
     ) {
+        this.startTime = new Date()
+        this.endTime = this.startTime
+        console.log(`Maze gen constructor triggered at: ${this.startTime}`)
+        //TODO set timers for temp hack until I put in better typing
         // this.img = p.loadImage("../../assets/exit.jpg");
         this.img = p.loadImage(img);
         // p.preload = () => {
@@ -86,7 +101,9 @@ export class MazeGenerator {
                     logColumnDuringCreation(columnNumber)
 
                     //make a cell
+                    this.currentCellNumber += 1
                     let cell = new Cell(
+                        this.currentCellNumber,
                         columnNumber,
                         rowNumber,
                         p,
@@ -102,9 +119,14 @@ export class MazeGenerator {
 
             //set current cell as first
             this.currentCell = this.grid[0]
+            //set up metrics numbers
+            this.numberOfCells = this.mazeOptions.numberOfColumns * this.mazeOptions.numberOfRows
+            console.log(`Number of cells ${this.numberOfCells}`)
+            this.intervalForDisplayOfMetrics = 120 //Math.floor(this.numberOfCells / 20)
+            console.log(`interval for display of metrics is every ${this.intervalForDisplayOfMetrics} frames`)
         }
-        this.logOnce = true
         //https://p5js.org/reference/#/p5/mouseClicked
+        //TODO Figure out how to prevent menu clicks from being registered by p5 internals
         this.followMouse = false
         p.mouseClicked = () => {
             //Only toggle to follow mouse if click happens when menu is closed
@@ -112,9 +134,53 @@ export class MazeGenerator {
                 this.followMouse = !this.followMouse
             }
         }
-        p.draw = () => {
+        this.logMetrics = () => {
+            //keep track of how many frames were drawn
             this.setFrameRate()
-            // console.log(`Frame rate ${p.frameRate()} passed frame rate is ${this.frameRate}`)
+            //calculate number of cells to be created
+            //set up interval for logging metrics based on number of times logged for entirity of maze generation
+            if (!this.mazeGenerationComplete && this.numberOfFramesDrawn % this.intervalForDisplayOfMetrics === 0) {
+                let numberOfVisitsEstimate = 2.5
+                let numberOfEstimatedSeconds = (this.numberOfCells * numberOfVisitsEstimate) / p.frameRate()
+                let estimatedMinutes = Math.floor(numberOfEstimatedSeconds / 60)
+                let estimatedSeconds = Math.floor(numberOfEstimatedSeconds * 100)
+                let estimatedRunTime = `${estimatedMinutes}:${estimatedSeconds}`
+                console.log(`
+                FRAME RATE: ${frameRate}
+                Frame rate from p.frameRate() = ${p.frameRate()} 
+                Passed frame rate is ${this.frameRate}
+                Extected run time is: ${estimatedRunTime} 
+                View Rotation ${this.viewRotation}
+                Number of visits ${this.numberOfFramesDrawn}
+                Cells Created ${this.numberOfCells}
+                When Maze Complete Visits to Number of Cells Ratio
+                ${(this.numberOfFramesDrawn / this.numberOfCells)}
+                Stack size ${this.stack.length}
+                `)
+            }
+            if (this.mazeGenerationComplete && !this.loggedMazeGenCompleteMetrics) {
+                //Convert date to unix time for milliseconds comparison
+                this.runTime = Math.floor(this.endTime.getTime() / 1000 - this.startTime.getTime() / 1000)
+                console.log(`Run time in seconds ${this.runTime}`)
+                let minutes = this.runTime > 60 ? Math.floor(this.runTime / 60) : 0
+                let seconds = this.runTime > 60 ? this.runTime % 60 : this.runTime
+                console.log(`
+                Start Time  ${this.startTime}
+                End Time ${this.endTime}
+                Run time: ${minutes}:${seconds}`)
+                this.loggedMazeGenCompleteMetrics = true
+
+            }
+        }
+        this.loggedMazeGenCompleteMetrics = false
+        this.viewRotation = 0
+        p.draw = () => {
+            //Show start time of maze and store in variable for later reference
+            if (this.numberOfFramesDrawn === 0) {
+                this.startTime = new Date()
+                console.log(`Maze generation started at: ${this.startTime}`)
+            }
+            this.logMetrics()
             if (this.use3d) {
                 //temp
                 // shader() sets the active shader with our shader
@@ -142,7 +208,6 @@ export class MazeGenerator {
                 // p.rotateY(1.75);
                 // p.rotateX(1.25);
                 // p.rotateX(1.25);
-                let viewRotation = 0
                 p.angleMode(p.RADIANS)
                 // p.angleMode(p.DEGREES)
                 if (mazeView === 0) {
@@ -150,10 +215,9 @@ export class MazeGenerator {
                     // p.rotateX(66);
                 } else {
                     // viewRotation = (p.PI / (((mazeView + 2 % 9) / p.PI)))
-                    viewRotation = p.sin((mazeView % 6) * 30) * p.PI
-                    p.rotateX(viewRotation);
+                    this.viewRotation = p.sin((mazeView % 6) * 30) * p.PI
+                    p.rotateX(this.viewRotation);
                 }
-                console.log(`View Rotation ${viewRotation}`)
                 let normalizedMouseX = mouseX - (mazeOptions.windowWidth / 2)
                 let normalizedMouseY = mouseY - (mazeOptions.windowHeight / 2)
                 let yTranslate = mazeOptions.view.zoomHeightDiff / mazeOptions.windowHeight
@@ -162,7 +226,7 @@ export class MazeGenerator {
                 if (this.followMouse && !this.mazeOptionsIsOpen) {
                     p.translate(
                         normalizedMouseX,
-                        (viewRotation > -1.8 && viewRotation < 1.8) ?
+                        (this.viewRotation > -1.8 && this.viewRotation < 1.8) ?
                             // -normalizedMouseY + (mazeOptions.windowHeight / 2 * yTranslate) :
                             normalizedMouseY :
                             -normalizedMouseY
@@ -246,6 +310,13 @@ export class MazeGenerator {
                     this.currentCell = nextCell
                 }
             }
+            //If stack is empty that means we're back to origin and maze gen is complete
+            if (!this.mazeGenerationComplete && this.stack.length === 0) {
+                this.endTime = new Date()
+                console.log(`Maze gen ended at ${this.endTime}`)
+                this.mazeGenerationComplete = true
+            }
+            this.numberOfFramesDrawn += 1
         }
     }
     setFrameRate = () => this.p.frameRate(this.frameRate)

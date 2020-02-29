@@ -30,6 +30,7 @@ const MazeContainer: React.FC<MazeContainerProps> = (
   //get the window dimension
   // let controlsTopPadding = 100
   // const mazeContainerRef = useRef(undefined);
+  
 
   let mazeContext: P5_MazeContext = useContext(p5_MazeContext);
   const { mazeOptions, p5_MazeFuncs } = mazeContext!;

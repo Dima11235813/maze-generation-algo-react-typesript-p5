@@ -30,6 +30,7 @@ export class Cell {
     numberOfDecreasesInStack = 0
     potentialExitToMake: boolean = false
     constructor(
+        public cellNumber: number,
         public column: any,
         public row: any,
         private _p: p5,
