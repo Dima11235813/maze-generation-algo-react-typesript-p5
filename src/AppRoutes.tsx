@@ -18,6 +18,7 @@ export function AppRoutes() {
   return [
     <Route key="" exact path="/" render={() => {
       //TODO Add page logging for google analytics integration
+      errorHandler.report("Test")
       return <Home/>
     }} />,
     <Route key={mazeRoute} exact path={mazeRoute} component={MazeContainer} />,

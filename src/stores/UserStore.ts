@@ -9,7 +9,7 @@ export class UserStore extends CommonStore {
     //https://mobx.js.org/refguide/observable-decorator.html
     @observable user: any | undefined 
 
-    @action updateInverseColorMode = (state: boolean) => {
+    @action toggleInverseColorMode = (state: boolean) => {
         // this.user = state
     }
 }

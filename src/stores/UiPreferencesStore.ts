@@ -16,18 +16,22 @@ export class UiPreferencesStore extends CommonStore {
     @observable inverseColorMode: boolean = false
     @observable use3dMode: boolean = true
     @observable mazeOptionsIsOpen: boolean = false
+    @observable animateMirror: boolean = false
 
-    @action updateDarkModeEnabled = (state: boolean) => {
-        this.darkModeEnable = state
+    @action updateDarkModeEnabled = () => {
+        this.darkModeEnable = !this.darkModeEnable
     }
-    @action updateInverseColorMode = (state: boolean) => {
-        this.inverseColorMode = state
+    @action toggleInverseColorMode = () => {
+        this.inverseColorMode = !this.inverseColorMode
     }
-    @action updateUse3dMode = (state: boolean) => {
-        this.use3dMode = state
+    @action toggleUpdateUse3dMode = () => {
+        this.use3dMode = !this.use3dMode
     }
     @action toggleMazeOptionsIsOpen = () => {
         this.mazeOptionsIsOpen = !this.mazeOptionsIsOpen
+    }
+    @action toggleAnimateMirror = () => {
+        this.animateMirror = !this.animateMirror
     }
 }
 
@@ -42,5 +46,5 @@ export class UiPreferencesStore extends CommonStore {
 //     darkModeEnable: observable,
 //     inverseColorMode: observable,
 //     updateDarkModeEnabled: action,
-//     updateInverseColorMode: action
+//     toggleInverseColorMode: action
 // })

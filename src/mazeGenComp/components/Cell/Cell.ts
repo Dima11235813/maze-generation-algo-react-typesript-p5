@@ -61,6 +61,7 @@ export class Cell {
         stackLength: number,
         inverseColorMode: boolean,
         use3d: boolean,
+        animateMirror: boolean,
         sineOffsetForDepth: number
     ) => {
         this.depthOffset = sineOffsetForDepth * 1
@@ -134,12 +135,7 @@ export class Cell {
             // let z_position = this.visited ? (this.column + this.row) * 3 : (this.column + this.row) * 3 / 2
             if (use3d) {
                 let animate = true
-                let animateMirror = true
-
-
-
                 //keep track if we're going backwards or not
-
                 const STACK_TO_Z_CHANGE_RATIO = mazeOptions.cellSize / 4
                 let goDown = this.lastStackLength > stackLength
                 let goUp = this.lastStackLength < stackLength
@@ -206,11 +202,12 @@ export class Cell {
             // let newXyMoustPoint = new Point(this._p.mouseX, this._p.mouseY)
             // const { x, y } = getProjectionFor3D(use3d, newXyMoustPoint, mazeOptions)
             // this._p.translate(newXyMoustPoint.x , newXyMoustPoint.y)
+            //+1 temp hack until I figure out why there's a 1 px gap
             this._p.rect(
                 projectedXyPoint.x + this.paddingToApplyToLeft,
                 projectedXyPoint.y + this.paddingToApplyToTop,
-                this._cellWidth,
-                this._cellHeight)
+                this._cellWidth + 1,
+                this._cellHeight + 1)
         }
         //set wall options 
         //stroke

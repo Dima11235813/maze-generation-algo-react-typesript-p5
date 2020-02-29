@@ -15,7 +15,7 @@ describe("UiPreferencesStore", () => {
         expect(uiPreferencesStore.inverseColorMode).toBe(DARK_MODE_DEFAULT_SETTING)
     })
     it("toggles inverse color mode", () => {
-        uiPreferencesStore.updateInverseColorMode(!INVERSE_COLOR_DEFAULT_SETTING)
+        uiPreferencesStore.toggleInverseColorMode(!INVERSE_COLOR_DEFAULT_SETTING)
         expect(uiPreferencesStore.inverseColorMode).toBe(!INVERSE_COLOR_DEFAULT_SETTING)
     })
     it("toggles dark mode", () => {

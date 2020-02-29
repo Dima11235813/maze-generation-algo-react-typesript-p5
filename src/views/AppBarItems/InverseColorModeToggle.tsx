@@ -18,7 +18,7 @@ interface InverseColorModeToggleProps {
 const InverseColorModeToggle: FunctionComponent<InverseColorModeToggleProps> = (
   props: InverseColorModeToggleProps
 ) => {
-  const { updateInverseColorMode, inverseColorMode } = props.uiPreferencesStore!;
+  const { toggleInverseColorMode, inverseColorMode } = props.uiPreferencesStore!;
 
   const handleChange = (name: string) => (
     event: React.ChangeEvent<HTMLInputElement>
@@ -26,7 +26,7 @@ const InverseColorModeToggle: FunctionComponent<InverseColorModeToggleProps> = (
     let status = event.target.checked;
     console.log("changing inverse color mode to");
     console.log(status);
-    updateInverseColorMode(status);
+    toggleInverseColorMode();
   };
 
   return (

@@ -37,6 +37,7 @@ export class MazeGenerator {
     constructor(
         public mazeOptionsIsOpen: boolean,
         public use3d: boolean,
+        public animateMirror: boolean,
         public mazeIsActive: boolean,
         public frameRate: number,
         public p: p5,
@@ -189,7 +190,7 @@ export class MazeGenerator {
             let increasing = true
             this.grid.map(cell => {
                 //show the cell
-                cell.show(mazeOptions, this.stack.length, inverseColorMode, this.use3d, this.sineOffsetForDepth)
+                cell.show(mazeOptions, this.stack.length, inverseColorMode, this.use3d, this.animateMirror, this.sineOffsetForDepth)
                 if (increasing) {
                     this.sineOffsetForDepth += this.sineOffsetInterval
                     if (this.sineOffsetForDepth >= this.sineOffsetForDepthBound) {

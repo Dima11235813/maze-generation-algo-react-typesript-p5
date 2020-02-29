@@ -12,6 +12,7 @@ import { CellWallStyleWrapper } from "./MazeOptionsUiExpansionPanel/CellWallStyl
 import InverseColorModeToggle from "../views/AppBarItems/InverseColorModeToggle";
 import Use3dModeToggle from "../views/AppBarItems/Use3dModeToggle";
 import { FrameRateSliderWrapper } from "./MazeOptionsUiExpansionPanel/NumberBasedSelections/FrameRateSliderWrapper";
+import AnimateMirrorToggle from "../views/AppBarItems/AnimateMirrorToggle";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -33,6 +34,7 @@ export default function MazeOptionsUiExpansionPanel() {
           <>
             <Use3dModeToggle key="use3d" />
             <InverseColorModeToggle key="inverseColors"/>
+            <AnimateMirrorToggle key="animateMirror"/>
           </>
         )}
       />

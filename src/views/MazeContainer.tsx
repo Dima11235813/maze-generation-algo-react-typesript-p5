@@ -33,7 +33,11 @@ const MazeContainer: React.FC<MazeContainerProps> = (
   const { mazeOptions, p5_MazeFuncs } = mazeContext!;
   let mazeContainer: HTMLElement | null;
 
-  const { use3dMode, mazeOptionsIsOpen } = props.uiPreferencesStore!;
+  const {
+    use3dMode,
+    mazeOptionsIsOpen,
+    animateMirror
+  } = props.uiPreferencesStore!;
 
   const clearMaze = () => {
     logToConsole("Clearing Maze");
@@ -62,14 +66,21 @@ const MazeContainer: React.FC<MazeContainerProps> = (
       clearMaze();
     };
   });
-  let mazeIsActive = true
-  let context = useContext(p5_MazeContext)
+  let mazeIsActive = true;
+  let context = useContext(p5_MazeContext);
   const createMazeSketch = () => {
-
-    const { mazeOptions } = context
-    const { frameRate } = mazeOptions
+    const { mazeOptions } = context;
+    const { frameRate } = mazeOptions;
     sketchHandler = (p: p5) =>
-      new MazeGenerator(mazeOptionsIsOpen, use3dMode, mazeIsActive, frameRate, p, mazeOptions);
+      new MazeGenerator(
+        mazeOptionsIsOpen,
+        use3dMode,
+        animateMirror,
+        mazeIsActive,
+        frameRate,
+        p,
+        mazeOptions
+      );
     logger("Maze Options:");
     loggerObj(mazeOptions);
     if (mazeContainer) {
@@ -79,9 +90,9 @@ const MazeContainer: React.FC<MazeContainerProps> = (
       };
     }
   };
-  const clickHandler = () => mazeIsActive = !mazeIsActive
+  const clickHandler = () => (mazeIsActive = !mazeIsActive);
   const attachEventHandlers = () => {
-    window.onresize = function (event: Event) {
+    window.onresize = function(event: Event) {
       logger(`
         New Widow Width ${window.innerWidth}
         New Window Height ${window.innerHeight}
@@ -95,7 +106,6 @@ const MazeContainer: React.FC<MazeContainerProps> = (
   return (
     <div>
       <div id="maze-container"></div>;
-      <button onClick={clickHandler}>PAUSE</button>
     </div>
   );
 };
