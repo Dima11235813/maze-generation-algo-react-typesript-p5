@@ -161,13 +161,13 @@ export class MazeGenerator {
             if (this.mazeGenerationComplete && !this.loggedMazeGenCompleteMetrics) {
                 //Convert date to unix time for milliseconds comparison
                 this.runTime = Math.floor(this.endTime.getTime() / 1000 - this.startTime.getTime() / 1000)
-                console.log(`Run time in seconds ${this.runTime}`)
                 let minutes = this.runTime > 60 ? Math.floor(this.runTime / 60) : 0
                 let seconds = this.runTime > 60 ? this.runTime % 60 : this.runTime
+                let adjustedSeconds = seconds < 10 ? `0${seconds}` : seconds
                 console.log(`
                 Start Time  ${this.startTime}
                 End Time ${this.endTime}
-                Run time: ${minutes}:${seconds}`)
+                Run time:  ${minutes}:${adjustedSeconds}`)
                 this.loggedMazeGenCompleteMetrics = true
 
             }
@@ -312,6 +312,9 @@ export class MazeGenerator {
             }
             //If stack is empty that means we're back to origin and maze gen is complete
             if (!this.mazeGenerationComplete && this.stack.length === 0) {
+                //log metrics one last time 
+                this.logMetrics()
+                //show time based metrics
                 this.endTime = new Date()
                 console.log(`Maze gen ended at ${this.endTime}`)
                 this.mazeGenerationComplete = true

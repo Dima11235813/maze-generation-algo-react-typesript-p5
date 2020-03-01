@@ -137,7 +137,8 @@ export class Cell {
             if (use3d) {
                 let animate = true
                 //keep track if we're going backwards or not
-                const STACK_TO_Z_CHANGE_RATIO = mazeOptions.cellSize / 4
+                const DEPTH_CELL_CELL_SIZE_OFFSET = 6
+                const STACK_TO_Z_CHANGE_RATIO = mazeOptions.cellSize / DEPTH_CELL_CELL_SIZE_OFFSET
                 let goDown = this.lastStackLength > stackLength
                 let goUp = this.lastStackLength < stackLength
                 // this.cellDepthAnimations.

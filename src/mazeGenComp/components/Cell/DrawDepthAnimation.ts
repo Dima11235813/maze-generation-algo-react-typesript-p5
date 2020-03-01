@@ -18,7 +18,7 @@ export class DrawDepthAnimation {
             this.drawWall(
                 this._cellWidth,
                 1 , //this._mazeOptions.cellWallSize,
-                CELL_WALL_WITH_DEPTH_Z_VALUE,
+                this._mazeOptions.cellSize / 2 ,// CELL_WALL_WITH_DEPTH_Z_VALUE,
                 this._column * this._cellWidth + (this._cellWidth / 2),
                 this._row * this._cellHeight
             )
@@ -27,7 +27,7 @@ export class DrawDepthAnimation {
             this.drawWall(
                 1 ,//this._mazeOptions.cellWallSize,
                 this._cellHeight,
-                CELL_WALL_WITH_DEPTH_Z_VALUE,
+                this._mazeOptions.cellSize / 2 ,// CELL_WALL_WITH_DEPTH_Z_VALUE,
                 (this._column + 1) * this._cellWidth,
                 this._row * this._cellHeight + (this._cellHeight / 2)
             )
@@ -36,7 +36,7 @@ export class DrawDepthAnimation {
             this.drawWall(
                 this._cellWidth,
                 1, //this._mazeOptions.cellWallSize,
-                CELL_WALL_WITH_DEPTH_Z_VALUE,
+                this._mazeOptions.cellSize / 2 ,// CELL_WALL_WITH_DEPTH_Z_VALUE,
                 this._column * this._cellWidth + (this._cellWidth / 2),
                 (this._row + 1) * this._cellHeight
             )
@@ -45,7 +45,7 @@ export class DrawDepthAnimation {
             this.drawWall(
                 1, //this._mazeOptions.cellWallSize,
                 this._cellHeight,
-                CELL_WALL_WITH_DEPTH_Z_VALUE,
+                this._mazeOptions.cellSize / 2 ,// CELL_WALL_WITH_DEPTH_Z_VALUE,
                 (this._column) * this._cellWidth,
                 this._row * this._cellHeight + (this._cellHeight / 2)
             )
