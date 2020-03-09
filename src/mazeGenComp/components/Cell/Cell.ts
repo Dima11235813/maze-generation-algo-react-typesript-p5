@@ -192,11 +192,12 @@ export class Cell {
 
 
                 }
-
+                //Only render the cell projection into 3rd space - if it's below the pixel thershold
+                const {maxPixelDepthToRenderProjection} = mazeOptions
                 this.lastStackLength = stackLength
-                if(this.zTranslate <= mazeOptions.maxPixelDepthToRenderProjection)
+                if(this.zTranslate <= maxPixelDepthToRenderProjection)
                 drawProjectionOfCell()
-                if (animateMirror) {
+                if (animateMirror && -this.zTranslate >= -maxPixelDepthToRenderProjection) {
                     drawProjectionOfCell(true)
                 }
 

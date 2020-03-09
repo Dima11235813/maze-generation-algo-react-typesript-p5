@@ -36,12 +36,7 @@ const MazeContainer: React.FC<MazeContainerProps> = (
   const { mazeOptions, p5_MazeFuncs } = mazeContext!;
   let mazeContainer: HTMLElement | null;
 
-  const {
-    use3dMode,
-    mazeOptionsIsOpen,
-    animateMirror
-  } = props.uiPreferencesStore!;
-  const { mazeView } = props.mazeViewStore!;
+  const {use3dMode} = props.uiPreferencesStore!;
 
   const clearMaze = () => {
     logToConsole("Clearing Maze");
@@ -75,10 +70,7 @@ const MazeContainer: React.FC<MazeContainerProps> = (
     const { frameRate } = mazeOptions;
     sketchHandler = (p: p5) =>
       new MazeGenerator(
-        mazeOptionsIsOpen,
-        mazeView, 
         use3dMode,
-        animateMirror,
         mazeIsActive,
         frameRate,
         p,
@@ -108,7 +100,7 @@ const MazeContainer: React.FC<MazeContainerProps> = (
   };
   return (
     <div>
-      <div id="maze-container"></div>;
+      <div id="maze-container"></div>
     </div>
   );
 };

@@ -3,9 +3,6 @@ import { Cell } from "./components/Cell/Cell"
 import { logColumnDuringCreation, logRowDuringCreation, logger } from "../utils/loggingUtils"
 import { MazeOptions } from "./mazeUtils/mazeOptions"
 import { stores } from '../stores'
-import { getProjectionFor3D } from "./mazeUtils/projectionUtils"
-import { Point } from "./components/Point"
-import { mazeOptionsUiContext, p5_MazeContext } from "../AppContext"
 import { DEFAULT_Z_DISTANCE } from "../shared/constants"
 import img from "../assets/exit.jpg"
 
@@ -45,10 +42,7 @@ export class MazeGenerator {
     endTime: Date;
     runTime: number = 0
     constructor(
-        public mazeOptionsIsOpen: boolean,
-        public mazeView: number,
         public use3d: boolean,
-        public animateMirror: boolean,
         public mazeIsActive: boolean,
         public frameRate: number,
         public p: p5,
@@ -129,8 +123,9 @@ export class MazeGenerator {
         //TODO Figure out how to prevent menu clicks from being registered by p5 internals
         this.followMouse = false
         p.mouseClicked = () => {
+            const { mazeOptionsIsOpen } = stores.uiPreferencesStore!
             //Only toggle to follow mouse if click happens when menu is closed
-            if (!this.mazeOptionsIsOpen) {
+            if (!mazeOptionsIsOpen) {
                 this.followMouse = !this.followMouse
             }
         }
@@ -210,6 +205,7 @@ export class MazeGenerator {
                 // p.rotateX(1.25);
                 p.angleMode(p.RADIANS)
                 // p.angleMode(p.DEGREES)
+                const { mazeView } = stores.mazeViewStore!;
                 if (mazeView === 0) {
                     p.rotateX(p.PI / 3)
                     // p.rotateX(66);
@@ -223,7 +219,8 @@ export class MazeGenerator {
                 let yTranslate = mazeOptions.view.zoomHeightDiff / mazeOptions.windowHeight
 
                 //Only follow mouse if maze options aren't open
-                if (this.followMouse && !this.mazeOptionsIsOpen) {
+                const { mazeOptionsIsOpen } = stores.uiPreferencesStore!
+                if (this.followMouse && !mazeOptionsIsOpen) {
                     p.translate(
                         normalizedMouseX,
                         (this.viewRotation > -1.8 && this.viewRotation < 1.8) ?
@@ -251,7 +248,9 @@ export class MazeGenerator {
             // if (a) {
             //     p.background(r, g, b, a)
             // } else {
-            const { inverseColorMode } = stores.uiPreferencesStore!
+
+            //Get UI Preferences
+            const { inverseColorMode, animateMirror } = stores.uiPreferencesStore!
             //TODO Move to color util
             if (inverseColorMode) {
                 r = 255 - r
@@ -266,7 +265,7 @@ export class MazeGenerator {
             let increasing = true
             this.grid.map(cell => {
                 //show the cell
-                cell.show(mazeOptions, this.stack.length, inverseColorMode, this.use3d, this.animateMirror, this.sineOffsetForDepth)
+                cell.show(mazeOptions, this.stack.length, inverseColorMode, this.use3d, animateMirror, this.sineOffsetForDepth)
                 if (increasing) {
                     this.sineOffsetForDepth += this.sineOffsetInterval
                     if (this.sineOffsetForDepth >= this.sineOffsetForDepthBound) {
