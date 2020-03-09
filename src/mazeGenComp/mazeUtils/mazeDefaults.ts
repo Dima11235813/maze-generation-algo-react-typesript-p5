@@ -13,7 +13,8 @@ export const mazeDefaultOptions: MazeDefaultOptions = {
     //CELL WALL SHAPE
     defaultStrokeCapStyle: "ROUND",
     //Rendering
-    frameRate: 40
+    frameRate: 40,
+    maxPixelDepthToRenderProjection: 100
 }
 export interface MazeDefaultOptions {
 
@@ -27,5 +28,6 @@ export interface MazeDefaultOptions {
     //CELL WALL SHAPE
     defaultStrokeCapStyle: string,
     //Rendering
-    frameRate: number
+    frameRate: number,
+    maxPixelDepthToRenderProjection: number,
 }

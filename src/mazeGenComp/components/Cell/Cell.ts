@@ -194,7 +194,7 @@ export class Cell {
                 }
 
                 this.lastStackLength = stackLength
-
+                if(this.zTranslate <= mazeOptions.maxPixelDepthToRenderProjection)
                 drawProjectionOfCell()
                 if (animateMirror) {
                     drawProjectionOfCell(true)

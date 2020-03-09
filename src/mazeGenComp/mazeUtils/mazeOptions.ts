@@ -31,7 +31,10 @@ export class MazeOptions {
         public cellWallSize : number = mazeDefaultOptions.defaultCellWallSize,
         //CELL WALL SHAPE,
         public cellWallStrokeCapStyle: string = mazeDefaultOptions.defaultStrokeCapStyle,
-        public frameRate: number = mazeDefaultOptions.frameRate
+        //RENDER
+        public frameRate: number = mazeDefaultOptions.frameRate,
+        public maxPixelDepthToRenderProjection: number = mazeDefaultOptions.maxPixelDepthToRenderProjection
+        
     ) {
         //SET UP DEFAULTS FOR MAZE if not using storage
         //SCENE
@@ -83,6 +86,7 @@ export class MazeOptions {
         // console.log(`MAZE OPTIONS`)
         // console.log(this)
         this.padding = .3 * this.cellSize
+        this.maxPixelDepthToRenderProjection = this.numberOfRows * this.cellSize / 10
 
         //THIS Was a bad idea 
         // this.padding = Math.floor(this.windowWidth % this.calculatedCellWidth)
