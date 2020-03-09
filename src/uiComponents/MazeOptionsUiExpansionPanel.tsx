@@ -22,6 +22,10 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
+const toggleOptionsWrapper = {
+  display: "flex"
+}
+
 //TODO Move to maze options ui defaults
 export default function MazeOptionsUiExpansionPanel() {
   const classes = useStyles();
@@ -32,9 +36,11 @@ export default function MazeOptionsUiExpansionPanel() {
         name={Labels.HEADER}
         render={() => (
           <>
-            <Use3dModeToggle key="use3d" />
-            <InverseColorModeToggle key="inverseColors"/>
-            <AnimateMirrorToggle key="animateMirror"/>
+            <div style={toggleOptionsWrapper}>
+              <Use3dModeToggle key="use3d" />
+              <InverseColorModeToggle key="inverseColors" />
+              <AnimateMirrorToggle key="animateMirror" />
+            </div>
           </>
         )}
       />
