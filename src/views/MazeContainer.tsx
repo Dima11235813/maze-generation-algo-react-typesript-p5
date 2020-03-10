@@ -12,7 +12,7 @@ import { MazeViewStore } from "../stores/MazeViewStore";
 
 interface MazeContainerProps {
   routerStore?: RouterStore;
-  uiPreferencesStore?: UiPreferencesStore;
+  // uiPreferencesStore?: UiPreferencesStore;
   mazeViewStore?: MazeViewStore;
 }
 
@@ -35,8 +35,6 @@ const MazeContainer: React.FC<MazeContainerProps> = (
   let mazeContext: P5_MazeContext = useContext(p5_MazeContext);
   const { mazeOptions, p5_MazeFuncs } = mazeContext!;
   let mazeContainer: HTMLElement | null;
-
-  const {use3dMode} = props.uiPreferencesStore!;
 
   const clearMaze = () => {
     logToConsole("Clearing Maze");
@@ -70,7 +68,6 @@ const MazeContainer: React.FC<MazeContainerProps> = (
     const { frameRate } = mazeOptions;
     sketchHandler = (p: p5) =>
       new MazeGenerator(
-        use3dMode,
         mazeIsActive,
         frameRate,
         p,
@@ -106,7 +103,6 @@ const MazeContainer: React.FC<MazeContainerProps> = (
 };
 
 export default inject(
-  "uiPreferencesStore",
   "routerStore",
   "mazeViewStore"
 )(observer(MazeContainer));

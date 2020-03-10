@@ -21,8 +21,8 @@ const Use3dModeToggle: FunctionComponent<InverseColorModeToggleProps> = (
   props: InverseColorModeToggleProps
 ) => {
   const { toggleUpdateUse3dMode, use3dMode } = props.uiPreferencesStore!;
-  const context = useContext(p5_MazeContext)
-  const {p5_MazeFuncs } = context
+  // const context = useContext(p5_MazeContext)
+  // const {p5_MazeFuncs } = context
 
   const handleChange = (name: string) => (
     event: React.ChangeEvent<HTMLInputElement>
@@ -30,7 +30,7 @@ const Use3dModeToggle: FunctionComponent<InverseColorModeToggleProps> = (
     let status = event.target.checked;
     logToConsole(`changing user 3d mode to: ${status}`);
     toggleUpdateUse3dMode();
-    p5_MazeFuncs.resetMaze();
+    // p5_MazeFuncs.resetMaze();
   };
 
   return (

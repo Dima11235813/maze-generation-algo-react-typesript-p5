@@ -27,24 +27,12 @@ export const offsetHeightBy3dProjection = (value: number, mazeOptions: MazeOptio
 
 
 
-export const getProjectionFor3D = (use3d: boolean, point: Point, mazeOptions: MazeOptions) => {
+export const getProjectionFor3D = (point: Point, mazeOptions: MazeOptions) => {
     let x_value = point.x
     let y_value = point.y
     //set up point vals based on 2D or 3D projection 
     //TODO extract this logic
-    let xColPointValToDraw
-    let yRowPointValToDraw
-    if (use3d) {
-        xColPointValToDraw = offsetWidthBy3dProjection(x_value, mazeOptions)
-    } else {
-        xColPointValToDraw = x_value
-    }
-    if (use3d) {
-        yRowPointValToDraw = offsetHeightBy3dProjection(y_value, mazeOptions)
-    } else {
-        yRowPointValToDraw = y_value
-    }
-    let pointToReturn = new Point(xColPointValToDraw, yRowPointValToDraw)
-    // console.log(pointToReturn)
-    return pointToReturn
+    let xColPointValToDraw = offsetWidthBy3dProjection(x_value, mazeOptions)
+    let yRowPointValToDraw = offsetHeightBy3dProjection(y_value, mazeOptions)
+    return new Point(xColPointValToDraw, yRowPointValToDraw)
 }

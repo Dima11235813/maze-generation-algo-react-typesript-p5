@@ -68,7 +68,6 @@ function HideOnScroll(props: any) {
 const Header = (props: HeaderProps) => {
   const classes = useStyles();
   const mazeContext = useContext(p5_MazeContext);
-  const { p5_MazeFuncs } = mazeContext;
   const { changeView } = props.mazeViewStore!;
   return (
     <div className={classes.root}>

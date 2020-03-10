@@ -1,4 +1,4 @@
-import React from "react";
+import React, { CSSProperties } from "react";
 
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import { Labels } from "../shared/labels";
@@ -13,6 +13,7 @@ import InverseColorModeToggle from "../views/AppBarItems/InverseColorModeToggle"
 import Use3dModeToggle from "../views/AppBarItems/Use3dModeToggle";
 import { FrameRateSliderWrapper } from "./MazeOptionsUiExpansionPanel/NumberBasedSelections/FrameRateSliderWrapper";
 import AnimateMirrorToggle from "../views/AppBarItems/AnimateMirrorToggle";
+import { stores } from "../stores";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -22,13 +23,17 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const toggleOptionsWrapper = {
-  display: "flex"
+
+
+const toggleOptionsWrapper: CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
 }
 
 //TODO Move to maze options ui defaults
 export default function MazeOptionsUiExpansionPanel() {
   const classes = useStyles();
+  const { use3dMode } = stores.uiPreferencesStore!
   return (
     <div className={classes.root}>
       <ExpansionPanelWrapper
@@ -50,7 +55,8 @@ export default function MazeOptionsUiExpansionPanel() {
       <CellColorSelectWrapper />
       <CellWallColorSelectWrapper />
       <MazeBackgroundColorSelectWrapper />
-      <CellWallStyleWrapper />
+      {/* {use3dMode ? null : <CellWallStyleWrapper />  */}
+      }
     </div>
   );
 }

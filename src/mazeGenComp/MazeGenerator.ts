@@ -42,7 +42,6 @@ export class MazeGenerator {
     endTime: Date;
     runTime: number = 0
     constructor(
-        public use3d: boolean,
         public mazeIsActive: boolean,
         public frameRate: number,
         public p: p5,
@@ -58,6 +57,7 @@ export class MazeGenerator {
         //     this.theShader = p.loadShader('assets/webcam.vert', 'assets/webvam.frag')
         // }
         p.setup = () => {
+            const {use3dMode} = stores.uiPreferencesStore!;
             //TEMP
             // if (p.createCapture) {
             //     this.cam = p.createCapture(p.VIDEO);
@@ -75,11 +75,14 @@ export class MazeGenerator {
                 numberOfColumns,
                 numberOfRows,
                 padding } = mazeOptions
-            if (this.use3d) {
+                //TODO Add use webQL option because defualt should be webql
+                //other option is html canvas and that will have those stroke cap options
+                
+            // if (use3dMode) {
                 p.createCanvas(windowWidth, windowHeight, p.WEBGL)
-            } else {
-                p.createCanvas(windowWidth, windowHeight)
-            }
+            // } else {
+            //     p.createCanvas(windowWidth, windowHeight)
+            // }
             //set frame rate
             // https://p5js.org/reference/#/p5/frameRate
             //https://www.geeksforgeeks.org/p5-js-framerate-function/
@@ -170,13 +173,14 @@ export class MazeGenerator {
         this.loggedMazeGenCompleteMetrics = false
         this.viewRotation = 0
         p.draw = () => {
+            const {use3dMode} = stores.uiPreferencesStore!;
             //Show start time of maze and store in variable for later reference
             if (this.numberOfFramesDrawn === 0) {
                 this.startTime = new Date()
                 console.log(`Maze generation started at: ${this.startTime}`)
             }
             this.logMetrics()
-            if (this.use3d) {
+            if (use3dMode) {
                 //temp
                 // shader() sets the active shader with our shader
                 // https://p5js.org/examples/3d-shader-using-webcam.html
@@ -250,7 +254,7 @@ export class MazeGenerator {
             // } else {
 
             //Get UI Preferences
-            const { inverseColorMode, animateMirror } = stores.uiPreferencesStore!
+            const { inverseColorMode } = stores.uiPreferencesStore!
             //TODO Move to color util
             if (inverseColorMode) {
                 r = 255 - r
@@ -265,7 +269,7 @@ export class MazeGenerator {
             let increasing = true
             this.grid.map(cell => {
                 //show the cell
-                cell.show(mazeOptions, this.stack.length, inverseColorMode, this.use3d, animateMirror, this.sineOffsetForDepth)
+                cell.show(mazeOptions, this.stack.length)
                 if (increasing) {
                     this.sineOffsetForDepth += this.sineOffsetInterval
                     if (this.sineOffsetForDepth >= this.sineOffsetForDepthBound) {
@@ -284,7 +288,7 @@ export class MazeGenerator {
                 this.currentCell.visited += 1
 
                 //highlight the current cell to tell it apart from other visited ones
-                this.currentCell.highlight(this.use3d, mazeOptions)
+                this.currentCell.highlight(use3dMode, mazeOptions)
                 //STEP 1
                 //get the random next neightbor cell from the current cell
                 let nextCell

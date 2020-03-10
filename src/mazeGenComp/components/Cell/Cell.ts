@@ -11,6 +11,7 @@ import { Image } from "p5"
 import { ShowWallIndicator } from "./ShowWallIndicator"
 import { DrawDepthAnimation } from "./DrawDepthAnimation"
 import { invertColors } from "../../../utils/colorUtils"
+import { stores } from "../../../stores"
 
 export class Cell {
     //TOP, RIGHT, BOTTOM, LEFT
@@ -59,13 +60,11 @@ export class Cell {
     depthOffset = 0
     show = (
         mazeOptions: MazeOptions,
-        stackLength: number,
-        inverseColorMode: boolean,
-        use3d: boolean,
-        animateMirror: boolean,
-        sineOffsetForDepth: number
+        stackLength: number
+        // sineOffsetForDepth: number
     ) => {
-        this.depthOffset = sineOffsetForDepth * 1
+        const { use3dMode, inverseColorMode, animateMirror } = stores.uiPreferencesStore
+        // this.depthOffset = sineOffsetForDepth * 1
         //Before executing show
         //check if anything changed about this cell
 
@@ -76,8 +75,9 @@ export class Cell {
 
         //set up point vals based on 2D or 3D projection 
         //TODO extract this logic
-        let xyPoint = new Point(this.column * this._cellWidth, this.row * this._cellHeight)
-        let projectedXyPoint = getProjectionFor3D(use3d, xyPoint, mazeOptions)
+
+        let newPoint = new Point(this.column * this._cellWidth, this.row * this._cellHeight)
+        let projectedXyPoint = getProjectionFor3D(newPoint, mazeOptions)
 
         //set fill based on if visited or not
         if (this.visited) {
@@ -130,11 +130,12 @@ export class Cell {
             // logger(`Cell Color`)
             // logger(color)
             // this._p.fill(255 / (this.getColorBasedOnVisited()),0, 0, 255)
+
             this._p.noStroke()
             // let x_position = this.visited ? (this.row * this._cellWidth) : (this.row * this._cellWidth) / 2
             // let y_position = this.visited ? (this.column * this._cellWidth) : (this.column * this._cellWidth) / 2
             // let z_position = this.visited ? (this.column + this.row) * 3 : (this.column + this.row) * 3 / 2
-            if (use3d) {
+            if (use3dMode) {
                 let animate = true
                 //keep track if we're going backwards or not
                 const DEPTH_CELL_CELL_SIZE_OFFSET = 6
@@ -193,10 +194,10 @@ export class Cell {
 
                 }
                 //Only render the cell projection into 3rd space - if it's below the pixel thershold
-                const {maxPixelDepthToRenderProjection} = mazeOptions
+                const { maxPixelDepthToRenderProjection } = mazeOptions
                 this.lastStackLength = stackLength
-                if(this.zTranslate <= maxPixelDepthToRenderProjection)
-                drawProjectionOfCell()
+                if (this.zTranslate <= maxPixelDepthToRenderProjection)
+                    drawProjectionOfCell()
                 if (animateMirror && -this.zTranslate >= -maxPixelDepthToRenderProjection) {
                     drawProjectionOfCell(true)
                 }
@@ -219,27 +220,28 @@ export class Cell {
             logger(`Stroke weight is ${newStrokeWeight}`)
             this._p.strokeWeight(newStrokeWeight)
         }
-        if (!use3d) {
-            //stroke cap style
-            if (mazeOptions.cellWallStrokeCapStyle) {
-                //set stroke style
-                let projectCap = this._p.PROJECT
-                let squareCap = this._p.SQUARE
-                let roundCap = this._p.ROUND
-                logger(`Stroke weight is ${mazeOptions.cellWallStrokeCapStyle}`)
-                switch (mazeOptions.cellWallStrokeCapStyle) {
-                    case CellWallOptions.SQUARE:
-                        this._p.strokeCap(squareCap)
-                        break;
-                    case CellWallOptions.PROJECT:
-                        this._p.strokeCap(projectCap)
-                        break;
-                    case CellWallOptions.ROUND:
-                        this._p.strokeCap(roundCap)
-                        break;
-                }
-            }
-        }
+        //TODO Figure out if I want to use a non webql canvas
+        // if (!use3dMode) {
+        //     //stroke cap style
+        //     if (mazeOptions.cellWallStrokeCapStyle) {
+        //         //set stroke style
+        //         let projectCap = this._p.PROJECT
+        //         let squareCap = this._p.SQUARE
+        //         let roundCap = this._p.ROUND
+        //         logger(`Stroke weight is ${mazeOptions.cellWallStrokeCapStyle}`)
+        //         switch (mazeOptions.cellWallStrokeCapStyle) {
+        //             case CellWallOptions.SQUARE:
+        //                 this._p.strokeCap(squareCap)
+        //                 break;
+        //             case CellWallOptions.PROJECT:
+        //                 this._p.strokeCap(projectCap)
+        //                 break;
+        //             case CellWallOptions.ROUND:
+        //                 this._p.strokeCap(roundCap)
+        //                 break;
+        //         }
+        //     }
+        // }
         //wall color
         let { r, g, b, a } = invertColors(mazeOptions.cellWallColor)
 
@@ -249,10 +251,12 @@ export class Cell {
             g = 255 - g
             b = 255 - b
         }
-        if (a) {
-            this._p.stroke(r, g, b, 255)
-        } else {
-            this._p.stroke(r, g, b, 255)
+        if (!use3dMode) {
+            if (a) {
+                this._p.stroke(r, g, b, 255)
+            } else {
+                this._p.stroke(r, g, b, 255)
+            }
         }
 
 
@@ -293,7 +297,7 @@ export class Cell {
             let pointsToDrawWallBetween = new CellWallPoints(point4, point1)
             this._drawCellWalls(pointsToDrawWallBetween)
         }
-        if (use3d) {
+        if (use3dMode) {
             let drawDepthAnimation = new DrawDepthAnimation(
                 mazeOptions,
                 showWallIndicator,
@@ -339,9 +343,9 @@ export class Cell {
     highlight = (use3d: boolean, mazeOptions: MazeOptions) => {
         var xLength = this.column * this._cellWidth
         var yLength = this.row * this._cellHeight
-        let xyProjectedPoint = getProjectionFor3D(use3d, { x: xLength, y: yLength }, mazeOptions)
+        let xyProjectedPoint = getProjectionFor3D({ x: xLength, y: yLength }, mazeOptions)
         // this._p.noStroke()
-        this._p.fill(0, 0, 255 / this.visited + 1, 100)
+        this._p.fill(0, 0, 255 / (this.visited + 1) / 2, 100)
         this._p.rect(xyProjectedPoint.x + this.paddingToApplyToLeft, xyProjectedPoint.y + this.paddingToApplyToTop, this._cellWidth, this._cellHeight)
     }
 
