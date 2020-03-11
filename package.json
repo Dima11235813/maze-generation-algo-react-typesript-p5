@@ -46,20 +46,23 @@
     "react-scripts": "3.1.2",
     "react-select": "^3.0.8",
     "react-simple-range": "^1.6.0",
+    "serve": "^11.3.0",
     "stackdriver-errors-js": "^0.8.0",
     "typescript": "3.6.3"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "serve -s build",
+    "local": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "postbuild": "node buildYamlPostBuild.js"
   },
   "eslintConfig": {
     "extends": "react-app"
   },
-  "jest" : {
-    "snapshotSerializers" : [
+  "jest": {
+    "snapshotSerializers": [
       "enzyme-to-json/serializer"
     ]
   },

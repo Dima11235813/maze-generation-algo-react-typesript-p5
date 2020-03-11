@@ -7,8 +7,8 @@ import { CellSizeSliderWrapper } from "./MazeOptionsUiExpansionPanel/CellSizeSli
 import { CellWallSizeSliderWrapper } from "./MazeOptionsUiExpansionPanel/CellWallSizeSliderWrapper";
 import { CellColorSelectWrapper } from "./MazeOptionsUiExpansionPanel/CellColorSelectWrapper";
 import { CellWallColorSelectWrapper } from "./MazeOptionsUiExpansionPanel/CellWallColorSelectWrapper";
-import { MazeBackgroundColorSelectWrapper } from "./MazeOptionsUiExpansionPanel/MazeBackgroundColorSelectWrapper.";
-import { CellWallStyleWrapper } from "./MazeOptionsUiExpansionPanel/CellWallStyleWrapper";
+import { MazeBackgroundColorSelectWrapper } from "./MazeOptionsUiExpansionPanel/MazeBackgroundColorSelectWrapper";
+// import { CellWallStyleWrapper } from "./MazeOptionsUiExpansionPanel/CellWallStyleWrapper";
 import InverseColorModeToggle from "../views/AppBarItems/InverseColorModeToggle";
 import Use3dModeToggle from "../views/AppBarItems/Use3dModeToggle";
 import { FrameRateSliderWrapper } from "./MazeOptionsUiExpansionPanel/NumberBasedSelections/FrameRateSliderWrapper";
@@ -60,7 +60,7 @@ const MazeOptionsUiExpansionPanel: FunctionComponent<MazeOptionsUiExpansionPanel
               <InverseColorModeToggle key="inverseColors" />
               {/* Only only offer projection if in 3d color mode*/}
               {use3dMode ? <MazeGenCubeProjectionShowToggle key="mazeGenProjection" /> : null}
-              {/* Only offer mirror optino if showing projection */}
+              {/* Only offer mirror option if showing projection */}
               {use3dMode && showGeneratorCubeProjection ? <AnimateMirrorToggle key="animateMirror" /> : null}
             </div>
           </>
