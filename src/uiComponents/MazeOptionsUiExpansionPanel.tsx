@@ -17,6 +17,7 @@ import { stores } from "../stores";
 import MazeGenCubeProjectionShowToggle from "../views/AppBarItems/MazeGenCubeProjectionShowToggle";
 import { inject, observer } from "mobx-react";
 import { MazeViewStore } from "../stores/MazeViewStore";
+import { UiPreferencesStore } from "../stores/UiPreferencesStore";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -36,6 +37,7 @@ const toggleOptionsWrapper: CSSProperties = {
 
 interface MazeOptionsUiExpansionPanelProps {
   mazeViewStore?: MazeViewStore;
+  uiPreferencesStore?: UiPreferencesStore;
 }
 
 
@@ -45,7 +47,7 @@ const MazeOptionsUiExpansionPanel: FunctionComponent<MazeOptionsUiExpansionPanel
 ) => {
   const classes = useStyles();
   const { showGeneratorCubeProjection } = props.mazeViewStore!
-  // const { use3dMode } = stores.uiPreferencesStore!
+  const { use3dMode } = props.uiPreferencesStore!;
   return (
     <div className={classes.root}>
       <ExpansionPanelWrapper
@@ -56,11 +58,10 @@ const MazeOptionsUiExpansionPanel: FunctionComponent<MazeOptionsUiExpansionPanel
             <div style={toggleOptionsWrapper}>
               <Use3dModeToggle key="use3d" />
               <InverseColorModeToggle key="inverseColors" />
-              <MazeGenCubeProjectionShowToggle key="mazeGenProjection" />
+              {/* Only only offer projection if in 3d color mode*/}
+              {use3dMode ? <MazeGenCubeProjectionShowToggle key="mazeGenProjection" /> : null}
               {/* Only offer mirror optino if showing projection */}
-              {showGeneratorCubeProjection ?
-                <AnimateMirrorToggle key="animateMirror" /> : null
-              }
+              {use3dMode && showGeneratorCubeProjection ? <AnimateMirrorToggle key="animateMirror" /> : null}
             </div>
           </>
         )}
@@ -78,6 +79,7 @@ const MazeOptionsUiExpansionPanel: FunctionComponent<MazeOptionsUiExpansionPanel
 }
 
 export default inject(
+  "uiPreferencesStore",
   "mazeViewStore",
   "routerStore"
 )(observer(MazeOptionsUiExpansionPanel));

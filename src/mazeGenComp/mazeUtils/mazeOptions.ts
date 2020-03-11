@@ -33,7 +33,9 @@ export class MazeOptions {
         public cellWallStrokeCapStyle: string = mazeDefaultOptions.defaultStrokeCapStyle,
         //RENDER
         public frameRate: number = mazeDefaultOptions.frameRate,
-        public maxPixelDepthToRenderProjection: number = mazeDefaultOptions.maxPixelDepthToRenderProjection
+        public maxPixelDepthToRenderProjection: number = mazeDefaultOptions.maxPixelDepthToRenderProjection,
+        //RENDER TYPE
+        public use3d: boolean = mazeDefaultOptions.use3d,
         
     ) {
         //SET UP DEFAULTS FOR MAZE if not using storage

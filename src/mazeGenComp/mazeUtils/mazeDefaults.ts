@@ -14,7 +14,9 @@ export const mazeDefaultOptions: MazeDefaultOptions = {
     defaultStrokeCapStyle: "ROUND",
     //Rendering
     frameRate: 40,
-    maxPixelDepthToRenderProjection: 100
+    maxPixelDepthToRenderProjection: 100,
+    //Render Type
+    use3d: true,
 }
 export interface MazeDefaultOptions {
 
@@ -30,4 +32,6 @@ export interface MazeDefaultOptions {
     //Rendering
     frameRate: number,
     maxPixelDepthToRenderProjection: number,
+    //Render Type
+    use3d: boolean
 }
