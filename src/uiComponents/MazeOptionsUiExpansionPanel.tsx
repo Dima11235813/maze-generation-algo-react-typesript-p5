@@ -1,4 +1,4 @@
-import React, { CSSProperties } from "react";
+import React, { CSSProperties, FunctionComponent } from "react";
 
 import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
 import { Labels } from "../shared/labels";
@@ -14,6 +14,9 @@ import Use3dModeToggle from "../views/AppBarItems/Use3dModeToggle";
 import { FrameRateSliderWrapper } from "./MazeOptionsUiExpansionPanel/NumberBasedSelections/FrameRateSliderWrapper";
 import AnimateMirrorToggle from "../views/AppBarItems/AnimateMirrorToggle";
 import { stores } from "../stores";
+import MazeGenCubeProjectionShowToggle from "../views/AppBarItems/MazeGenCubeProjectionShowToggle";
+import { inject, observer } from "mobx-react";
+import { MazeViewStore } from "../stores/MazeViewStore";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -30,10 +33,19 @@ const toggleOptionsWrapper: CSSProperties = {
   flexDirection: "column",
 }
 
+
+interface MazeOptionsUiExpansionPanelProps {
+  mazeViewStore?: MazeViewStore;
+}
+
+
 //TODO Move to maze options ui defaults
-export default function MazeOptionsUiExpansionPanel() {
+const MazeOptionsUiExpansionPanel: FunctionComponent<MazeOptionsUiExpansionPanelProps> = (
+  props: MazeOptionsUiExpansionPanelProps
+) => {
   const classes = useStyles();
-  const { use3dMode } = stores.uiPreferencesStore!
+  const { showGeneratorCubeProjection } = props.mazeViewStore!
+  // const { use3dMode } = stores.uiPreferencesStore!
   return (
     <div className={classes.root}>
       <ExpansionPanelWrapper
@@ -44,7 +56,11 @@ export default function MazeOptionsUiExpansionPanel() {
             <div style={toggleOptionsWrapper}>
               <Use3dModeToggle key="use3d" />
               <InverseColorModeToggle key="inverseColors" />
-              <AnimateMirrorToggle key="animateMirror" />
+              <MazeGenCubeProjectionShowToggle key="mazeGenProjection" />
+              {/* Only offer mirror optino if showing projection */}
+              {showGeneratorCubeProjection ?
+                <AnimateMirrorToggle key="animateMirror" /> : null
+              }
             </div>
           </>
         )}
@@ -60,3 +76,9 @@ export default function MazeOptionsUiExpansionPanel() {
     </div>
   );
 }
+
+export default inject(
+  "mazeViewStore",
+  "routerStore"
+)(observer(MazeOptionsUiExpansionPanel));
+

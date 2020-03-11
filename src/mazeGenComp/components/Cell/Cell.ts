@@ -194,12 +194,15 @@ export class Cell {
 
                 }
                 //Only render the cell projection into 3rd space - if it's below the pixel thershold
-                const { maxPixelDepthToRenderProjection } = mazeOptions
-                this.lastStackLength = stackLength
-                if (this.zTranslate <= maxPixelDepthToRenderProjection)
-                    drawProjectionOfCell()
-                if (animateMirror && -this.zTranslate >= -maxPixelDepthToRenderProjection) {
-                    drawProjectionOfCell(true)
+                const { showGeneratorCubeProjection } = stores.mazeViewStore!;
+                if (showGeneratorCubeProjection) {
+                    const { maxPixelDepthToRenderProjection } = mazeOptions
+                    this.lastStackLength = stackLength
+                    if (this.zTranslate <= maxPixelDepthToRenderProjection)
+                        drawProjectionOfCell()
+                    if (animateMirror && -this.zTranslate >= -maxPixelDepthToRenderProjection) {
+                        drawProjectionOfCell(true)
+                    }
                 }
 
             }
