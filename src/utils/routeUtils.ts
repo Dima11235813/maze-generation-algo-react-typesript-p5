@@ -6,7 +6,9 @@ export enum APP_ROUTES {
 }
 
 export enum MAIN_MENU_OPTIONS {
-    ENABLE_FOLLOW_CELL_CREATOR = "View",
+    ENABLE_FOLLOW_CELL_CREATOR = "Change View",
     SAVE = "Save",
+    //Maze Running
+    EXIT_RUNNING_MAZE = "Exit Maze",
     RUN_MAZE = "Run Maze"
 }

@@ -68,7 +68,7 @@ function HideOnScroll(props: any) {
 const Header = (props: HeaderProps) => {
   const classes = useStyles();
   const mazeContext = useContext(p5_MazeContext);
-  const { changeView, changeRunMazeMode } = props.mazeViewStore!;
+  const { changeView, changeRunMazeMode, runMazeMode } = props.mazeViewStore!;
   return (
     <div className={classes.root}>
       <CssBaseline />
@@ -83,30 +83,35 @@ const Header = (props: HeaderProps) => {
             >
               <MenuIcon />
             </IconButton>
-            <NavLink
-              to={APP_ROUTES.LOGIN}
-              className={styles.NavLink}
-              activeClassName={styles.SelectedLink}
-            >
-              {APP_ROUTES.LOGIN.toUpperCase()}
-            </NavLink>
-            <NavLink
-              to={APP_ROUTES.MAZE}
-              className={styles.NavLink}
-              activeClassName={styles.SelectedLink}
-            >
-              {APP_ROUTES.MAZE.toUpperCase()}
-            </NavLink>
-            <Button
-              onClick={() => {
-                changeView();
-              }}
-              color="inherit"
-            >
-              <Typography>
-                {MAIN_MENU_OPTIONS.ENABLE_FOLLOW_CELL_CREATOR}
-              </Typography>
-            </Button>
+            {/* Only allow toggling the view if not in run maze mode */}
+            {runMazeMode ? null : (
+              <React.Fragment>
+                <NavLink
+                  to={APP_ROUTES.LOGIN}
+                  className={styles.NavLink}
+                  activeClassName={styles.SelectedLink}
+                >
+                  {APP_ROUTES.LOGIN.toUpperCase()}
+                </NavLink>
+                <NavLink
+                  to={APP_ROUTES.MAZE}
+                  className={styles.NavLink}
+                  activeClassName={styles.SelectedLink}
+                >
+                  {APP_ROUTES.MAZE.toUpperCase()}
+                </NavLink>
+                <Button
+                  onClick={() => {
+                    changeView();
+                  }}
+                  color="inherit"
+                >
+                  <Typography>
+                    {MAIN_MENU_OPTIONS.ENABLE_FOLLOW_CELL_CREATOR}
+                  </Typography>
+                </Button>
+              </React.Fragment>
+            )}
             <Button
               onClick={() => {
                 changeRunMazeMode();
@@ -114,13 +119,20 @@ const Header = (props: HeaderProps) => {
               color="inherit"
             >
               <Typography>
-                {MAIN_MENU_OPTIONS.RUN_MAZE}
+                {runMazeMode
+                  ? MAIN_MENU_OPTIONS.EXIT_RUNNING_MAZE
+                  : MAIN_MENU_OPTIONS.RUN_MAZE}
               </Typography>
             </Button>
-            <Button color="inherit">
-              <Typography>{MAIN_MENU_OPTIONS.SAVE}</Typography>
-            </Button>
-            <ExpandSideBar />
+            {/* Only allow save mode outside of run maze mode */}
+            {runMazeMode ? null : (
+              <React.Fragment>
+                <Button color="inherit">
+                  <Typography>{MAIN_MENU_OPTIONS.SAVE}</Typography>
+                </Button>
+                <ExpandSideBar />
+              </React.Fragment>
+            )}
           </Toolbar>
         </AppBar>
       </HideOnScroll>
