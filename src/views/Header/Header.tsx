@@ -68,7 +68,7 @@ function HideOnScroll(props: any) {
 const Header = (props: HeaderProps) => {
   const classes = useStyles();
   const mazeContext = useContext(p5_MazeContext);
-  const { changeView } = props.mazeViewStore!;
+  const { changeView, changeRunMazeMode } = props.mazeViewStore!;
   return (
     <div className={classes.root}>
       <CssBaseline />
@@ -105,6 +105,16 @@ const Header = (props: HeaderProps) => {
             >
               <Typography>
                 {MAIN_MENU_OPTIONS.ENABLE_FOLLOW_CELL_CREATOR}
+              </Typography>
+            </Button>
+            <Button
+              onClick={() => {
+                changeRunMazeMode();
+              }}
+              color="inherit"
+            >
+              <Typography>
+                {MAIN_MENU_OPTIONS.RUN_MAZE}
               </Typography>
             </Button>
             <Button color="inherit">

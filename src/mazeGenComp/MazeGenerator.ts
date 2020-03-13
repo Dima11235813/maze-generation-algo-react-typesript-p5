@@ -1,4 +1,4 @@
-import p5 from "p5";
+import p5, { Camera } from "p5";
 import { Cell } from "./components/Cell/Cell"
 import { logColumnDuringCreation, logRowDuringCreation, logger } from "../utils/loggingUtils"
 import { MazeOptions } from "./mazeUtils/mazeOptions"
@@ -41,6 +41,15 @@ export class MazeGenerator {
     startTime: Date
     endTime: Date;
     runTime: number = 0
+    halfWindowWidth: number = 0;
+    halfWindowHeight: number = 0;
+    //Camera
+    camera: Camera = new Camera;
+    //Run Maze Start
+    xLocation: number = 0;
+    yLocation: number = 0;
+    appliedRotation: number = 0
+
     constructor(
         public mazeIsActive: boolean,
         public frameRate: number,
@@ -57,7 +66,11 @@ export class MazeGenerator {
         //     this.theShader = p.loadShader('assets/webcam.vert', 'assets/webvam.frag')
         // }
         p.setup = () => {
-            const {use3dMode} = stores.uiPreferencesStore!;
+            // const {use3dMode} = stores.uiPreferencesStore!;
+
+            //Set up reused values for maze
+            this.halfWindowWidth = (mazeOptions.windowWidth / 2)
+            this.halfWindowHeight = (mazeOptions.windowHeight / 2)
             //TEMP
             // if (p.createCapture) {
             //     this.cam = p.createCapture(p.VIDEO);
@@ -75,11 +88,17 @@ export class MazeGenerator {
                 numberOfColumns,
                 numberOfRows,
                 padding } = mazeOptions
-                //TODO Add use webQL option because defualt should be webql
-                //other option is html canvas and that will have those stroke cap options
-                
+            //TODO Add use webQL option because defualt should be webql
+            //other option is html canvas and that will have those stroke cap options
+
             // if (use3dMode) {
-                p.createCanvas(windowWidth, windowHeight, p.WEBGL)
+            p.createCanvas(windowWidth, windowHeight, p.WEBGL)
+            p.setAttributes('antialias', true);
+            this.camera = p.createCamera()
+            // this.camera.tilt(90)
+            // this.camera.pan(90)
+            // this.camera.lookAt(windowWidth, windowHeight, 0);
+            p.perspective(1.57, windowWidth / windowHeight, 0.1, windowHeight * 2);
             // } else {
             //     p.createCanvas(windowWidth, windowHeight)
             // }
@@ -173,7 +192,7 @@ export class MazeGenerator {
         this.loggedMazeGenCompleteMetrics = false
         this.viewRotation = 0
         p.draw = () => {
-            const {use3dMode} = stores.uiPreferencesStore!;
+            const { use3dMode } = stores.uiPreferencesStore!;
             //Show start time of maze and store in variable for later reference
             if (this.numberOfFramesDrawn === 0) {
                 this.startTime = new Date()
@@ -209,8 +228,8 @@ export class MazeGenerator {
                 // p.rotateX(1.25);
                 p.angleMode(p.RADIANS)
                 // p.angleMode(p.DEGREES)
-                const { mazeView } = stores.mazeViewStore!;
-                if (mazeView === 0) {
+                const { mazeView, runMazeMode, mazeRunnerViewPoint } = stores.mazeViewStore!;
+                if (mazeView === 0 && !runMazeMode) {
                     p.rotateX(p.PI / 3)
                     // p.rotateX(66);
                 } else {
@@ -218,13 +237,40 @@ export class MazeGenerator {
                     this.viewRotation = p.sin((mazeView % 6) * 30) * p.PI
                     p.rotateX(this.viewRotation);
                 }
-                let normalizedMouseX = mouseX - (mazeOptions.windowWidth / 2)
-                let normalizedMouseY = mouseY - (mazeOptions.windowHeight / 2)
+                let normalizedMouseX = mouseX - this.halfWindowWidth
+                let normalizedMouseY = mouseY - this.halfWindowHeight
                 let yTranslate = mazeOptions.view.zoomHeightDiff / mazeOptions.windowHeight
 
                 //Only follow mouse if maze options aren't open
                 const { mazeOptionsIsOpen } = stores.uiPreferencesStore!
-                if (this.followMouse && !mazeOptionsIsOpen) {
+                // this.camera(mazeOptions.calculatedCellWidth, mazeOptions.calculatedCellHeight, 0)
+                if (runMazeMode) {
+                    // this.camera.perspective()
+                    this.camera.pan(mazeRunnerViewPoint.rotation)
+                    this.camera.setPosition(this.xLocation, this.yLocation, 0)
+                    this.camera.move(
+                        mazeRunnerViewPoint.x,
+                        mazeRunnerViewPoint.y,
+                        0)
+                    // this.camera.lookAt(mazeRunnerViewPoint.x, mazeRunnerViewPoint.y, -20)
+                    // p.rotateZ(
+                    //     mazeRunnerViewPoint.rotation
+                    // )
+                    // }
+                    p.rotateY(p.PI / 2)
+                    p.rotateX(p.PI / 2)
+                    p.translate(
+                        mazeRunnerViewPoint.x + this.halfWindowWidth - (mazeOptions.calculatedCellWidth / 2),
+                        mazeRunnerViewPoint.y + this.halfWindowHeight - (mazeOptions.calculatedCellHeight / 2)
+                        ,
+                        0//mazeOptions.calculatedCellHeight / 2
+                    )
+                    // p.rotateZ(90)
+                    this.xLocation += mazeRunnerViewPoint.x
+                    this.yLocation += mazeRunnerViewPoint.y
+                    this.appliedRotation += mazeRunnerViewPoint.rotation
+                }
+                else if (this.followMouse && !mazeOptionsIsOpen) {
                     p.translate(
                         normalizedMouseX,
                         (this.viewRotation > -1.8 && this.viewRotation < 1.8) ?

@@ -45,8 +45,8 @@ export class MazeOptions {
         this.updateDynamicValues()
         //Set UI Vars
         //TODO Move to header constants
-        this.windowHeight = window.innerHeight;
-        this.windowWidth = window.innerWidth;
+        this.windowHeight = window.innerHeight - 100;
+        this.windowWidth = window.innerWidth - 50;
         window.addEventListener("wheel", (event: any) => {
             const minZoomSetting = 0
             let userIsZoomingIn = event.wheelDelta > 0

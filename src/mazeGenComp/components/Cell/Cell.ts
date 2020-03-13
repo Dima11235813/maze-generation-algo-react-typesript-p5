@@ -135,7 +135,8 @@ export class Cell {
             // let x_position = this.visited ? (this.row * this._cellWidth) : (this.row * this._cellWidth) / 2
             // let y_position = this.visited ? (this.column * this._cellWidth) : (this.column * this._cellWidth) / 2
             // let z_position = this.visited ? (this.column + this.row) * 3 : (this.column + this.row) * 3 / 2
-            if (use3dMode) {
+            const { runMazeMode } = stores.mazeViewStore!;
+            if (use3dMode && !runMazeMode) {
                 let animate = true
                 //keep track if we're going backwards or not
                 const DEPTH_CELL_CELL_SIZE_OFFSET = 6
