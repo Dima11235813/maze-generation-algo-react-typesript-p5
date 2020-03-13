@@ -45,10 +45,6 @@ export class MazeGenerator {
     halfWindowHeight: number = 0;
     //Camera
     camera: Camera = new Camera;
-    //Run Maze Start
-    xLocation: number = 0;
-    yLocation: number = 0;
-    appliedRotation: number = 0
 
     constructor(
         public mazeIsActive: boolean,
@@ -210,25 +206,34 @@ export class MazeGenerator {
                 const mouseY = p.mouseY
                 const dirY = (mouseX / p.height - 0.5) * 4;
                 const dirX = (mouseY / p.width - 0.5) * 4;
+                const { mazeView, runMazeMode, cameraView, appliedRotation, xCameraLocation, yCameraLocation } = stores.mazeViewStore!;
                 // p.ambientLight(255);
                 // p.directionalLight(204, 204, 204, dirX, dirY, 1);
                 p.background(255);
+                p.angleMode(p.RADIANS)
+                if (runMazeMode) {
+                    p.directionalLight(0, 102, 255, -1, 0, 0);
+                    p.pointLight(255, 255, 255, 0, 0, 600);
+                    p.pointLight(255, 255, 255, xCameraLocation, yCameraLocation, 100);
+                    // p.pointLight(0, 0, 0, 0, 0, 600);
+                    // p.directionalLight(0, 0, 0, -1, 0, 0);
+                } else {
 
-                // Orange point light on the right
-                p.pointLight(255, 255, 255, 0, 0, 600);
-                p.pointLight(255, 255, 255, 0, 0, -600);
+                    // Orange point light on the right
+                    p.pointLight(255, 255, 255, 0, 0, 600);
+                    p.pointLight(255, 255, 255, 0, 0, -600);
 
-                // Blue directional light from the left
-                p.directionalLight(0, 102, 255, -1, 0, 0);
+                    // Blue directional light from the left
+                    p.directionalLight(0, 102, 255, -1, 0, 0);
 
-                // Yellow spotlight from the front
-                p.pointLight(mouseX, mouseY, mazeOptions.windowHeight, 255, 255, 255);
+                    // Yellow spotlight from the front
+                    p.pointLight(mouseX, mouseY, mazeOptions.windowHeight, 255, 255, 255);
+                }
+
                 // p.rotateY(1.75);
                 // p.rotateX(1.25);
                 // p.rotateX(1.25);
-                p.angleMode(p.RADIANS)
                 // p.angleMode(p.DEGREES)
-                const { mazeView, runMazeMode, mazeRunnerViewPoint } = stores.mazeViewStore!;
                 if (mazeView === 0 && !runMazeMode) {
                     p.rotateX(p.PI / 3)
                     // p.rotateX(66);
@@ -240,35 +245,48 @@ export class MazeGenerator {
                 let normalizedMouseX = mouseX - this.halfWindowWidth
                 let normalizedMouseY = mouseY - this.halfWindowHeight
                 let yTranslate = mazeOptions.view.zoomHeightDiff / mazeOptions.windowHeight
+                const xTranslatedCameraLocation = -xCameraLocation + this.halfWindowWidth - (mazeOptions.calculatedCellHeight / 4)
+                const yTranslatedCameraLocation = -yCameraLocation + this.halfWindowHeight - (mazeOptions.calculatedCellWidth / 4)
 
                 //Only follow mouse if maze options aren't open
                 const { mazeOptionsIsOpen } = stores.uiPreferencesStore!
                 // this.camera(mazeOptions.calculatedCellWidth, mazeOptions.calculatedCellHeight, 0)
                 if (runMazeMode) {
                     // this.camera.perspective()
-                    this.camera.pan(mazeRunnerViewPoint.rotation)
-                    this.camera.setPosition(this.xLocation, this.yLocation, 0)
-                    this.camera.move(
-                        mazeRunnerViewPoint.x,
-                        mazeRunnerViewPoint.y,
-                        0)
-                    // this.camera.lookAt(mazeRunnerViewPoint.x, mazeRunnerViewPoint.y, -20)
+                    // this.camera.pan(cameraView.rotation)
+                    this.camera.setPosition(0, 0, 0)
+                    // this.camera.move(
+                    //     cameraView.x,
+                    //     cameraView.y,
+                    //     mazeOptions.calculatedCellWidth / 2)
+                    // this.camera.lookAt(cameraView.x, cameraView.y, -20)
                     // p.rotateZ(
-                    //     mazeRunnerViewPoint.rotation
+                    //     cameraView.rotation
                     // )
                     // }
                     p.rotateY(p.PI / 2)
                     p.rotateX(p.PI / 2)
+                    let quarterTurn = 2 * p.PI / 4
+                    switch (appliedRotation) {
+                        case 0:
+                            p.rotateZ(0)
+                            break;
+                        case 1:
+                            p.rotateZ(quarterTurn)
+                            break;
+                        case 2:
+                            p.rotateZ(quarterTurn * 2)
+                            break;
+                        case 3:
+                            p.rotateZ(quarterTurn * 3)
+                            break;
+                    }
                     p.translate(
-                        mazeRunnerViewPoint.x + this.halfWindowWidth - (mazeOptions.calculatedCellWidth / 2),
-                        mazeRunnerViewPoint.y + this.halfWindowHeight - (mazeOptions.calculatedCellHeight / 2)
-                        ,
-                        0//mazeOptions.calculatedCellHeight / 2
+                        xTranslatedCameraLocation,
+                        yTranslatedCameraLocation,
+                        -mazeOptions.cellSize / 6
                     )
                     // p.rotateZ(90)
-                    this.xLocation += mazeRunnerViewPoint.x
-                    this.yLocation += mazeRunnerViewPoint.y
-                    this.appliedRotation += mazeRunnerViewPoint.rotation
                 }
                 else if (this.followMouse && !mazeOptionsIsOpen) {
                     p.translate(
