@@ -6,7 +6,7 @@ import { logger } from '../utils/loggingUtils';
 const rotationSpeed = 1
 
 //TODO Set this to be cell width somehow
-const upDownSpeed = 40
+const upDownSpeed = 10
 
 export enum KeyEventType {
     UP, DOWN
@@ -30,10 +30,11 @@ export class MazeViewStore extends CommonStore {
         //TODO Remove after dev
         this.bindKeyDirectionHandler()
     }
+    @observable peakOffset: number = 0;
     @observable xCameraLocation: number = 0;
     @observable yCameraLocation: number = 0;
     @observable lastRotation: number = 0
-    @observable runMazeMode: boolean = true
+    @observable runMazeMode: boolean = false
     @observable appliedRotation: number = 0
     @observable cameraView: CameraView = {
         x: 0,
@@ -122,8 +123,11 @@ export class MazeViewStore extends CommonStore {
     }
     handleKeyEvent = (keyEvent: KeyboardEvent, upOrDown: KeyEventType) => {
         const { keyCode } = keyEvent
-        console.log(keyCode)
         switch (keyCode) {
+            //Peek
+            case 80:
+                this.handlePeak(upOrDown)
+                break;
             //If going up
             case 38:
                 if (upOrDown === KeyEventType.UP) {
@@ -195,5 +199,13 @@ export class MazeViewStore extends CommonStore {
             }
         }
         this.lastRotation = this.cameraView.rotation
+    }
+    handlePeak = (keyEventType: KeyEventType) => {
+        const peakOffsetDefault = 50
+        if (keyEventType === KeyEventType.UP) {
+            this.peakOffset = 0
+        } else if (keyEventType === KeyEventType.DOWN && this.peakOffset !== peakOffsetDefault) {
+            this.peakOffset = peakOffsetDefault
+        }
     }
 }

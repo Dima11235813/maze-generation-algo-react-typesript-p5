@@ -206,15 +206,18 @@ export class MazeGenerator {
                 const mouseY = p.mouseY
                 const dirY = (mouseX / p.height - 0.5) * 4;
                 const dirX = (mouseY / p.width - 0.5) * 4;
-                const { mazeView, runMazeMode, cameraView, appliedRotation, xCameraLocation, yCameraLocation } = stores.mazeViewStore!;
+                const { mazeView, runMazeMode, cameraView, appliedRotation, xCameraLocation, yCameraLocation, peakOffset } = stores.mazeViewStore!;
+                const xTranslatedCameraLocation = -xCameraLocation + this.halfWindowWidth - (mazeOptions.calculatedCellHeight / 4)
+                const yTranslatedCameraLocation = -yCameraLocation + this.halfWindowHeight - (mazeOptions.calculatedCellWidth / 4)
+                // let currentCell = this.grid.returnCell(xTranslatedCameraLocation, yTranslatedCameraLocation)
                 // p.ambientLight(255);
                 // p.directionalLight(204, 204, 204, dirX, dirY, 1);
                 p.background(255);
                 p.angleMode(p.RADIANS)
                 if (runMazeMode) {
-                    p.directionalLight(0, 102, 255, -1, 0, 0);
-                    p.pointLight(255, 255, 255, 0, 0, 600);
-                    p.pointLight(255, 255, 255, xCameraLocation, yCameraLocation, 100);
+                    // p.directionalLight(0, 102, 255, -1, 0, 0);
+                    p.pointLight(255, 255, 255, -100, -100, -100);
+                    // p.pointLight(255, 255, 255, xTranslatedCameraLocation, yTranslatedCameraLocation, -40);
                     // p.pointLight(0, 0, 0, 0, 0, 600);
                     // p.directionalLight(0, 0, 0, -1, 0, 0);
                 } else {
@@ -245,25 +248,12 @@ export class MazeGenerator {
                 let normalizedMouseX = mouseX - this.halfWindowWidth
                 let normalizedMouseY = mouseY - this.halfWindowHeight
                 let yTranslate = mazeOptions.view.zoomHeightDiff / mazeOptions.windowHeight
-                const xTranslatedCameraLocation = -xCameraLocation + this.halfWindowWidth - (mazeOptions.calculatedCellHeight / 4)
-                const yTranslatedCameraLocation = -yCameraLocation + this.halfWindowHeight - (mazeOptions.calculatedCellWidth / 4)
 
                 //Only follow mouse if maze options aren't open
                 const { mazeOptionsIsOpen } = stores.uiPreferencesStore!
                 // this.camera(mazeOptions.calculatedCellWidth, mazeOptions.calculatedCellHeight, 0)
                 if (runMazeMode) {
-                    // this.camera.perspective()
-                    // this.camera.pan(cameraView.rotation)
                     this.camera.setPosition(0, 0, 0)
-                    // this.camera.move(
-                    //     cameraView.x,
-                    //     cameraView.y,
-                    //     mazeOptions.calculatedCellWidth / 2)
-                    // this.camera.lookAt(cameraView.x, cameraView.y, -20)
-                    // p.rotateZ(
-                    //     cameraView.rotation
-                    // )
-                    // }
                     p.rotateY(p.PI / 2)
                     p.rotateX(p.PI / 2)
                     let quarterTurn = 2 * p.PI / 4
@@ -284,7 +274,7 @@ export class MazeGenerator {
                     p.translate(
                         xTranslatedCameraLocation,
                         yTranslatedCameraLocation,
-                        -mazeOptions.cellSize / 6
+                        -mazeOptions.cellSize / 6 - peakOffset
                     )
                     // p.rotateZ(90)
                 }
