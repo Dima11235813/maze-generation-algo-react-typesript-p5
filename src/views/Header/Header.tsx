@@ -68,7 +68,13 @@ function HideOnScroll(props: any) {
 const Header = (props: HeaderProps) => {
   const classes = useStyles();
   const mazeContext = useContext(p5_MazeContext);
-  const { changeView, changeRunMazeMode, runMazeMode } = props.mazeViewStore!;
+  const {
+    changeView,
+    changeRunMazeMode,
+    runMazeMode,
+    solveMazeMode,
+    setSolveMazeMode
+  } = props.mazeViewStore!;
   return (
     <div className={classes.root}>
       <CssBaseline />
@@ -127,6 +133,18 @@ const Header = (props: HeaderProps) => {
             {/* Only allow save mode outside of run maze mode */}
             {runMazeMode ? null : (
               <React.Fragment>
+                <Button
+                  onClick={() => {
+                    setSolveMazeMode();
+                  }}
+                  color="inherit"
+                >
+                  <Typography>
+                    {solveMazeMode
+                      ? MAIN_MENU_OPTIONS.EXIT_MAZE_SOLVER
+                      : MAIN_MENU_OPTIONS.SOLVE_MAZE}
+                  </Typography>
+                </Button>
                 <Button color="inherit">
                   <Typography>{MAIN_MENU_OPTIONS.SAVE}</Typography>
                 </Button>

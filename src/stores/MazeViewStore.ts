@@ -30,6 +30,7 @@ export class MazeViewStore extends CommonStore {
         //TODO Remove after dev
         this.bindKeyDirectionHandler()
     }
+    @observable solveMazeMode: boolean = false;
     @observable peakOffset: number = 0;
     @observable xCameraLocation: number = 0;
     @observable yCameraLocation: number = 0;
@@ -44,6 +45,10 @@ export class MazeViewStore extends CommonStore {
     @observable mazeView: number = 0
     @observable showGeneratorCubeProjection: boolean = true
     @observable percentOfCubeProjectionToShow: number = 10
+
+    @action setSolveMazeMode = () => {
+        this.solveMazeMode = !this.solveMazeMode
+    }
 
     @action changeView = () => {
         this.mazeView++
