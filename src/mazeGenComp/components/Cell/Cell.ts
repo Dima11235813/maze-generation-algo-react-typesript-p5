@@ -344,7 +344,7 @@ export class Cell {
     //             this._cellHeight - (2 * this.paddingToApplyToDepth))
     //         this._p.pop()
     // }
-    highlight = (use3d: boolean, mazeOptions: MazeOptions) => {
+    highlight = (mazeOptions: MazeOptions) => {
         var xLength = this.column * this._cellWidth
         var yLength = this.row * this._cellHeight
         let xyProjectedPoint = getProjectionFor3D({ x: xLength, y: yLength }, mazeOptions)

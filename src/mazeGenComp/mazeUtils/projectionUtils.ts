@@ -2,6 +2,7 @@ import { mazeOptionsUiContext } from "../../AppContext"
 import { MazeOptions } from "./mazeOptions"
 import { useContext } from "react"
 import { Point } from "../components/Point"
+import { stores } from "../../stores"
 
 
 export class ProjectionTo3dUtilClass {
@@ -11,7 +12,7 @@ export class ProjectionTo3dUtilClass {
 }
 export const offsetWidthBy3dProjection = (value: number, mazeOptions: MazeOptions): number => {
     const { windowWidth,
-    } = mazeOptions
+    } = stores.browserInfoStore
     let offsetWidth3d = Math.floor(value - (windowWidth / 2))
     // console.log(offsetWidth3d)
     return offsetWidth3d
@@ -19,7 +20,7 @@ export const offsetWidthBy3dProjection = (value: number, mazeOptions: MazeOption
 export const offsetHeightBy3dProjection = (value: number, mazeOptions: MazeOptions): number => {
     const {
         windowHeight,
-    } = mazeOptions
+    } = stores.browserInfoStore
     let offsetHeight3d = Math.floor(value - (windowHeight / 2))
     // console.log(offsetHeight3d)
     return offsetHeight3d

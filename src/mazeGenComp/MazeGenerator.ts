@@ -5,6 +5,7 @@ import { MazeOptions } from "./mazeUtils/mazeOptions"
 import { stores } from '../stores'
 import { DEFAULT_Z_DISTANCE } from "../shared/constants"
 import img from "../assets/exit.jpg"
+import { MazeRenderer } from "./mazeRenderer.ts/mazeRenderer";
 
 export class MazeGenerator {
     //vars to hold current column and row during draw phase
@@ -29,7 +30,6 @@ export class MazeGenerator {
     sineOffsetForDepth: any = 0.0
     sineOffsetForDepthBound: any = 68
     sineOffsetInterval: any = .4
-    viewRotation: number;
     //Metrics
     currentCellNumber = 0
     numberOfCells: number = 100
@@ -41,11 +41,10 @@ export class MazeGenerator {
     startTime: Date
     endTime: Date;
     runTime: number = 0
-    halfWindowWidth: number = 0;
-    halfWindowHeight: number = 0;
+
     //Camera
     camera: Camera = new Camera;
-
+    mazeRenderer?: MazeRenderer;
     constructor(
         public mazeIsActive: boolean,
         public frameRate: number,
@@ -65,8 +64,7 @@ export class MazeGenerator {
             // const {use3dMode} = stores.uiPreferencesStore!;
 
             //Set up reused values for maze
-            this.halfWindowWidth = (mazeOptions.windowWidth / 2)
-            this.halfWindowHeight = (mazeOptions.windowHeight / 2)
+            stores.browserInfoStore.setBrowserDimensions()
             //TEMP
             // if (p.createCapture) {
             //     this.cam = p.createCapture(p.VIDEO);
@@ -77,8 +75,7 @@ export class MazeGenerator {
 
             ///
             this.mazeOptions.updateDynamicValues()
-            const { windowWidth,
-                windowHeight,
+            const {
                 calculatedCellHeight,
                 calculatedCellWidth,
                 numberOfColumns,
@@ -87,7 +84,7 @@ export class MazeGenerator {
             //TODO Add use webQL option because defualt should be webql
             //other option is html canvas and that will have those stroke cap options
 
-            // if (use3dMode) {
+            const { windowWidth, windowHeight } = stores.browserInfoStore
             p.createCanvas(windowWidth, windowHeight, p.WEBGL)
             p.setAttributes('antialias', true);
             this.camera = p.createCamera()
@@ -95,6 +92,7 @@ export class MazeGenerator {
             // this.camera.pan(90)
             // this.camera.lookAt(windowWidth, windowHeight, 0);
             p.perspective(1.57, windowWidth / windowHeight, 0.1, windowHeight * 2);
+            this.mazeRenderer = new MazeRenderer(p, this.camera, mazeOptions)
             // } else {
             //     p.createCanvas(windowWidth, windowHeight)
             // }
@@ -163,7 +161,6 @@ export class MazeGenerator {
                 Frame rate from p.frameRate() = ${p.frameRate()} 
                 Passed frame rate is ${this.frameRate}
                 Extected run time is: ${estimatedRunTime} 
-                View Rotation ${this.viewRotation}
                 Number of visits ${this.numberOfFramesDrawn}
                 Cells Created ${this.numberOfCells}
                 When Maze Complete Visits to Number of Cells Ratio
@@ -186,118 +183,16 @@ export class MazeGenerator {
             }
         }
         this.loggedMazeGenCompleteMetrics = false
-        this.viewRotation = 0
         p.draw = () => {
-            const { use3dMode } = stores.uiPreferencesStore!;
             //Show start time of maze and store in variable for later reference
             if (this.numberOfFramesDrawn === 0) {
                 this.startTime = new Date()
                 console.log(`Maze generation started at: ${this.startTime}`)
             }
+            this.mazeRenderer!.setCameraLocations()
+            this.mazeRenderer!.draw3dLight()
+            this.mazeRenderer!.applyContentManipulations(this.followMouse)
             this.logMetrics()
-            if (use3dMode) {
-                //temp
-                // shader() sets the active shader with our shader
-                // https://p5js.org/examples/3d-shader-using-webcam.html
-                // if(this.theShader){
-                //     p.shader(this.theShader);
-                // }
-                const mouseX = p.mouseX
-                const mouseY = p.mouseY
-                const dirY = (mouseX / p.height - 0.5) * 4;
-                const dirX = (mouseY / p.width - 0.5) * 4;
-                const { mazeView, runMazeMode, cameraView, appliedRotation, xCameraLocation, yCameraLocation, peakOffset } = stores.mazeViewStore!;
-                const xTranslatedCameraLocation = -xCameraLocation + this.halfWindowWidth - (mazeOptions.calculatedCellHeight / 4)
-                const yTranslatedCameraLocation = -yCameraLocation + this.halfWindowHeight - (mazeOptions.calculatedCellWidth / 4)
-                // let currentCell = this.grid.returnCell(xTranslatedCameraLocation, yTranslatedCameraLocation)
-                // p.ambientLight(255);
-                // p.directionalLight(204, 204, 204, dirX, dirY, 1);
-                p.background(255);
-                p.angleMode(p.RADIANS)
-                if (runMazeMode) {
-                    // p.directionalLight(0, 102, 255, -1, 0, 0);
-                    p.pointLight(255, 255, 255, -100, -100, -100);
-                    // p.pointLight(255, 255, 255, xTranslatedCameraLocation, yTranslatedCameraLocation, -40);
-                    // p.pointLight(0, 0, 0, 0, 0, 600);
-                    // p.directionalLight(0, 0, 0, -1, 0, 0);
-                } else {
-
-                    // Orange point light on the right
-                    p.pointLight(255, 255, 255, 0, 0, 600);
-                    p.pointLight(255, 255, 255, 0, 0, -600);
-
-                    // Blue directional light from the left
-                    p.directionalLight(0, 102, 255, -1, 0, 0);
-
-                    // Yellow spotlight from the front
-                    p.pointLight(mouseX, mouseY, mazeOptions.windowHeight, 255, 255, 255);
-                }
-
-                // p.rotateY(1.75);
-                // p.rotateX(1.25);
-                // p.rotateX(1.25);
-                // p.angleMode(p.DEGREES)
-                if (mazeView === 0 && !runMazeMode) {
-                    p.rotateX(p.PI / 3)
-                    // p.rotateX(66);
-                } else {
-                    // viewRotation = (p.PI / (((mazeView + 2 % 9) / p.PI)))
-                    this.viewRotation = p.sin((mazeView % 6) * 30) * p.PI
-                    p.rotateX(this.viewRotation);
-                }
-                let normalizedMouseX = mouseX - this.halfWindowWidth
-                let normalizedMouseY = mouseY - this.halfWindowHeight
-                let yTranslate = mazeOptions.view.zoomHeightDiff / mazeOptions.windowHeight
-
-                //Only follow mouse if maze options aren't open
-                const { mazeOptionsIsOpen } = stores.uiPreferencesStore!
-                // this.camera(mazeOptions.calculatedCellWidth, mazeOptions.calculatedCellHeight, 0)
-                if (runMazeMode) {
-                    this.camera.setPosition(0, 0, 0)
-                    p.rotateY(p.PI / 2)
-                    p.rotateX(p.PI / 2)
-                    let quarterTurn = 2 * p.PI / 4
-                    switch (appliedRotation) {
-                        case 0:
-                            p.rotateZ(0)
-                            break;
-                        case 1:
-                            p.rotateZ(quarterTurn)
-                            break;
-                        case 2:
-                            p.rotateZ(quarterTurn * 2)
-                            break;
-                        case 3:
-                            p.rotateZ(quarterTurn * 3)
-                            break;
-                    }
-                    p.translate(
-                        xTranslatedCameraLocation,
-                        yTranslatedCameraLocation,
-                        -mazeOptions.cellSize / 6 - peakOffset
-                    )
-                    // p.rotateZ(90)
-                }
-                else if (this.followMouse && !mazeOptionsIsOpen) {
-                    p.translate(
-                        normalizedMouseX,
-                        (this.viewRotation > -1.8 && this.viewRotation < 1.8) ?
-                            // -normalizedMouseY + (mazeOptions.windowHeight / 2 * yTranslate) :
-                            normalizedMouseY :
-                            -normalizedMouseY
-                        , mazeOptions.view.zValue
-                    )
-                } else {
-                    p.translate(
-                        0,
-                        0 - (mazeOptions.windowHeight / 2 * yTranslate),
-                        mazeOptions.view.zValue
-                    )
-                }
-
-            }
-
-            ///
             const { numberOfColumns, numberOfRows } = mazeOptions
             // let { r, g, b, a } = mazeOptions.backgroundColor
             let { r, g, b } = mazeOptions.backgroundColor
@@ -342,7 +237,7 @@ export class MazeGenerator {
                 this.currentCell.visited += 1
 
                 //highlight the current cell to tell it apart from other visited ones
-                this.currentCell.highlight(use3dMode, mazeOptions)
+                this.currentCell.highlight(mazeOptions)
                 //STEP 1
                 //get the random next neightbor cell from the current cell
                 let nextCell

@@ -3,6 +3,7 @@ import { ShowWallIndicator } from "./ShowWallIndicator";
 import { MazeOptions } from "../../mazeUtils/mazeOptions";
 import { CELL_WALL_WITH_DEPTH_Z_VALUE } from "../../../shared/constants";
 import { invertColors } from "../../../utils/colorUtils";
+import { stores } from "../../../stores";
 
 export class DrawDepthAnimation {
     constructor(
@@ -17,17 +18,17 @@ export class DrawDepthAnimation {
         if (this._showWallIndicator.drawTop) {
             this.drawWall(
                 this._cellWidth,
-                1 , //this._mazeOptions.cellWallSize,
-                this._mazeOptions.cellSize / 2 ,// CELL_WALL_WITH_DEPTH_Z_VALUE,
+                1, //this._mazeOptions.cellWallSize,
+                this._mazeOptions.cellSize / 2,// CELL_WALL_WITH_DEPTH_Z_VALUE,
                 this._column * this._cellWidth + (this._cellWidth / 2),
                 this._row * this._cellHeight
             )
         }
         if (this._showWallIndicator.drawRight) {
             this.drawWall(
-                1 ,//this._mazeOptions.cellWallSize,
+                1,//this._mazeOptions.cellWallSize,
                 this._cellHeight,
-                this._mazeOptions.cellSize / 2 ,// CELL_WALL_WITH_DEPTH_Z_VALUE,
+                this._mazeOptions.cellSize / 2,// CELL_WALL_WITH_DEPTH_Z_VALUE,
                 (this._column + 1) * this._cellWidth,
                 this._row * this._cellHeight + (this._cellHeight / 2)
             )
@@ -36,7 +37,7 @@ export class DrawDepthAnimation {
             this.drawWall(
                 this._cellWidth,
                 1, //this._mazeOptions.cellWallSize,
-                this._mazeOptions.cellSize / 2 ,// CELL_WALL_WITH_DEPTH_Z_VALUE,
+                this._mazeOptions.cellSize / 2,// CELL_WALL_WITH_DEPTH_Z_VALUE,
                 this._column * this._cellWidth + (this._cellWidth / 2),
                 (this._row + 1) * this._cellHeight
             )
@@ -45,7 +46,7 @@ export class DrawDepthAnimation {
             this.drawWall(
                 1, //this._mazeOptions.cellWallSize,
                 this._cellHeight,
-                this._mazeOptions.cellSize / 2 ,// CELL_WALL_WITH_DEPTH_Z_VALUE,
+                this._mazeOptions.cellSize / 2,// CELL_WALL_WITH_DEPTH_Z_VALUE,
                 (this._column) * this._cellWidth,
                 this._row * this._cellHeight + (this._cellHeight / 2)
             )
@@ -67,9 +68,10 @@ export class DrawDepthAnimation {
         let { r, g, b, a } = invertColors(this._mazeOptions.cellWallColor)
         this._p.fill(r, g, b)
         //translate to consider shape origin point have central alignment
+        const { windowWidth, windowHeight } = stores.browserInfoStore
         this._p.translate(
-            xTranslate - (this._mazeOptions.windowWidth / 2) + (this._mazeOptions.padding / 2),
-            yTranslate - (this._mazeOptions.windowHeight / 2) + (this._mazeOptions.padding / 2),
+            xTranslate - (windowWidth / 2) + (this._mazeOptions.padding / 2),
+            yTranslate - (windowHeight / 2) + (this._mazeOptions.padding / 2),
             0)
         // this._cellWidth > this._cellHeight ? this._cellWidth / 2 : this._cellHeight / 2);
         // this._p.texture(this._img);

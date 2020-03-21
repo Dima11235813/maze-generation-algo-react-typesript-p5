@@ -9,6 +9,7 @@ import { RouterStore } from "mobx-react-router";
 import { UiPreferencesStore } from "../stores/UiPreferencesStore";
 import { logToConsole } from "../shared/logger";
 import { MazeViewStore } from "../stores/MazeViewStore";
+import { stores } from "../stores";
 
 interface MazeContainerProps {
   routerStore?: RouterStore;
@@ -89,8 +90,7 @@ const MazeContainer: React.FC<MazeContainerProps> = (
         New Widow Width ${window.innerWidth}
         New Window Height ${window.innerHeight}
         `);
-      mazeOptions.windowWidth = window.innerWidth;
-      mazeOptions.windowHeight = window.innerHeight;
+      stores.browserInfoStore.setBrowserDimensions()
       storageUtils.setMazeoptionsInStorage(mazeOptions);
       rerunMaze();
     };

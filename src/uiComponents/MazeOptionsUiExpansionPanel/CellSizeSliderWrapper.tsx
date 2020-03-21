@@ -8,6 +8,7 @@ import {
 import { ExpansionPanelWrapper } from "./ExpansionPanel";
 import CellSizeSlider from "../CellSizeSlider";
 import { Labels } from "../../shared/labels";
+import { stores } from "../../stores";
 
 export const CellSizeSliderWrapper = () => {
   let mazeContextInstance: P5_MazeContext = useContext(p5_MazeContext);
@@ -15,8 +16,9 @@ export const CellSizeSliderWrapper = () => {
     mazeOptionsUiContext
   );
   const { mazeOptionsSetter, mazeOptions, p5_MazeFuncs } = mazeContextInstance;
-  const {panelIsExpandedState} = mazeOptionsUiContextInstance
+  const { panelIsExpandedState } = mazeOptionsUiContextInstance;
   const { resetMaze } = p5_MazeFuncs;
+  const { windowWidth } = stores.browserInfoStore;
   return (
     <ExpansionPanelWrapper
       name={Labels.CELL_SIZE}
@@ -25,7 +27,7 @@ export const CellSizeSliderWrapper = () => {
         <CellSizeSlider
           mazeOptionsSetter={mazeOptionsSetter}
           onSizeChange={resetMaze}
-          windowWidth={mazeOptions.windowWidth}
+          windowWidth={windowWidth}
           cellSize={mazeOptions.cellSize}
         />
       )}
