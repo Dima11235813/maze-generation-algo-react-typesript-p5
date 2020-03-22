@@ -13,6 +13,7 @@ export class MazeRenderer {
     yTranslatedCameraLocation: number = 0;
     //track rotation internally for logging
     viewRotation: number = 0
+    yTranslate: number = 0;
 
     constructor(
         public p: p5,
@@ -57,12 +58,14 @@ export class MazeRenderer {
 
     }
     applyContentManipulations = (followMouse: boolean) => {
-        const { mazeView, runMazeMode, cameraView, appliedRotation, xCameraLocation, yCameraLocation, peakOffset } = stores.mazeViewStore!;
+        const { mazeView, runMazeMode, solveMazeMode } = stores.mazeViewStore!;
         const { use3dMode } = stores.uiPreferencesStore!;
         const { halfWindowWidth, halfWindowHeight } = stores.browserInfoStore
         const { PI } = this.p
         if (use3dMode) {
-            if (mazeView === 0 && !runMazeMode) {
+            if (solveMazeMode) {
+                this.p.rotateX(0)
+            } else if (mazeView === 0 && !runMazeMode) {
                 this.p.rotateX(PI / 3)
             } else {
                 // viewRotation = (PI / (((mazeView + 2 % 9) / PI)))
@@ -73,56 +76,62 @@ export class MazeRenderer {
             const { windowHeight } = stores.browserInfoStore
             let normalizedMouseX = mouseX - halfWindowWidth
             let normalizedMouseY = mouseY - halfWindowHeight
-            let yTranslate = this.mazeOptions.view.zoomHeightDiff / windowHeight
+            this.yTranslate = this.mazeOptions.view.zoomHeightDiff / windowHeight
 
             //Only follow mouse if maze options aren't open
             const { mazeOptionsIsOpen } = stores.uiPreferencesStore!
             // this.camera(mazeOptions.calculatedCellWidth, mazeOptions.calculatedCellHeight, 0)
             if (runMazeMode) {
-                this.camera.setPosition(0, 0, 0)
-                this.p.rotateY(PI / 2)
-                this.p.rotateX(PI / 2)
-                let quarterTurn = 2 * PI / 4
-                switch (appliedRotation) {
-                    case 0:
-                        this.p.rotateZ(0)
-                        break;
-                    case 1:
-                        this.p.rotateZ(quarterTurn)
-                        break;
-                    case 2:
-                        this.p.rotateZ(quarterTurn * 2)
-                        break;
-                    case 3:
-                        this.p.rotateZ(quarterTurn * 3)
-                        break;
-                }
-                this.p.translate(
-                    this.xTranslatedCameraLocation,
-                    this.yTranslatedCameraLocation,
-                    -this.mazeOptions.cellSize / 6 - peakOffset
-                )
-                // this.p.rotateZ(90)
+                this.applyMazeRunnerRotations()
             }
             else if (followMouse && !mazeOptionsIsOpen) {
                 this.p.translate(
                     normalizedMouseX,
                     (this.viewRotation > -1.8 && this.viewRotation < 1.8) ?
-                        // -normalizedMouseY + (mazeOptions.windowHeight / 2 * yTranslate) :
+                        // -normalizedMouseY + (mazeOptions.windowHeight / 2 * this.yTranslate) :
                         normalizedMouseY :
                         -normalizedMouseY
                     , this.mazeOptions.view.zValue
                 )
             } else {
-                this.p.translate(
-                    0,
-                    0 - (windowHeight / 2 * yTranslate),
-                    this.mazeOptions.view.zValue
-                )
+                this.setDefaultViewTranlates()
             }
-
         }
 
+    }
+    setDefaultViewTranlates = () => {
+        const { windowHeight } = stores.browserInfoStore
+        this.p.translate(
+            0,
+            0 - (windowHeight / 2 * this.yTranslate),
+            this.mazeOptions.view.zValue
+        )
+    }
+    applyMazeRunnerRotations = () => {
+        const { appliedRotation, peakOffset } = stores.mazeViewStore!;
+        this.camera.setPosition(0, 0, 0)
+        this.p.rotateY(PI / 2)
+        this.p.rotateX(PI / 2)
+        let quarterTurn = 2 * PI / 4
+        switch (appliedRotation) {
+            case 0:
+                this.p.rotateZ(0)
+                break;
+            case 1:
+                this.p.rotateZ(quarterTurn)
+                break;
+            case 2:
+                this.p.rotateZ(quarterTurn * 2)
+                break;
+            case 3:
+                this.p.rotateZ(quarterTurn * 3)
+                break;
+        }
+        this.p.translate(
+            this.xTranslatedCameraLocation,
+            this.yTranslatedCameraLocation,
+            -this.mazeOptions.cellSize / 6 - peakOffset
+        )
     }
     //TODO Shader logic
     //temp
@@ -130,5 +139,9 @@ export class MazeRenderer {
     // https://p5js.org/examples/3d-shader-using-webcam.html
     // if(this.theShader){
     //     this.p.shader(this.theShader);
+    // }
+    //From maze generator
+    // p.preload = () => {
+    //     this.theShader = p.loadShader('assets/webcam.vert', 'assets/webvam.frag')
     // }
 }

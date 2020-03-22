@@ -57,23 +57,11 @@ export class MazeGenerator {
         //TODO set timers for temp hack until I put in better typing
         // this.img = p.loadImage("../../assets/exit.jpg");
         this.img = p.loadImage(img);
-        // p.preload = () => {
-        //     this.theShader = p.loadShader('assets/webcam.vert', 'assets/webvam.frag')
-        // }
         p.setup = () => {
-            // const {use3dMode} = stores.uiPreferencesStore!;
-
             //Set up reused values for maze
             stores.browserInfoStore.setBrowserDimensions()
-            //TEMP
-            // if (p.createCapture) {
-            //     this.cam = p.createCapture(p.VIDEO);
-            //     this.cam.size(710, 400);
 
-            //     this.cam.hide();
-            // }
-
-            ///
+            //Update maze options based on browser dimensions
             this.mazeOptions.updateDynamicValues()
             const {
                 calculatedCellHeight,
