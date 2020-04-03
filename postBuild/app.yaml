@@ -2,9 +2,17 @@ runtime: nodejs10
 env: standard
 handlers:
 - url: /.*
-  secure: always
+  static_files: "/build/index.html"
+  http_headers:
+    X-XSS-Protection: "1; mode=block"
   redirect_http_response_code: 301
-  script: auto
+  secure: always
+- url: /.*
+  static_dir: /build
+  http_headers:
+    X-XSS-Protection: "1; mode=block"
+  redirect_http_response_code: 301
+  secure: always
 manual_scaling:
   instances: 1
 resources:

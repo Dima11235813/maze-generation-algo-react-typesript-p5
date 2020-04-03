@@ -6,6 +6,7 @@ import { stores } from '../stores'
 import { DEFAULT_Z_DISTANCE } from "../shared/constants"
 import img from "../assets/exit.jpg"
 import { MazeRenderer } from "./mazeRenderer.ts/mazeRenderer";
+import mazeSolver from "../deps/MazeSolver";
 
 export class MazeGenerator {
     //vars to hold current column and row during draw phase
@@ -58,6 +59,7 @@ export class MazeGenerator {
         // this.img = p.loadImage("../../assets/exit.jpg");
         this.img = p.loadImage(img);
         p.setup = () => {
+
             //Set up reused values for maze
             stores.browserInfoStore.setBrowserDimensions()
 
@@ -69,6 +71,9 @@ export class MazeGenerator {
                 numberOfColumns,
                 numberOfRows,
                 padding } = mazeOptions
+
+            mazeSolver.location.x = calculatedCellWidth / 2
+            mazeSolver.location.y = calculatedCellHeight / 2
             //TODO Add use webQL option because defualt should be webql
             //other option is html canvas and that will have those stroke cap options
 

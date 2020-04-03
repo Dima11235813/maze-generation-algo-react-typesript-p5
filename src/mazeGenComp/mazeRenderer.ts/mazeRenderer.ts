@@ -108,6 +108,7 @@ export class MazeRenderer {
         )
     }
     applyMazeRunnerRotations = () => {
+        const { PI } = this.p
         const { appliedRotation, peakOffset } = stores.mazeViewStore!;
         this.camera.setPosition(0, 0, 0)
         this.p.rotateY(PI / 2)
