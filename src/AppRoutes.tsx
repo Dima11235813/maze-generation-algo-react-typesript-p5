@@ -8,7 +8,7 @@ import LoginView from "./views/Login/LoginView";
 
 //
 import { APP_ROUTES } from "./utils/routeUtils";
-import { errorHandler } from "./errorHandler";
+// import { errorHandler } from "./errorHandler";
 
 const accountRoute = `/${APP_ROUTES.ACCOUNT}`;
 const loginRoute = `/${APP_ROUTES.LOGIN}`;
@@ -18,7 +18,7 @@ export function AppRoutes() {
   return [
     <Route key="" exact path="/" render={() => {
       //TODO Add page logging for google analytics integration
-      errorHandler.report("Test error report on home route")
+      // errorHandler.report("Test error report on home route")
       return <Home/>
     }} />,
     <Route key={mazeRoute} exact path={mazeRoute} component={MazeContainer} />,
