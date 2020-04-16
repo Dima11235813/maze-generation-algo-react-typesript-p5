@@ -10,5 +10,6 @@ handlers:
     script: auto
 env_variables:
   NODE_ENV: production
+  GOOGLE_CLOUD_PROJECT: devenv-259801
 manual_scaling:
   instances: 1
