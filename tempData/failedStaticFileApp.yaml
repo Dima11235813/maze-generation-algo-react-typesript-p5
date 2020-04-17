@@ -1,0 +1,21 @@
+runtime: nodejs10
+env: standard
+handlers:
+- url: /.*
+  static_files: "/build/index.html"
+  http_headers:
+    X-XSS-Protection: "1; mode=block"
+  redirect_http_response_code: 301
+  secure: always
+- url: /.*
+  static_dir: /build
+  http_headers:
+    X-XSS-Protection: "1; mode=block"
+  redirect_http_response_code: 301
+  secure: always
+manual_scaling:
+  instances: 1
+resources:
+  cpu: 1
+  memory_gb: 2
+  disk_size_gb: 10

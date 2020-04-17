@@ -10,22 +10,18 @@ import Header from "./views/Header/Header";
 
 import { AppRoutes } from "./AppRoutes";
 import { stores } from "./stores";
-import { reportError } from "./utils/errorReporting";
 import { ErrorReport } from "./api/models/ErrorReport";
+import errorReporter from "./utils/errorReporting";
 
 const broswerHistory = createBrowserHistory();
 const history = syncHistoryWithStore(broswerHistory, stores.routerStore);
 //Comment to cause different build hash -- last /static/js/main.eb596332.chunk.js
 class App extends React.Component {
   render() {
-    try{
-      throw Error('Testing error reporting!')
-    }catch(e){
-      let newError: ErrorReport = {
-        message: e && e.message ? e.message : "",
-        stack: e && e.stack ? e.stack : ""
-      };
-      reportError(newError);
+    try {
+      throw Error("Testing error reporting!");
+    } catch (e) {
+      errorReporter.reportError(e);
     }
     return (
       <Provider {...stores}>
