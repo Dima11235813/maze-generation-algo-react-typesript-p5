@@ -1,8 +1,10 @@
 import { ErrorReport } from "../api/models/ErrorReport"
 import StackTrace, { StackFrame } from 'stacktrace-js'
+import { ErrorInfo } from "react"
 
 class ErrorReporter {
-    error: Error | null = null
+    error: Error | undefined = undefined
+    errorInfo: ErrorInfo | undefined = undefined
     constructor() {
 
     }
@@ -37,7 +39,7 @@ class ErrorReporter {
         }).join(" \n ")
         console.log("Stringified stack")
         console.log(strigifiedStack)
-        
+
         const { message, stack } = this.error!
         console.log(JSON.stringify(stack))
         //If stacktrace-js doesn't provide a stack trace use the default one that doesn't use sourcemaps
@@ -58,12 +60,13 @@ class ErrorReporter {
             preferredName,
             isAdmin,
         } = {
-            name: "Dmitri Larionov",
-            preferredName: "LarionovDmitri@gmail.com",
+            name: "Some User",
+            preferredName: "Suser@gmail.com",
             isAdmin: "true"
         }
         let newErrorReport: ErrorReport = {
             stack: strigifiedStack ? strigifiedStack : "",
+            componentStack: this.errorInfo && this.errorInfo.componentStack ? this.errorInfo.componentStack : notAvail,
             message,
             url,
             browserVendor: browserVendor ? browserVendor : notAvail,
@@ -89,8 +92,9 @@ class ErrorReporter {
         console.log(`Got error when creating stacktrace`)
         console.log(error)
     }
-    reportError = (error: Error): void => {
+    reportError = (error: Error, errorInfo?: ErrorInfo): void => {
         this.error = error
+        this.errorInfo = errorInfo
         this.getStackTrace(
             error,
             this.handleSuccessfulStacktrace,

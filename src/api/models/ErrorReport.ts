@@ -1,7 +1,9 @@
 export interface ErrorReport {
     message: string,
     stack: string,
+    componentStack: string,
     url: string,
+
     os: string,
     browserVendor: string,
     cookiesEnabled: string,

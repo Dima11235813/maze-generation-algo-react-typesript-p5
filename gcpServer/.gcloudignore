@@ -13,4 +13,4 @@
 node_modules
 .git
 .gitignore
-*.json
+gcpServer\devenv-259801-e0a3c51e758c.json

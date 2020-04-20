@@ -12,17 +12,18 @@ import { AppRoutes } from "./AppRoutes";
 import { stores } from "./stores";
 import { ErrorReport } from "./api/models/ErrorReport";
 import errorReporter from "./utils/errorReporting";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const broswerHistory = createBrowserHistory();
 const history = syncHistoryWithStore(broswerHistory, stores.routerStore);
 //Comment to cause different build hash -- last /static/js/main.eb596332.chunk.js
 class App extends React.Component {
   render() {
-    try {
-      throw Error("Testing error reporting!");
-    } catch (e) {
-      errorReporter.reportError(e);
-    }
+    // try {
+    //   throw Error("Testing error reporting!");
+    // } catch (e) {
+    //   errorReporter.reportError(e);
+    // }
     return (
       <Provider {...stores}>
         <Router history={history}>

@@ -8,8 +8,5 @@ handlers:
     redirect_http_response_code: '301'
   - url: .*
     script: auto
-env_variables:
-  NODE_ENV: production
-  GOOGLE_CLOUD_PROJECT: devenv-259801
 manual_scaling:
   instances: 1
