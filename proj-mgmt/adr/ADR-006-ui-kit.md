@@ -1,6 +1,6 @@
 # ADR-006 - UI kit: shadcn/ui (Radix) + Tailwind CSS v4; retire Material-UI v4
 
-> Status: Proposed | Date: 2026-09-27 | Deciders: Dmitri Larionov | Register ID: D-06
+> Status: Accepted (implemented 2026-09-27) | Date: 2026-09-27 | Deciders: Dmitri Larionov | Register ID: D-06
 
 ## Context
 

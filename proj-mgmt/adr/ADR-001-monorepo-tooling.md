@@ -1,6 +1,6 @@
 # ADR-001 - Monorepo tooling: pnpm workspaces + Turborepo
 
-> Status: Proposed | Date: 2026-09-27 | Deciders: Dmitri Larionov | Register ID: D-01
+> Status: Accepted (implemented 2026-09-27) | Date: 2026-09-27 | Deciders: Dmitri Larionov | Register ID: D-01
 
 ## Context
 

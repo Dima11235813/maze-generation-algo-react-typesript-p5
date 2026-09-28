@@ -1,6 +1,6 @@
 # ADR-018 - MazeDocument v1: versioned JSON envelope with packed wall nibbles and provenance
 
-> Status: Proposed | Date: 2026-09-27 | Deciders: Dmitri Larionov | Register ID: D-18
+> Status: Accepted (implemented 2026-09-27) | Date: 2026-09-27 | Deciders: Dmitri Larionov | Register ID: D-18
 
 ## Context
 

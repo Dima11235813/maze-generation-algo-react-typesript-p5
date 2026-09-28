@@ -1,6 +1,6 @@
 # ADR-004 - Rendering port with Canvas 2D and three.js adapters; retire p5.js
 
-> Status: Proposed | Date: 2026-09-27 | Deciders: Dmitri Larionov | Register ID: D-04
+> Status: Accepted (implemented 2026-09-27) | Date: 2026-09-27 | Deciders: Dmitri Larionov | Register ID: D-04
 
 ## Context
 

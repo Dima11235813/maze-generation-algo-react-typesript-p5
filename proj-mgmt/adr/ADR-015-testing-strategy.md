@@ -1,6 +1,6 @@
 # ADR-015 - Testing strategy: Vitest + fast-check, RTL, Playwright (E2E, axe, visual), Storybook
 
-> Status: Proposed | Date: 2026-09-27 | Deciders: Dmitri Larionov | Register ID: D-15
+> Status: Accepted (implemented 2026-09-27) | Date: 2026-09-27 | Deciders: Dmitri Larionov | Register ID: D-15
 
 ## Context
 

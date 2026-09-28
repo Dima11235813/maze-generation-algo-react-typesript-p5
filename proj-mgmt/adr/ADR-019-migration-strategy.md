@@ -1,6 +1,6 @@
 # ADR-019 - Migration strategy: strangler fig with a frozen legacy app and a parity checklist
 
-> Status: Proposed | Date: 2026-09-27 | Deciders: Dmitri Larionov | Register ID: D-19
+> Status: Accepted (implemented 2026-09-27) | Date: 2026-09-27 | Deciders: Dmitri Larionov | Register ID: D-19
 
 ## Context
 

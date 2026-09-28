@@ -1,6 +1,6 @@
 # ADR-002 - Language and runtime: TypeScript 5 strict, Node 22 LTS, ESM
 
-> Status: Proposed | Date: 2026-09-27 | Deciders: Dmitri Larionov | Register ID: D-02
+> Status: Accepted (implemented 2026-09-27) | Date: 2026-09-27 | Deciders: Dmitri Larionov | Register ID: D-02
 
 ## Context
 

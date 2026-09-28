@@ -3,7 +3,7 @@
 > Planning workspace for turning the 2019-2020 p5.js maze generator prototype into an
 > enterprise-grade, multi-platform **maze playground and computer-science learning tool**.
 >
-> Status: **Proposed** (planning complete, execution not started)
+> Status: **In execution** (foundation + parity merged to develop/main on 2026-09-27; Phase 3 in progress on feature branches)
 > Owner: Dmitri Larionov | Plan date: 2026-09-27
 
 ---
@@ -38,6 +38,7 @@ architectural choice was made, and **in what order** the work happens.
 | 13 | [Education & Playground Mode](./13-education-and-playground.md) | Learning experience design, step debugger, curriculum, AI-vs-AI race rules |
 | 14 | [Roadmap](./14-roadmap.md) | Phases, milestones, sequencing, estimates, risks |
 | 15 | [Backlog](./15-backlog.md) | Epics and issue-ready stories with acceptance criteria |
+| 16 | [Human Actions](./16-human-actions.md) | Owner-only to-dos (key rotation, pushes, GitHub/GCP/store setup) that unblock each phase |
 | ADR | [adr/](./adr/) | Architecture Decision Records (one file per decision) |
 
 Read order for a newcomer: **01 -> 00 -> 03 -> 02 -> 14**, then dive into the specialised docs.

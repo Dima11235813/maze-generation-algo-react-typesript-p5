@@ -1,6 +1,6 @@
 # ADR-003 - Core algorithms as pure generator functions with seeded RNG
 
-> Status: Proposed | Date: 2026-09-27 | Deciders: Dmitri Larionov | Register ID: D-03
+> Status: Accepted (implemented 2026-09-27) | Date: 2026-09-27 | Deciders: Dmitri Larionov | Register ID: D-03
 
 ## Context
 

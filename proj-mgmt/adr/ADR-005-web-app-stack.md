@@ -1,6 +1,6 @@
 # ADR-005 - Web app stack: Vite, React 19, TanStack Router/Query, Zustand, PWA
 
-> Status: Proposed | Date: 2026-09-27 | Deciders: Dmitri Larionov | Register ID: D-05
+> Status: Accepted (implemented 2026-09-27) | Date: 2026-09-27 | Deciders: Dmitri Larionov | Register ID: D-05
 
 ## Context
 
