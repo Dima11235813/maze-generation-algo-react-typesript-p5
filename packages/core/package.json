@@ -1,0 +1,23 @@
+{
+  "name": "@maze/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pure, dependency-free maze engine: grid model, seeded RNG, generators and solvers as step generators, metrics, MazeDocument serialization",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "bench": "vitest bench --run"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^5.0.2",
+    "fast-check": "^4.10.2",
+    "vitest": "^5.0.2"
+  }
+}
