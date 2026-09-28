@@ -1,0 +1,33 @@
+{
+  "name": "@maze/player",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Step Player: frame-rate-independent playback of step generators (play/pause/step/speed) plus React bindings",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./react": "./src/react.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@maze/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=19"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "react": "^19.3.0",
+    "vitest": "^5.0.2"
+  }
+}
