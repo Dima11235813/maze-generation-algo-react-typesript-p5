@@ -6,6 +6,8 @@ export * from './meta';
 export * from './registry';
 export * from './generators';
 export * from './solvers';
+export * from './postprocessors';
+export * from './agents';
 export * from './tracker';
 export * from './metrics';
 export * from './document';
