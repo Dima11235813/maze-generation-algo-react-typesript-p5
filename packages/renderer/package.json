@@ -1,0 +1,26 @@
+{
+  "name": "@maze/renderer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Renderer port with Canvas 2D and three.js adapters for MazeState + trackers",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./canvas2d": "./src/canvas2d/index.ts",
+    "./three": "./src/three/index.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@maze/core": "workspace:*",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@types/three": "^0.186.0",
+    "vitest": "^5.0.2"
+  }
+}
