@@ -1,0 +1,41 @@
+{
+  "name": "@maze/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Maze Lab web app (Vite + React 19); also the UI for the Tauri desktop/mobile shells",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5173 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --port 4173 --strictPort",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@maze/core": "workspace:*",
+    "@maze/player": "workspace:*",
+    "@maze/renderer": "workspace:*",
+    "@maze/ui": "workspace:*",
+    "@tanstack/react-router": "^1.170.40",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.48.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "three": "^0.186.1",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/three": "^0.186.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "jsdom": "^30.1.1",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.1",
+    "vitest": "^5.0.2"
+  }
+}
