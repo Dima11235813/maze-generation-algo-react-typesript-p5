@@ -1,43 +1,87 @@
-# Implement a depth first search recursive backtracker maze generator tutorial on youtube set up in a create react app typescript app
+# Maze Lab
 
-* [part 1]https://www.youtube.com/watch?v=HyK_Q5rrcr4
-* [part 2]https://www.youtube.com/watch?v=D8UgRyRnvXU
-* [part 3]https://www.youtube.com/watch?v=8Ju_uxJ9v44
-* [part 4]https://www.youtube.com/watch?v=_p5IH0L63wo
+An interactive maze playground and computer-science learning tool: generate mazes step by
+step, watch and compare solving algorithms, race them, build and save your own, and explore the
+graph theory underneath. Web first, packaged for desktop and mobile from one codebase.
 
-## Libaries Used 
+This repository started in 2019 as a Create React App + p5.js port of Daniel Shiffman's
+"Maze Generator" coding challenge. That app is preserved unchanged under `apps/legacy`; the
+rebuild that replaces it lives in `packages/*` and `apps/web`. The full plan, architecture and
+decision records are in [`proj-mgmt/`](./proj-mgmt/README.md).
 
-* [P5]https://p5js.org/
-* [ColorUtil]https://gist.github.com/EvAlex/ad0e43f4087e2e813a8f4cd872b433b8
-* [Range]https://github.com/tjallen/react-simple-range
+---
 
-### P4 Useful Links
-* [Processuing]https://github.com/processing/p5.js/wiki/Processing-transition
-* [P5_API_REF]https://p5js.org/reference/
-* [p5_Setup_Typescrip]https://github.com/Gaweph/p5-typescript-starter
-* [p5_Types_Typescript]https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/p5
-
-
-## other misc links
-
-consider subscribing
-
-* [PaidSide]https://www.kadenze.com/courses/the-nature-of-code/info
-* [Github]
-* [WikiResourceForRecursiveBacktracker]https://www.wikiwand.com/en/Maze_generation_algorithm#/Recursive_backtracker
-* [CodingChallenges]https://www.youtube.com/playlist?list=PLRqwX-V7Uu6ZiZxtDDRCi6uhfTH4FilpH
-* [ReadMeExample]https://gist.github.com/PurpleBooth/109311bb0361f32d87a2
-
-## Tutorial Notes
+## Repository layout
 
 ```
-Canvas as a grid
-    each spot is a cell object
-
+apps/
+  web/        Vite + React 19 app (the product UI; also used by the Tauri shells later)
+  legacy/     Frozen 2019-2020 CRA + p5 app, read-only reference (own yarn.lock, not in the workspace)
+packages/
+  core/       @maze/core     pure TS engine: grid, seeded RNG, generators/solvers as step generators,
+                             trackers, metrics, MazeDocument v1, navigation. Zero runtime deps.
+  player/     @maze/player   StepPlayer (play/pause/step/speed, frame-rate independent) + React hook
+  renderer/   @maze/renderer Renderer port + adapters: canvas2d (2D) and three (3D / first-person)
+  ui/         @maze/ui       Design system: Radix primitives + Tailwind v4 tokens
+  config/     @maze/config   Shared tsconfig presets
+proj-mgmt/    Plan: assessment, vision, architecture, ADRs, roadmap, backlog
+.github/      CI (typecheck, test, build)
 ```
-## The Order - Memorize This
 
-* Top 
-* Right
-* Bottom
-* Left
+Dependency rule: `core <- player, renderer, ui <- apps/web`. Nothing in `packages/` imports from
+`apps/`, and `@maze/core` imports nothing at runtime.
+
+## Getting started
+
+Requirements: Node 22 (see `.node-version`), pnpm 10 (`corepack enable` or `npm i -g pnpm`).
+
+```bash
+pnpm install
+pnpm dev          # web app on http://localhost:5173
+pnpm test         # all package tests (Vitest; core uses fast-check property tests)
+pnpm typecheck    # TypeScript strict across the workspace
+pnpm build        # production build of apps/web into apps/web/dist
+```
+
+Per package: `pnpm --filter @maze/core test`, `pnpm --filter @maze/web dev`, and so on.
+
+## What works today (parity phase)
+
+The current milestone is feature parity with the legacy app on the new stack
+([checklist](./proj-mgmt/09-modernization-migration.md#4-feature-parity-checklist)):
+
+- Recursive-backtracker generation animated through the Step Player (play, pause, step, speed).
+- 2D top-down view and 3D view with extruded walls, the stack-depth "cube projection" that rises
+  and falls as the backtracker explores and returns, optional mirror, and depth culling.
+- Camera presets, follow-pointer parallax, wheel zoom, inverse colours, colour and size options
+  persisted locally (legacy `localStorage` settings are imported once).
+- First-person "Run Maze" mode with keyboard movement and peek.
+- Real solvers (BFS, DFS) animated over the finished maze; metrics panel; save/load to a local
+  library as `MazeDocument` v1.
+
+Next phases (solver catalogue, race mode, backend, accounts, learn mode, desktop/mobile) are in
+[`proj-mgmt/14-roadmap.md`](./proj-mgmt/14-roadmap.md).
+
+## Adding an algorithm
+
+1. Add one file under `packages/core/src/generators/` (or `solvers/`) exporting an object with
+   `meta` and a `*run()` generator function that yields `GenStep`s (or `SolveStep`s).
+2. Register it in the folder's `index.ts`.
+3. Run `pnpm --filter @maze/core test`: the shared property-based suite checks every registry
+   entry (spanning tree, wall symmetry, determinism, path validity), and the UI menus pick it up
+   automatically.
+
+## Conventions
+
+- Wall/direction order is **N, E, S, W** (the legacy Top, Right, Bottom, Left).
+- Every maze is reproducible from `(algorithm, seed, params, size)`; seeds are normalised strings.
+- Decisions are recorded as ADRs in `proj-mgmt/adr/`; change the decision register before the code.
+
+## Legacy app
+
+See [`apps/legacy/README.md`](./apps/legacy/README.md). The API key found in its `src/.env` is
+scheduled for rotation and must not be reused ([security plan](./proj-mgmt/07-security.md)).
+
+## License
+
+Private project; no license granted yet. A license decision is part of the launch checklist.
