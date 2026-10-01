@@ -30,3 +30,6 @@ playwright-report/
 test-results/
 
 # apps/legacy has its own .gitignore (frozen CRA app)
+
+# agent worktrees (git worktree add targets)
+.claude/worktrees/

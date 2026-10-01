@@ -13,4 +13,5 @@ export * from './metrics';
 export * from './document';
 export * from './describe';
 export * from './navigation';
+export * from './editing';
 export { CORE_VERSION } from './version';
