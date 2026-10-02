@@ -167,7 +167,8 @@ export function createRng(seed?: string | number | null, algo: 'xoshiro128ss' | 
 ```ts
 export type GenStep =
   | { t: 'visit';     cell: CellId }
-  | { t: 'carve';     from: CellId; to: CellId }
+  | { t: 'carve';     from: CellId; to: CellId }                 // wall removed (the only two verbs
+  | { t: 'seal';      a: CellId; b: CellId }                      //  that change walls; see replay.ts)
   | { t: 'backtrack'; from: CellId; to: CellId }
   | { t: 'frontier';  add?: CellId[]; remove?: CellId[] }         // Prim, Growing Tree, Hunt-and-Kill scan
   | { t: 'union';     a: CellId; b: CellId }                      // Kruskal
@@ -195,7 +196,10 @@ Rules for step design:
 2. A step carries enough information for a **renderer to update incrementally** without
    re-reading the algorithm's internal state. Data-structure snapshots (`frontier`, `union`)
    are deltas, not full copies.
-3. The variants above are the **complete vocabulary**. A new algorithm that needs a new verb
+3. Only `carve` and `seal` change walls; `@maze/core/replay` (`applyGenStep`,
+   `replayGenSteps`) is the single place that interprets them, so live mirrors, race replays
+   and tests all rebuild walls the same way. Every other verb is informational.
+4. The variants above are the **complete vocabulary**. A new algorithm that needs a new verb
    adds it here (one union member) and every consumer's exhaustive `switch` fails to compile
    until it is handled, which is the point.
 
