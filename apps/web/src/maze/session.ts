@@ -20,7 +20,7 @@ import {
   encodeDocument,
   generators,
   initialPose,
-  removeWall,
+  applyGenStep,
   solvers,
   stepBackward,
   stepForward,
@@ -168,7 +168,7 @@ export class MazeSession {
     player.subscribe((batch) => {
       for (const step of batch) {
         tracker.apply(step);
-        if (step.t === 'carve') removeWall(liveWalls, grid, step.from, step.to);
+        applyGenStep(liveWalls, grid, step);
       }
       this.requestRender();
     });

@@ -7,6 +7,7 @@ export * from './registry';
 export * from './generators';
 export * from './solvers';
 export * from './postprocessors';
+export * from './replay';
 export * from './agents';
 export * from './tracker';
 export * from './metrics';
