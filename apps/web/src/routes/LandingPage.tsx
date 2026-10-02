@@ -20,7 +20,7 @@ const PILLARS: readonly Pillar[] = [
     to: '/watch',
     title: 'Watch',
     blurb: 'Step through BFS, A* and friends with pseudo-code and data-structure views.',
-    live: false,
+    live: true,
   },
   {
     to: '/race',
@@ -44,7 +44,7 @@ const PILLARS: readonly Pillar[] = [
     to: '/explore',
     title: 'Explore',
     blurb: 'Compare generators side by side and measure what makes a maze hard.',
-    live: false,
+    live: true,
   },
 ];
 
