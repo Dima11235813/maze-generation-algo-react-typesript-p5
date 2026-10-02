@@ -10,7 +10,9 @@
     "preview": "vite preview --port 4173 --strictPort",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
-    "icons": "node scripts/generate-icons.mjs"
+    "icons": "node scripts/generate-icons.mjs",
+    "size": "node scripts/check-bundle-size.mjs",
+    "postbuild": "node scripts/check-bundle-size.mjs"
   },
   "dependencies": {
     "@maze/core": "workspace:*",

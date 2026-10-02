@@ -3,6 +3,23 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+/**
+ * Chunking (Vite 8 / Rolldown `output.codeSplitting`, formerly `advancedChunks`): long-lived
+ * vendor code is split from the app bundle so a deploy only invalidates what changed. three.js
+ * is reached only through the dynamic `import('@maze/renderer/three')` and must stay out of the
+ * initial graph; no group below matches it, so Rolldown keeps it in its own lazily loaded chunk.
+ * `scripts/check-bundle-size.mjs` fails the build if that ever changes.
+ */
+const vendorGroups = [
+  { name: 'vendor-react', test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
+  { name: 'vendor-router', test: /[\\/]node_modules[\\/]@tanstack[\\/]/ },
+  {
+    name: 'vendor-ui',
+    test: /[\\/]node_modules[\\/](@radix-ui|lucide-react|@floating-ui|aria-hidden|react-remove-scroll|react-remove-scroll-bar|react-style-singleton|use-callback-ref|use-sidecar|get-nonce|tslib)[\\/]/,
+  },
+  { name: 'vendor-state', test: /[\\/]node_modules[\\/]zustand[\\/]/ },
+];
+
 export default defineConfig({
   plugins: [
     react(),
@@ -74,6 +91,14 @@ export default defineConfig({
   build: {
     target: 'es2022',
     sourcemap: false,
+    // dist/.vite/manifest.json is read by scripts/check-bundle-size.mjs.
+    manifest: true,
+    chunkSizeWarningLimit: 600,
+    rolldownOptions: {
+      output: {
+        codeSplitting: { groups: vendorGroups },
+      },
+    },
   },
   server: {
     fs: {

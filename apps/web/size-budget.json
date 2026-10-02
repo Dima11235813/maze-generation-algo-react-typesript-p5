@@ -1,0 +1,8 @@
+{
+  "$comment": "Enforced by scripts/check-bundle-size.mjs after every build. Sizes in kilobytes (1 kB = 1024 bytes).",
+  "initialJsGzipKb": 250,
+  "initialCssGzipKb": 40,
+  "lazyChunks": {
+    "three": { "rawKb": 600, "gzipKb": 160 }
+  }
+}
