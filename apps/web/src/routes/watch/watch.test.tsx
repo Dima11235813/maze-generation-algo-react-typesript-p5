@@ -31,7 +31,7 @@ describe('/watch', () => {
     const picker = screen.getByRole('group', { name: /solver/i });
     const radios = within(picker).getAllByRole('radio');
     expect(radios).toHaveLength(solvers.all.length);
-    expect(within(picker).getByRole('radio', { name: /breadth-first/i })).toBeChecked();
+    expect(within(picker).getByRole('radio', { name: /^breadth-first search/i })).toBeChecked();
 
     await waitFor(() => expect(factories.created).toHaveLength(1));
     expect(factories.created[0]!.kind).toBe('2d');
