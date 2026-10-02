@@ -4,6 +4,7 @@
  * Stored under `maze-lab:prefs`. On first load, legacy CRA-app localStorage keys are imported
  * once (never deleted) so returning users keep their colours and sizes.
  */
+import type { NarratorVerbosity } from '@maze/player';
 import type { CameraPreset, ViewMode } from '@maze/renderer';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
@@ -34,6 +35,13 @@ export interface Prefs {
   theme: ThemePref;
   generatorId: string;
   solverId: string;
+  // Accessibility (D-17)
+  /** How much the step narrator says through the live region. */
+  narratorVerbosity: NarratorVerbosity;
+  /** Mount the screen-reader grid mirror next to the canvas. */
+  screenReaderGrid: boolean;
+  /** Show the textual step log panel. */
+  showStepLog: boolean;
 }
 
 export interface PrefsActions {
@@ -76,7 +84,12 @@ export const DEFAULT_PREFS: Prefs = {
   theme: 'system',
   generatorId: 'recursive-backtracker',
   solverId: 'bfs',
+  narratorVerbosity: 'medium',
+  screenReaderGrid: true,
+  showStepLog: false,
 };
+
+const VERBOSITIES: readonly NarratorVerbosity[] = ['off', 'low', 'medium', 'high'];
 
 const PREF_KEYS = Object.keys(DEFAULT_PREFS) as (keyof Prefs)[];
 
@@ -173,6 +186,9 @@ function sanitize(input: Partial<Prefs> | undefined): Prefs {
   for (const key of ['cellColor', 'wallColor', 'backgroundColor'] as const) {
     if (!/^#[0-9a-f]{6}$/i.test(p[key])) p[key] = DEFAULT_PREFS[key];
   }
+  if (!VERBOSITIES.includes(p.narratorVerbosity)) p.narratorVerbosity = DEFAULT_PREFS.narratorVerbosity;
+  if (typeof p.screenReaderGrid !== 'boolean') p.screenReaderGrid = DEFAULT_PREFS.screenReaderGrid;
+  if (typeof p.showStepLog !== 'boolean') p.showStepLog = DEFAULT_PREFS.showStepLog;
   return p;
 }
 

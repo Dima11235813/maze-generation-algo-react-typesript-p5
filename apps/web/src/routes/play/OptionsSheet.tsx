@@ -14,6 +14,7 @@ import {
 import { useEffect, useState } from 'react';
 import { autoProjectionDepth, MIN_CELL_SIZE, maxCellSizeFor } from '../../maze/gridSizing';
 import { DEFAULT_PREFS, LIMITS, usePrefs, type MotionPref, type ThemePref } from '../../state/prefs';
+import { VERBOSITY_OPTIONS } from './StepLogPanel';
 
 export interface OptionsSheetProps {
   open: boolean;
@@ -188,6 +189,32 @@ export function OptionsSheet({ open, onOpenChange, hostWidth, rows }: OptionsShe
             options={MOTION_OPTIONS}
           />
           <SimpleSelect label="Theme" value={prefs.theme} onValueChange={(v) => prefs.set('theme', v)} options={THEME_OPTIONS} />
+        </section>
+
+        <Separator />
+
+        <section aria-labelledby="opt-a11y" className="flex flex-col gap-3">
+          <h3 id="opt-a11y" className="text-xs font-semibold tracking-wide text-muted uppercase">
+            Accessibility
+          </h3>
+          <SwitchField
+            label="Screen-reader grid"
+            description="A hidden grid that mirrors the maze for assistive technology. Press G to focus it."
+            checked={prefs.screenReaderGrid}
+            onCheckedChange={(v) => prefs.set('screenReaderGrid', v)}
+          />
+          <SimpleSelect
+            label="Narration"
+            value={prefs.narratorVerbosity}
+            onValueChange={(v) => prefs.set('narratorVerbosity', v)}
+            options={VERBOSITY_OPTIONS}
+          />
+          <SwitchField
+            label="Show step log"
+            description="A readable log of what the narrator said. Press L to toggle."
+            checked={prefs.showStepLog}
+            onCheckedChange={(v) => prefs.set('showStepLog', v)}
+          />
         </section>
 
         <Separator />
