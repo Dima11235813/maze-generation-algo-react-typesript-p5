@@ -9,3 +9,12 @@ export {
   type StepPlayerSnapshot,
   type StepListener,
 } from './StepPlayer';
+export {
+  createNarrator,
+  NARRATOR_VERBOSITIES,
+  type Narrator,
+  type NarratorLogEntry,
+  type NarratorOptions,
+  type NarratorVerbosity,
+  type Politeness,
+} from './narrator';
