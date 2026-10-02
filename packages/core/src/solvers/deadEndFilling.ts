@@ -66,6 +66,8 @@ export const deadEndFilling: MazeSolver = {
     const seen = new Uint8Array(total);
     const bfs: CellId[] = [start];
     seen[start] = 1;
+    c.discovered++; // surviving cells reached by the final sweep also count as discovered
+    c.frontier(1);
     let found = start === goal;
     for (let i = 0; i < bfs.length && !found; i++) {
       const cell = bfs[i] as CellId;
@@ -74,6 +76,7 @@ export const deadEndFilling: MazeSolver = {
         seen[nb] = 1;
         parent[nb] = cell;
         bfs.push(nb);
+        c.discovered++;
         if (nb === goal) {
           found = true;
           break;

@@ -41,6 +41,10 @@ export const dijkstraMeta: AlgorithmMeta = {
  * discovered cell is found), and why a heap replaces BFS's queue once edges have costs.
  * Complete and optimal for non-negative weights. Uses lazy deletion: stale heap entries are
  * skipped when popped instead of being removed.
+ *
+ * Note for Learn mode: with *per-cell entry* costs the first discovery of a cell always comes
+ * from the cheapest predecessor (the heap pops in non-decreasing g), so `relax` never fires;
+ * it appears once costs differ per *edge* or in A*, whose f-order differs from g-order.
  */
 export const dijkstra: MazeSolver<DijkstraParams> = {
   meta: dijkstraMeta,
