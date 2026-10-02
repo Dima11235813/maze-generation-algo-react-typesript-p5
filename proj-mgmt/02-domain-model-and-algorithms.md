@@ -373,7 +373,7 @@ mode. `b` = branching factor, `d` = solution depth.
 | `bfs` | Breadth-first search | Yes | Yes (unweighted) | O(V+E) / O(V) | FIFO queue | Frontier as concentric rings; shortest path by layers | `expand`, `discover` with `g` = depth; frontier deltas |
 | `dfs` | Depth-first search (iterative) | Yes (finite graph) | No | O(V+E) / O(V) | LIFO stack | Contrast with BFS; why it finds *a* path not *the* path; on a perfect maze DFS with backtracking is the recursive backtracker in reverse | `expand`, `deadend`, `discover` |
 | `recursive-dfs` | Naive recursive DFS | Yes but **stack overflow** beyond ~10k depth in JS | No | as DFS | Call stack | Recursion vs explicit stack; engineering limits | Same as `dfs` plus a `depth` warning surfaced in Learn mode |
-| `dijkstra` | Uniform-cost search | Yes | Yes (non-negative weights) | O((V+E) log V) / O(V) | Binary heap (decrease-key via lazy deletion) | Weighted cells (mud/ice tiles in Learn mode); relaxation | `expand` with `g`, `relax` on improvement |
+| `dijkstra` | Uniform-cost search | Yes | Yes (non-negative weights) | O((V+E) log V) / O(V) | Binary heap (decrease-key via lazy deletion) | Weighted cells (mud/ice tiles in Learn mode); relaxation. Note: with per-*cell* entry costs the first discovery is already cheapest, so `relax` only appears with per-edge costs or in A* | `expand` with `g`, `relax` on improvement |
 | `astar` | A* with heuristic | Yes | Yes if `h` admissible (and consistent for closed-set correctness) | O((V+E) log V) worst, far fewer expansions in practice / O(V) | Binary heap ordered by `f = g + h` | Heuristics, admissibility, consistency, tie-breaking (`prefer higher g`) | `expand` with `g,h,f`; `relax` |
 | `greedy-best-first` | Order by `h` only | Yes (with closed set) | No | O((V+E) log V) / O(V) | Binary heap by `h` | Speed vs optimality trade-off; shows heuristic being fooled | `expand` with `h` |
 | `bidirectional-bfs` | BFS from start and goal, meet in the middle | Yes | Yes (unweighted) | O(b^(d/2)) / O(b^(d/2)) | Two queues, two visited maps | Exponential savings; meeting-point detection | Two-coloured frontiers; `path` assembled from both |
@@ -413,10 +413,10 @@ They are pure and memoised per `document.id` by the callers.
 | `avgBranching` | mean degree of non-dead-end, non-corridor cells | degree scan | difficulty input |
 | `solutionLength` | edges on the unique/shortest path start->goal | BFS from start (`flood-fill`) | Play scoring, Race optimality reference |
 | `diameter` (longest path) | longest shortest-path between any two cells | **Double BFS**: BFS from any cell -> farthest `u`; BFS from `u` -> farthest `v`; exact on trees, lower bound on braided mazes | "hardest possible start/goal" suggestion |
-| `river` | mean length of maximal corridors (runs of degree-2 cells) | walk corridors | high for backtracker, low for Kruskal |
+| `river` | mean length of maximal corridors (connected runs of degree-2 cells); `longestDeadEndCorridor` = longest branch from a dead end (not start/goal) to a junction | degree scan + component walk (`corridorStats`) | high for backtracker, low for Kruskal |
 | `twistiness` | turns on the solution path / `solutionLength` | direction changes along path | difficulty input |
 | `symmetry` | fraction of wall bits equal under horizontal/vertical/rotational mirroring | compare nibbles under transforms | detect biased generators (binary tree, sidewinder) |
-| `difficulty` | heuristic `0..100`: `w1*z(solutionLength/V) + w2*z(deadEndRatio) + w3*z(twistiness) + w4*z(decoyDepth)` where `decoyDepth` = mean depth of dead-end branches off the solution | computed from the distance field + path | Play mode level labels; weights tuned empirically and versioned |
+| `difficulty` | heuristic `0..100`: `100 * (0.35*L + 0.20*D + 0.15*T + 0.30*B)` with each term clamped to 0..1: `L = solutionLength / V`, `D = deadEndRatio / 0.3`, `T = twistiness`, `B = 3 * junctionsOnPath / solutionLength`; 0 when unsolvable | computed from the shortest path + degree scan (`difficultyScore` in `metrics.ts`) | Play mode level labels; weights versioned with the core |
 | Solver-relative | `expanded`, `discovered`, `frontierPeak`, `steps`, `pathLength`, `optimalityRatio = pathLength / solutionLength` | from `SolveStats` | Race scoring, Learn mode comparisons |
 
 ## 7. Editing (`@maze/core/editing`)
@@ -482,7 +482,7 @@ Packing:
 | Tie-break (`first-to-goal`) | earlier `finishedAtTick`, then fewer `expanded`, then shorter `pathLength`, then lexical agent id |
 | `fewest-expanded` | rank by `expanded`, then `finishedAtTick`, then `pathLength` |
 | `composite` | `score = 0.5 * norm(finishedAtTick) + 0.3 * norm(expanded) + 0.2 * (optimalityRatio - 1)`, lower is better; `norm` divides by the best agent's value |
-| Replay format | `RaceResult` with the optional `log: RaceTick[]`; the log is also the a11y text transcript. Large races store only `config` + `ranking` and regenerate the log on demand (deterministic) |
+| Replay format | `runRace()` yields one `RaceTick` per tick (the replay log and the a11y transcript) and returns `RaceResult { config, ranking, perAgent, ticks }`. Large races store only `config` + `ranking` and regenerate the ticks on demand (deterministic). Agent ids must be unique; 2..4 agents |
 | Fairness note | Agent-perspective solvers "see" less than map solvers; the UI labels the two classes and the default race pairs like with like. Mixed races are allowed and are a lesson in themselves |
 
 ## 10. Property-based test checklist (fast-check, D-15)
