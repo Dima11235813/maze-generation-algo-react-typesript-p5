@@ -4,12 +4,11 @@ import {
   collect,
   createGrid,
   createRng,
-  createWalls,
   generators,
   isPerfectMaze,
   passageCount,
   recursiveBacktracker,
-  removeWall,
+  replayGenSteps,
   runToEnd,
   type GenStep,
   type MazeState,
@@ -56,15 +55,12 @@ describe.each(generators.all.map((g) => [g.meta.id, g] as const))('generator %s'
     );
   });
 
-  it('property: the step stream mirrors the final walls (replaying carves rebuilds the maze)', () => {
+  it('property: the step stream mirrors the final walls (replaying carve/seal rebuilds the maze)', () => {
     fc.assert(
       fc.property(gridArb, fc.string(), ({ width, height }, seed) => {
         const grid = createGrid(width, height);
         const { steps, result } = collect(gen.run(grid, createRng(seed)));
-        const rebuilt = createWalls(grid);
-        for (const s of steps) {
-          if (s.t === 'carve') removeWall(rebuilt, grid, s.from, s.to);
-        }
+        const rebuilt = replayGenSteps(grid, steps);
         expect(Array.from(rebuilt)).toEqual(Array.from(result.walls));
         expect(steps.at(-1)?.t).toBe('done');
         expect(steps.filter((s) => s.t === 'done')).toHaveLength(1);

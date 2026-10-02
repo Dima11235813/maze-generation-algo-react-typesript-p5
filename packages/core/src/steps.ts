@@ -7,9 +7,16 @@
  */
 import type { CellId, Dir } from './grid';
 
+/**
+ * Generator steps. Only two verbs change walls: `carve` removes the wall between two adjacent
+ * cells and `seal` adds one. Every other verb is informational (what the algorithm is looking
+ * at) so renderers, narrators and the replay helper stay simple.
+ */
 export type GenStep =
   | { readonly t: 'visit'; readonly cell: CellId }
   | { readonly t: 'carve'; readonly from: CellId; readonly to: CellId }
+  /** Wall added between adjacent cells `a` and `b` (wall-adding algorithms, tree rotations). */
+  | { readonly t: 'seal'; readonly a: CellId; readonly b: CellId }
   | { readonly t: 'backtrack'; readonly from: CellId; readonly to: CellId }
   | { readonly t: 'frontier'; readonly add?: readonly CellId[]; readonly remove?: readonly CellId[] }
   | { readonly t: 'union'; readonly a: CellId; readonly b: CellId }

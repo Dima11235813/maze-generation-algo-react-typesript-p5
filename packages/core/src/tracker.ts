@@ -47,6 +47,16 @@ export class GenerationTracker {
         this.carves++;
         this.depth++;
         if (this.depth > this.maxDepth) this.maxDepth = this.depth;
+        // A cell whose wall changed must render. For the backtracker the `visit` that follows
+        // would set the same depth (post-increment), so legacy visuals are unchanged; for
+        // carve-only generators (Kruskal, Sidewinder, ...) this is what makes cells appear.
+        this.markSeen(step.from);
+        this.markSeen(step.to);
+        break;
+      case 'seal':
+        // Wall-adding algorithms: the cells become visible, the DFS depth is not involved.
+        this.markSeen(step.a);
+        this.markSeen(step.b);
         break;
       case 'backtrack':
         this.backtracks++;
@@ -62,13 +72,18 @@ export class GenerationTracker {
       case 'rotate':
         // Other generator families: mark touched cells as seen so they render.
         for (const c of touchedCells(step)) {
-          if (this.depthAtVisit[c] === -1) {
-            this.depthAtVisit[c] = this.depth;
-            this.seenCount++;
-          }
+          this.markSeen(c);
           if ((this.visitCount[c] ?? 0) === 0) this.visitCount[c] = 1;
         }
         break;
+    }
+  }
+
+  /** First sighting of a cell records the current depth (the cube-projection baseline). */
+  private markSeen(c: CellId): void {
+    if (this.depthAtVisit[c] === -1) {
+      this.depthAtVisit[c] = this.depth;
+      this.seenCount++;
     }
   }
 

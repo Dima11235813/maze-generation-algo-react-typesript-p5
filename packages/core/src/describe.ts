@@ -40,6 +40,8 @@ export function describeGenStep(grid: Grid, step: GenStep): string {
       return `Visiting ${describePosition(grid, step.cell)}.`;
     case 'carve':
       return `Carving a passage to ${describePosition(grid, step.to)}.`;
+    case 'seal':
+      return `Adding a wall between ${describePosition(grid, step.a)} and ${describePosition(grid, step.b)}.`;
     case 'backtrack':
       return `Dead end. Backtracking to ${describePosition(grid, step.to)}.`;
     case 'frontier':
