@@ -55,7 +55,7 @@ function mountRenderer(events: DomRendererEvents = {}): { r: DomRenderer; host: 
 
 const cells = (host: HTMLElement) => Array.from(host.querySelectorAll<HTMLElement>('[role="gridcell"]'));
 const name = (host: HTMLElement, cell: number) =>
-  host.querySelector(`[data-cell="${cell}"]`)?.getAttribute('aria-label') ?? '';
+  host.querySelector(`[role="gridcell"][data-cell="${cell}"]`)?.getAttribute('aria-label') ?? '';
 
 afterEach(() => {
   document.body.replaceChildren();

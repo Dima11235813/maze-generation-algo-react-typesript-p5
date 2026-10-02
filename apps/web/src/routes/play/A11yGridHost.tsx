@@ -44,7 +44,8 @@ export function A11yGridHost({
     if (!host) return;
     const events: DomRendererEvents = {
       onCellFocus: (cell, reason) => {
-        const label = host.querySelector(`[data-cell="${cell}"]`)?.getAttribute('aria-label') ?? null;
+        const label =
+          host.querySelector(`[role="gridcell"][data-cell="${cell}"]`)?.getAttribute('aria-label') ?? null;
         setFocusedLabel(label);
         if (reason === 'describe' && label) latest.current.onDescribe?.(label);
       },
