@@ -1,8 +1,11 @@
 import { describeCell, randomSeed } from '@maze/core';
 import { useStepPlayer } from '@maze/player/react';
 import { CAMERA_PRESETS, type CameraState, type Renderer, type ViewMode } from '@maze/renderer';
+import type { DomRenderer } from '@maze/renderer/dom';
 import { Button } from '@maze/ui';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { ShortcutsDialog } from '../../a11y/ShortcutsDialog';
+import { useNarrator } from '../../a11y/useNarrator';
 import { useAnnouncer } from '../../app/Announcer';
 import { useReducedMotion } from '../../app/documentPrefs';
 import { log } from '../../lib/log';
@@ -11,6 +14,7 @@ import { MazeSession } from '../../maze/session';
 import { buildCamera, buildRenderOptions, buildTheme } from '../../maze/theme';
 import { makeThumbnail, useLibrary, type LibraryItem } from '../../state/library';
 import { usePrefs } from '../../state/prefs';
+import { A11yGridHost } from './A11yGridHost';
 import { FirstPersonHud } from './FirstPersonHud';
 import { LibrarySheet } from './LibrarySheet';
 import { MazeCanvas, type HostSize } from './MazeCanvas';
@@ -18,6 +22,7 @@ import { MetricsPanel } from './MetricsPanel';
 import { OptionsSheet } from './OptionsSheet';
 import { PlayToolbar } from './PlayToolbar';
 import { SaveDialog } from './SaveDialog';
+import { StepLogPanel } from './StepLogPanel';
 import { useKeyboardShortcuts } from './useKeyboardShortcuts';
 
 function useMazeSession(): MazeSession {
@@ -44,7 +49,9 @@ export function PlayPage() {
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const rendererRef = useRef<Renderer | null>(null);
+  const a11yRef = useRef<DomRenderer | null>(null);
 
   const activePlayer = session.activePlayer;
   const playerSnap = useStepPlayer(activePlayer);
@@ -88,9 +95,14 @@ export function PlayPage() {
   // ---- session wiring ---------------------------------------------------------------------
   useEffect(() => session.setSpeed(prefs.speed), [session, prefs.speed]);
 
-  useEffect(() => {
-    if (snap.statusSeq > 0 && snap.status) announce(snap.status);
-  }, [snap.statusSeq, snap.status, announce]);
+  // Narration: session statuses and (depending on verbosity) algorithm steps reach the live
+  // region or, while the step log is open, the log itself. Statuses are never announced twice.
+  const { narrator, log: narrationLog } = useNarrator({
+    snap,
+    verbosity: prefs.narratorVerbosity,
+    logIsLive: prefs.showStepLog,
+    announce,
+  });
 
   useEffect(() => setSeedDraft(snap.seed), [snap.seed]);
 
@@ -140,6 +152,19 @@ export function PlayPage() {
   const onRenderer = useCallback((r: Renderer | null) => {
     rendererRef.current = r;
   }, []);
+
+  const onA11yRenderer = useCallback((r: DomRenderer | null) => {
+    a11yRef.current = r;
+  }, []);
+
+  const focusA11yGrid = useCallback(() => {
+    const grid = a11yRef.current;
+    if (!grid) {
+      announce('The screen-reader grid is turned off. Enable it in Options.');
+      return;
+    }
+    grid.focusCell(grid.getFocusedCell());
+  }, [announce]);
 
   const onCellClick = useCallback(
     (cell: number | null) => {
@@ -202,6 +227,8 @@ export function PlayPage() {
   // ---- keyboard ---------------------------------------------------------------------------
   useKeyboardShortcuts({
     onKeyDown: (e) => {
+      // The screen-reader grid handles its own arrows/I and marks the event as handled.
+      if (e.defaultPrevented) return;
       const fp = session.getSnapshot().firstPerson;
       if (e.key === 'Escape') {
         if (fp) {
@@ -286,6 +313,18 @@ export function PlayPage() {
         case 'o':
         case 'O':
           setOptionsOpen(true);
+          break;
+        case 'g':
+        case 'G':
+          e.preventDefault();
+          focusA11yGrid();
+          break;
+        case 'l':
+        case 'L':
+          prefs.set('showStepLog', !prefs.showStepLog);
+          break;
+        case '?':
+          setShortcutsOpen(true);
           break;
         default:
           break;
@@ -378,7 +417,30 @@ export function PlayPage() {
             onExit={() => session.exitFirstPerson()}
           />
         ) : null}
+        {prefs.screenReaderGrid ? (
+          <A11yGridHost
+            session={session}
+            theme={theme}
+            options={options}
+            firstPerson={snap.firstPerson}
+            maze={snap.state}
+            generation={session.generation}
+            solve={session.solveTracker}
+            onDescribe={(text) => announce(text)}
+            onRenderer={onA11yRenderer}
+          />
+        ) : null}
       </div>
+
+      {prefs.showStepLog ? (
+        <StepLogPanel
+          entries={narrationLog}
+          verbosity={prefs.narratorVerbosity}
+          onVerbosityChange={(v) => prefs.set('narratorVerbosity', v)}
+          onClose={() => prefs.set('showStepLog', false)}
+          onClear={() => narrator.clearLog()}
+        />
+      ) : null}
 
       <MetricsPanel session={session} snap={snap} />
 
@@ -390,6 +452,7 @@ export function PlayPage() {
         defaultName={snap.sourceName ?? `Maze ${snap.width}x${snap.height} ${snap.seed}`}
         onSave={saveMaze}
       />
+      <ShortcutsDialog open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
     </div>
   );
 }

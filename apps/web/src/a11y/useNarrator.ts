@@ -7,10 +7,9 @@ import { createGrid, describeGenStep, describeSolveStep } from '@maze/core';
 import { createNarrator, type Narrator, type NarratorLogEntry, type NarratorVerbosity } from '@maze/player';
 import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import type { Politeness } from '../app/Announcer';
-import type { MazeSession, SessionSnapshot } from '../maze/session';
+import type { SessionSnapshot } from '../maze/session';
 
 export interface UseNarratorOptions {
-  session: MazeSession;
   snap: SessionSnapshot;
   verbosity: NarratorVerbosity;
   /** When true the step log region announces entries itself; the announcer stays quiet. */
@@ -25,7 +24,7 @@ export interface NarratorBinding {
 
 const EMPTY_LOG: readonly NarratorLogEntry[] = [];
 
-export function useNarrator({ session, snap, verbosity, logIsLive, announce }: UseNarratorOptions): NarratorBinding {
+export function useNarrator({ snap, verbosity, logIsLive, announce }: UseNarratorOptions): NarratorBinding {
   const announceRef = useRef(announce);
   announceRef.current = announce;
   const logIsLiveRef = useRef(logIsLive);
