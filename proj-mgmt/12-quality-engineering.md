@@ -38,6 +38,53 @@ Everything above is frozen with the legacy app (D-19) and replaced by the standa
 | **lefthook** | `pre-commit`: lint-staged (eslint --fix, prettier), `gitleaks protect --staged`; `pre-push`: `turbo typecheck --filter=...[origin/main]` | local |
 | **Changesets** | Every PR touching `packages/*` adds a changeset or the `no-changeset` label with justification | CI check |
 
+#### Implemented 2026-10-02 (branch `feat/tooling-lint-e2e`)
+
+- **ESLint 10 flat config**: root `eslint.config.js` composes `packages/config/eslint/index.js`
+  (type-aware `strictTypeChecked` + `stylisticTypeChecked`, `import-x` with the TS resolver,
+  `jsx-a11y`, `react-hooks`, `react-refresh`). Dependency boundaries are **errors** and pass:
+  `packages/**` never imports `apps/**`; `@maze/core` imports no workspace package and may not
+  reference `window`/`document`/`navigator`/`localStorage`/`requestAnimationFrame` or
+  `Math.random`. The lint toolchain lives in `@maze/config` with its own TypeScript 6 because
+  typescript-eslint cannot load the TS 7 native compiler; `tsc` stays on TS 7. `pnpm lint`
+  exits 0 with 0 errors.
+- **Lint debt** (rules set to `warn`, 198 warnings at the time of writing, by rule):
+  `restrict-template-expressions` 72, `no-confusing-void-expression` 66, `unbound-method` 27
+  (React callback props declared as methods), `dot-notation` 11, `no-unnecessary-condition` 4,
+  `no-unnecessary-type-assertion` 3, `react-refresh/only-export-components` 3, and one or two
+  each of `prefer-optional-chain`, `no-unnecessary-type-parameters`, `no-non-null-assertion`,
+  `restrict-plus-operands`, `jsx-a11y/no-autofocus`, `consistent-type-exports`,
+  `prefer-nullish-coalescing`, `prefer-for-of`, `no-unnecessary-type-conversion`,
+  `jsx-a11y/heading-has-content`. By area: `apps/web` 125, `packages/core` 39,
+  `packages/ui` 17, `packages/renderer` 15, `packages/player` 3. Promote to `error` as the
+  follow-up wave clears each rule. `non-nullable-type-assertion-style` is off by house style
+  (`xs[i] as T` under `noUncheckedIndexedAccess`).
+- **lefthook + commitlint**: `lefthook.yml` (pre-commit eslint --fix + prettier --check on
+  staged files, commit-msg commitlint, pre-push typecheck + test), `commitlint.config.js`
+  (conventional, 120-char header/body, trailers allowed, `merge: ...` ignored); installed by
+  the root `prepare` script; `LEFTHOOK=0` skips.
+- **knip**: `knip.json`; advisory in CI. Findings at the time of writing: unused deps `clsx`,
+  `three` (apps/web, imported only through `@maze/renderer`), `@maze/core` (player, types
+  only), `@radix-ui/react-dropdown-menu`, `react-popover`, `react-toggle` (ui); unused
+  devDeps `@types/three`, `tailwindcss`, `vite-plugin-pwa` (apps/web), `@vitest/coverage-v8`,
+  `fast-check`, `vitest` (root, duplicated per package); 14 unused exports (mostly constants
+  and `StubPage`, `createFakeRenderer`, `wrapAngle`), 4 unused exported types, and the
+  deliberate `Panel`/`Card` duplicate exports in `@maze/ui`.
+- **Playwright E2E** (`apps/web/e2e`, `pnpm e2e`): production build served by `vite preview`
+  on port 4174; fixture seeds `maze-lab:prefs` with reduced motion and maximum speed; software
+  WebGL flags; axe (`@axe-core/playwright`) gates serious/critical violations on `/`, `/play`,
+  `/play` + options sheet, `/learn`. Specs: landing, generation, view modes, solve,
+  first-person, options persistence, save/library. **Known a11y debt** excluded from the axe
+  gate until fixed: landing "coming soon" cards use `opacity-80`, pushing muted text and the
+  badge below 4.5:1 (`color-contrast`, serious). Advisory: `/play` has no `<h1>`
+  (`page-has-heading-one`, moderate).
+- **CI**: `lint` and `knip` (advisory) steps in the verify job; separate `e2e` job with the
+  Playwright report uploaded on failure.
+
+Not yet implemented from the table above: `eslint-plugin-react`, `-security`, `-unicorn`,
+`-vitest`, `prettier-plugin-tailwindcss`, commitlint scope enum, `gitleaks protect` in the
+pre-commit hook, Changesets check, dependency-cruiser/madge/syncpack.
+
 Custom ESLint rules worth writing early (as `@maze/config/eslint/rules/*`):
 
 - `no-process-env-outside-env-module`: `process.env` / `import.meta.env` only in `env.ts`.
