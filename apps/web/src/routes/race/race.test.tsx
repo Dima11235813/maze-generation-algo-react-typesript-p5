@@ -115,6 +115,11 @@ describe('bestColumns', () => {
     expect(bestColumns(2, 900, 500)).toBe(2);
   });
 
+  it('does not flip on a near tie (phone stage losing a few pixels of height)', () => {
+    expect(bestColumns(2, 372, 450)).toBe(1);
+    expect(bestColumns(2, 372, 430)).toBe(1);
+  });
+
   it('makes a 2 x 2 grid for four lanes unless the stage is very wide', () => {
     expect(bestColumns(4, 380, 560)).toBe(2);
     expect(bestColumns(4, 900, 800)).toBe(2);

@@ -58,7 +58,9 @@ export function bestColumns(n: number, width: number, height: number): number {
   for (let cols = 1; cols <= n; cols++) {
     const rows = Math.ceil(n / cols);
     const side = Math.min(width / cols, height / rows - LANE_HEADER_PX);
-    if (side > bestSide + 0.5) {
+    // Another column must clearly help (10%), so near-ties do not flip the layout when the
+    // stage changes height by a few pixels.
+    if (side > bestSide * 1.1) {
       best = cols;
       bestSide = side;
     }
@@ -297,8 +299,9 @@ export function RacePage() {
         stage={
           <>
             <p
-              className="border-b border-border bg-panel px-3 py-1.5 text-sm"
+              className="truncate border-b border-border bg-panel px-3 py-1.5 text-sm"
               data-testid="race-status"
+              title={statusLine}
             >
               {statusLine}
             </p>
