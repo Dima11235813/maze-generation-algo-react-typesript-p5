@@ -69,6 +69,8 @@ export class TreeScene {
   z = new Float64Array(0);
   /** Width / height of the layout in layout units (2D radial keeps it when fitting). */
   aspect = 1;
+  /** 3D: largest horizontal distance from the trunk, in normalised units (height = 1). */
+  reach = 0;
   /** True when the layout must keep its aspect ratio (radial); tidy trees stretch to fit. */
   uniform = false;
   /** Eased maze <-> tree morph, 0..1 (apply `smoothstep` when interpolating). */
@@ -192,12 +194,15 @@ export class TreeScene {
         );
       }
       const k = 1 / spanY;
-      const squeeze = Math.min(1, (0.6 * spanY) / reach);
+      // Every tree gets the same silhouette: its widest branch reaches 45 % of its height.
+      // Deep, narrow trees (the backtracker) spread out; wide, shallow ones are squeezed.
+      const spread = (0.45 * spanY) / reach;
+      this.reach = 0.45;
       for (let i = 0; i < tree.count; i++) {
         const c = tree.order[i] as number;
-        this.tx[c] = ((layout.x[c] as number) - ox) * k * squeeze;
+        this.tx[c] = ((layout.x[c] as number) - ox) * k * spread;
         this.ty[c] = ((layout.y[c] as number) - layout.minY) * k;
-        this.tz[c] = ((layout.z[c] as number) - oz) * k * squeeze;
+        this.tz[c] = ((layout.z[c] as number) - oz) * k * spread;
       }
       return;
     }

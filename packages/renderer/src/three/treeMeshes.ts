@@ -207,8 +207,8 @@ export class TreeMeshes {
     // Radii: like the maze's passages when flat; in the tree, from the spacing of its rows.
     const flatBase = cs * 0.14;
     const treeBase = Math.min(
-      treeH * 0.02,
-      Math.max(treeH * 0.002, (treeH / Math.max(1, tree.height)) * 0.16),
+      treeH * 0.015,
+      Math.max(treeH * 0.004, (treeH / Math.max(1, tree.height)) * 0.35),
     );
     const base = flatBase + (treeBase - flatBase) * t;
     const total = Math.max(1, tree.count);

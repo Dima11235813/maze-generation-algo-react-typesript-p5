@@ -264,11 +264,31 @@ class ThreeRenderer implements Renderer {
     const view = this.options.tree;
     const scene = this.treeScene;
     if (!scene || !view || !this.maze) return false;
-    scene.update(this.maze, this.gen, view);
+    const rebuilt = scene.update(this.maze, this.gen, view);
     const moving = scene.step(dt, view.morph, this.options.reducedMotion);
     // The maze stays visible only while the tree is still mostly flat.
     this.meshes?.setVisible(smoothstep(scene.morph) < 0.25);
+    if (moving || rebuilt) this.fitTree();
     return moving;
+  }
+
+  /**
+   * Camera fit for the Tree view, blended with the morph: the flat maze's footprint at 0, the
+   * standing tree (centred on the floor plane) at 1. The rig eases between the distances.
+   */
+  private fitTree(): void {
+    const maze = this.maze;
+    if (!maze) return;
+    const cs = this.options.cellSize;
+    const { width, height } = mazeExtent(maze.grid, cs);
+    const treeH = TreeMeshes.treeHeight(maze, cs);
+    const t = smoothstep(this.treeScene?.morph ?? 0);
+    const mazeSide = Math.max(width, height);
+    const treeSide = Math.max(treeH * 0.3, 2 * (this.treeScene?.reach ?? 0.45) * treeH);
+    const side = mazeSide + (treeSide - mazeSide) * t;
+    const top = cs * this.options.wallHeight + (treeH / 2 - cs * this.options.wallHeight) * t;
+    this.rig.setExtent(side, side, cs, top, (-treeH / 2) * t);
+    this.updateCameraTarget();
   }
 
   private syncMeshes(): void {
@@ -310,10 +330,7 @@ class ThreeRenderer implements Renderer {
     if (this.isTree3d()) {
       this.treeScene ??= new TreeScene();
       this.treeMeshes = new TreeMeshes(this.scene, this.maze);
-      // Fit the grown tree (it stands centred on the floor plane) as well as the flat maze.
-      const treeH = TreeMeshes.treeHeight(this.maze, cs);
-      const side = Math.max(width, height, treeH * 0.9);
-      this.rig.setExtent(side, side, cs, treeH / 2, -treeH / 2);
+      this.fitTree();
     } else {
       this.meshes.setVisible(true);
       this.rig.setExtent(width, height, cs, cs * this.options.wallHeight);

@@ -83,6 +83,28 @@ export function drawTree2d(input: TreeDraw2dInput): void {
   const base = gridBase + (treeBase - gridBase) * t;
   const total = Math.max(1, tree.count);
 
+  // Radial trees, once grown, draw each edge the classic way: along the parent's ring, then
+  // straight out to the child. Straight chords would cut across the circle.
+  const root = tree.roots[0] as CellId;
+  const arcs = scene.uniform && t > 0.95 && tree.roots.length === 1;
+  const cx = outX[root] as number;
+  const cy = outY[root] as number;
+  const edge = (p: CellId, c: CellId): void => {
+    const px = outX[p] as number;
+    const py = outY[p] as number;
+    ctx.moveTo(px, py);
+    if (arcs && p !== root) {
+      const rp = Math.hypot(px - cx, py - cy);
+      const a0 = Math.atan2(py - cy, px - cx);
+      const a1 = Math.atan2((outY[c] as number) - cy, (outX[c] as number) - cx);
+      let delta = a1 - a0;
+      if (delta > Math.PI) delta -= 2 * Math.PI;
+      if (delta < -Math.PI) delta += 2 * Math.PI;
+      if (Math.abs(delta) > 1e-4) ctx.arc(cx, cy, rp, a0, a0 + delta, delta < 0);
+    }
+    ctx.lineTo(outX[c] as number, outY[c] as number);
+  };
+
   // Loop edges (mazes with loops, or a wall-adding generator mid-way): dashed, faint.
   if (tree.loopEdges.length > 0) {
     ctx.save();
@@ -122,7 +144,7 @@ export function drawTree2d(input: TreeDraw2dInput): void {
       list = [];
       batches.set(key, list);
     }
-    list.push(outX[p] as number, outY[p] as number, outX[c] as number, outY[c] as number);
+    list.push(p, c);
   }
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
@@ -131,10 +153,7 @@ export function drawTree2d(input: TreeDraw2dInput): void {
     ctx.strokeStyle = key.slice(0, sep);
     ctx.lineWidth = Number(key.slice(sep + 1));
     ctx.beginPath();
-    for (let i = 0; i < coords.length; i += 4) {
-      ctx.moveTo(coords[i] as number, coords[i + 1] as number);
-      ctx.lineTo(coords[i + 2] as number, coords[i + 3] as number);
-    }
+    for (let i = 0; i < coords.length; i += 2) edge(coords[i] as CellId, coords[i + 1] as CellId);
     ctx.stroke();
   }
 
@@ -157,10 +176,7 @@ export function drawTree2d(input: TreeDraw2dInput): void {
     ctx.beginPath();
     for (const c of highlight) {
       const p = tree.parent[c] as number;
-      if (p >= 0 && set.has(p)) {
-        ctx.moveTo(outX[p] as number, outY[p] as number);
-        ctx.lineTo(outX[c] as number, outY[c] as number);
-      }
+      if (p >= 0 && set.has(p)) edge(p, c);
     }
     ctx.stroke();
     if (highlight.length <= 2) {
@@ -179,10 +195,17 @@ export function drawTree2d(input: TreeDraw2dInput): void {
     ctx.strokeStyle = rgbToCss(resolve(theme, theme.path));
     ctx.lineWidth = base * 1.6;
     ctx.beginPath();
-    path.forEach((c, i) => {
-      if (i === 0) ctx.moveTo(outX[c] as number, outY[c] as number);
-      else ctx.lineTo(outX[c] as number, outY[c] as number);
-    });
+    for (let i = 0; i + 1 < path.length; i++) {
+      const a = path[i] as CellId;
+      const b = path[i + 1] as CellId;
+      // Follow the tree's own edge (parent -> child) so arcs line up with the branches.
+      if (tree.parent[b] === a) edge(a, b);
+      else if (tree.parent[a] === b) edge(b, a);
+      else {
+        ctx.moveTo(outX[a] as number, outY[a] as number);
+        ctx.lineTo(outX[b] as number, outY[b] as number);
+      }
+    }
     ctx.stroke();
   }
 

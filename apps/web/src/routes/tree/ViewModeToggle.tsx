@@ -49,7 +49,9 @@ export function ViewModeToggle({ value, onChange, disabled }: ViewModeToggleProp
         <Tooltip key={v}>
           <TooltipTrigger asChild>
             <ToggleGroupItem value={v} aria-label={`${label} view`}>
-              <Icon className="h-3.5 w-3.5" aria-hidden="true" /> {label}
+              <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+              {/* Icons only on phones so the three choices always fit the toolbar. */}
+              <span className="hidden sm:inline">{label}</span>
             </ToggleGroupItem>
           </TooltipTrigger>
           <TooltipContent className="flex items-center gap-2">
