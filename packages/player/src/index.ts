@@ -8,6 +8,7 @@ export {
   type StepPlayerOptions,
   type StepPlayerSnapshot,
   type StepListener,
+  type ResetListener,
 } from './StepPlayer';
 export {
   createNarrator,

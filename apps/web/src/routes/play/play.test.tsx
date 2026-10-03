@@ -190,4 +190,33 @@ describe('/play', () => {
     await user.keyboard('-');
     await waitFor(() => expect(renderer.lastCamera?.zoom).toBeLessThan(1));
   });
+
+  it('rewinds a finished maze with Home, steps back, and scrubs with the timeline', async () => {
+    const user = userEvent.setup();
+    renderPlay();
+    const toolbar = await screen.findByRole('toolbar', { name: /maze controls/i });
+    await waitFor(() =>
+      expect(within(toolbar).getByRole('button', { name: /run to end/i })).toBeEnabled(),
+    );
+    await user.click(within(toolbar).getByRole('button', { name: /run to end/i }));
+    await waitFor(() => expect(screen.getByRole('img', { name: /complete/i })).toBeInTheDocument());
+
+    const timeline = screen.getByRole('group', { name: /generation timeline/i });
+    const scrubber = within(timeline).getByRole('slider', { name: /generation position/i });
+    expect(scrubber).toHaveAttribute(
+      'aria-valuetext',
+      expect.stringMatching(/^Step [\d,]+ of [\d,]+$/),
+    );
+
+    await user.keyboard('{Home}');
+    await waitFor(() =>
+      expect(screen.getByRole('img', { name: /generation in progress/i })).toBeInTheDocument(),
+    );
+    expect(scrubber).toHaveAttribute('aria-valuenow', '0');
+
+    await user.keyboard('...');
+    expect(scrubber).toHaveAttribute('aria-valuenow', '3');
+    await user.click(within(toolbar).getByRole('button', { name: /^step back$/i }));
+    expect(scrubber).toHaveAttribute('aria-valuenow', '2');
+  });
 });

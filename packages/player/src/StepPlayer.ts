@@ -24,9 +24,19 @@ export interface StepPlayerSnapshot<R> {
   readonly stepCount: number;
   readonly elapsedMs: number;
   readonly result: R | undefined;
+  /** Furthest step reached since the last `reset()` (the scrubber can seek anywhere up to it). */
+  readonly highWater: number;
+  /** Total steps of the source once it has run to completion at least once; null until known. */
+  readonly total: number | null;
 }
 
 export type StepListener<S> = (steps: readonly S[]) => void;
+
+/**
+ * Fired when the player rewinds: consumers must clear whatever they folded from earlier steps
+ * (trackers, live wall arrays, logs). The steps up to the new position follow as normal batches.
+ */
+export type ResetListener = () => void;
 
 const defaultNow = (): number =>
   typeof performance !== 'undefined' ? performance.now() : Date.now();
@@ -34,10 +44,10 @@ const defaultNow = (): number =>
 const defaultSchedule = (cb: (time: number) => void): (() => void) => {
   if (typeof requestAnimationFrame === 'function') {
     const id = requestAnimationFrame(cb);
-    return () => cancelAnimationFrame(id);
+    return () => { cancelAnimationFrame(id); };
   }
-  const id = setTimeout(() => cb(defaultNow()), 16);
-  return () => clearTimeout(id);
+  const id = setTimeout(() => { cb(defaultNow()); }, 16);
+  return () => { clearTimeout(id); };
 };
 
 export const SPEED_MIN = 1;
@@ -62,6 +72,9 @@ export class StepPlayer<S, R = unknown> {
 
   private readonly stepListeners = new Set<StepListener<S>>();
   private readonly changeListeners = new Set<() => void>();
+  private readonly resetListeners = new Set<ResetListener>();
+  private highWater = 0;
+  private total: number | null = null;
   private snapshot: StepPlayerSnapshot<R>;
 
   constructor(opts: StepPlayerOptions<S, R>) {
@@ -91,6 +104,55 @@ export class StepPlayer<S, R = unknown> {
   subscribe(listener: StepListener<S>): () => void {
     this.stepListeners.add(listener);
     return () => this.stepListeners.delete(listener);
+  }
+
+  /** Fires when the player rewinds (see {@link ResetListener}). */
+  onReset(listener: ResetListener): () => void {
+    this.resetListeners.add(listener);
+    return () => this.resetListeners.delete(listener);
+  }
+
+  /**
+   * Moves to an absolute step index. Rewinding re-creates the source and replays it from the
+   * start, so sources MUST be deterministic (seeded); that is what makes rewind exact. Forward
+   * seeks simply advance. A playing player keeps playing from the new position.
+   * Returns the steps delivered by this call (after a rewind: the replayed prefix).
+   */
+  seek(target: number): readonly S[] {
+    if (this.disposed) return [];
+    const to = Math.max(0, Math.floor(Number.isFinite(target) ? target : 0));
+    const wasPlaying = this.status === 'playing';
+    if (to < this.stepCount) {
+      this.cancelTick();
+      this.gen = this.source();
+      this.stepCount = 0;
+      this.result = undefined;
+      this.accumulator = 0;
+      if (this.status === 'done') this.status = 'paused';
+      for (const l of this.resetListeners) l();
+    }
+    if (this.status === 'idle') this.status = 'paused';
+    const delivered = this.advanceUncapped(to - this.stepCount);
+    if (wasPlaying && this.getStatus() !== 'done' && this.cancelFrame === null) {
+      this.status = 'playing';
+      this.lastTick = null;
+      this.requestTick();
+    }
+    this.emitChange();
+    return delivered;
+  }
+
+  /** Rewinds `n` steps (exact replay of the deterministic source). */
+  stepBack(n = 1): readonly S[] {
+    return this.seek(this.stepCount - Math.max(1, Math.floor(n)));
+  }
+
+  /** Back to step 0 and paused. */
+  restart(): void {
+    this.pause();
+    this.seek(0);
+    if (this.status === 'idle') this.status = 'paused';
+    this.emitChange();
   }
 
   /** Fires after any status/speed/count change. */
@@ -159,6 +221,9 @@ export class StepPlayer<S, R = unknown> {
     this.gen = this.source();
     this.status = 'idle';
     this.stepCount = 0;
+    this.highWater = 0;
+    this.total = null;
+    for (const l of this.resetListeners) l();
     this.result = undefined;
     this.elapsedMs = 0;
     this.accumulator = 0;
@@ -171,9 +236,23 @@ export class StepPlayer<S, R = unknown> {
     this.disposed = true;
     this.stepListeners.clear();
     this.changeListeners.clear();
+    this.resetListeners.clear();
   }
 
   // ---- internals -----------------------------------------------------------------------
+
+  /** Advances `n` steps in frame-sized batches, ignoring the per-frame cap (used by seek). */
+  private advanceUncapped(n: number): readonly S[] {
+    const out: S[] = [];
+    let remaining = n;
+    while (remaining > 0 && this.status !== 'done') {
+      const batch = this.advance(Math.min(remaining, this.maxStepsPerFrame));
+      if (batch.length === 0) break;
+      remaining -= batch.length;
+      if (out.length < this.maxStepsPerFrame) out.push(...batch);
+    }
+    return out;
+  }
 
   private advance(n: number): readonly S[] {
     const limit = Math.min(n, this.maxStepsPerFrame);
@@ -182,6 +261,7 @@ export class StepPlayer<S, R = unknown> {
       const next = this.gen.next();
       if (next.done) {
         this.result = next.value;
+        this.total = this.stepCount;
         this.status = 'done';
         this.cancelTick();
         break;
@@ -189,6 +269,7 @@ export class StepPlayer<S, R = unknown> {
       batch.push(next.value);
       this.stepCount++;
     }
+    if (this.stepCount > this.highWater) this.highWater = this.stepCount;
     if (batch.length > 0) {
       for (const l of this.stepListeners) l(batch);
     }
@@ -235,6 +316,8 @@ export class StepPlayer<S, R = unknown> {
       speed: this.speed,
       stepCount: this.stepCount,
       elapsedMs: this.elapsedMs,
+      highWater: this.highWater,
+      total: this.total,
       result: this.result,
     };
   }

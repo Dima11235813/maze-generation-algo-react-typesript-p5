@@ -10,6 +10,7 @@ import { computeGridDims } from '../../maze/gridSizing';
 import { MazeSession } from '../../maze/session';
 import { buildCamera, buildRenderOptions, buildTheme } from '../../maze/theme';
 import { useCameraView } from '../../maze/view';
+import { TimelineBar } from '../play/TimelineBar';
 import { ViewControls, handleViewKey } from '../play/ViewControls';
 import { usePrefs } from '../../state/prefs';
 import { MazeCanvas, type HostSize } from '../play/MazeCanvas';
@@ -171,7 +172,14 @@ export function WatchPage() {
     const grid = snap.state?.grid;
     if (!player || !grid) return;
     const pseudo = pseudocodeFor(snap.solverId);
-    return player.subscribe((batch) => {
+    // A rewind replays the solve from the start: clear the log so it is rebuilt from the replay.
+    const offReset = player.onReset(() => {
+      seqRef.current = 0;
+      bufferRef.current = [];
+      setEntries([]);
+      setCurrentLine(null);
+    });
+    const offSteps = player.subscribe((batch) => {
       const slice = batch.length > LOG_LIMIT ? batch.slice(-LOG_LIMIT) : batch;
       const base = seqRef.current + batch.length - slice.length;
       const buf = bufferRef.current;
@@ -184,6 +192,10 @@ export function WatchPage() {
       const last = batch[batch.length - 1];
       if (last) setCurrentLine(pseudo.stepToLine(last));
     });
+    return () => {
+      offReset();
+      offSteps();
+    };
   }, [snap.solvePlayer, snap.solverId, snap.state]);
 
   // ---- actions --------------------------------------------------------------------------
@@ -231,6 +243,15 @@ export function WatchPage() {
         case '.':
           if (armed) session.step();
           break;
+        case ',':
+          if (armed) session.stepBack();
+          break;
+        case 'Home':
+          if (armed) {
+            e.preventDefault();
+            session.restart();
+          }
+          break;
         case 'n':
         case 'N':
           generateWith(randomSeed());
@@ -264,6 +285,10 @@ export function WatchPage() {
         onStep={() => {
           session.step();
         }}
+        onStepBack={() => {
+          session.stepBack();
+        }}
+        canStepBack={armed && (playerSnap?.stepCount ?? 0) > 0}
         onRunToEnd={() => {
           session.runToEnd();
         }}
@@ -298,7 +323,21 @@ export function WatchPage() {
             onHostSize={onHostSize}
             onCameraChange={onCameraChange}
           />
-          <ViewControls mode={mode} controls={viewControls} className="absolute right-2 bottom-2" />
+          <ViewControls
+            mode={mode}
+            controls={viewControls}
+            className="absolute right-2 bottom-14"
+          />
+          <TimelineBar
+            snapshot={armed ? playerSnap : null}
+            label="Solve"
+            onSeek={(n) => {
+              session.seek(n);
+            }}
+            onRestart={() => {
+              session.restart();
+            }}
+          />
         </div>
         <aside
           aria-label="Solver details"

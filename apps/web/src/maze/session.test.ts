@@ -152,4 +152,56 @@ describe('MazeSession', () => {
     expect(s.getSnapshot().phase).toBe('empty');
     expect(calls).toBe(1);
   });
+
+  describe('timeline', () => {
+    it('rewinds generation exactly and replays to the same maze', () => {
+      const s = new MazeSession(manual);
+      s.generate({ width: 8, height: 6, cellSize: 20, seed: 'rewind', autoplay: false });
+      s.step(40);
+      const live = s.getSnapshot().state!;
+      const at40 = Array.from(live.walls);
+      const visits40 = s.generation!.visits;
+      s.step(10);
+      s.stepBack(10);
+      expect(Array.from(s.getSnapshot().state!.walls)).toEqual(at40);
+      expect(s.generation!.visits).toBe(visits40);
+      expect(s.getSnapshot().genPlayer!.getSnapshot().stepCount).toBe(40);
+      s.seek(0);
+      expect(s.generation!.steps).toBe(0);
+      expect(Array.from(s.getSnapshot().state!.walls).every((w) => w === 15)).toBe(true);
+    });
+
+    it('rewinding a finished maze reopens it and clears solve and first person', () => {
+      const s = finishedSession('reopen');
+      const finalWalls = Array.from(s.getSnapshot().state!.walls);
+      s.startSolve('bfs', false);
+      s.runToEnd();
+      expect(s.getSnapshot().solveResult).not.toBeNull();
+      s.clearSolve();
+      s.enterFirstPerson();
+      s.restart();
+      const snap = s.getSnapshot();
+      expect(snap.phase).toBe('generating');
+      expect(snap.metrics).toBeNull();
+      expect(snap.firstPerson).toBeNull();
+      expect(snap.solvePlayer).toBeNull();
+      s.runToEnd();
+      expect(s.getSnapshot().phase).toBe('ready');
+      expect(Array.from(s.getSnapshot().state!.walls)).toEqual(finalWalls);
+      expect(s.getSnapshot().metrics).not.toBeNull();
+    });
+
+    it('rewinds a solve and clears its result until it finishes again', () => {
+      const s = finishedSession('solve-rewind');
+      s.startSolve('bfs', false);
+      s.runToEnd();
+      const path = s.getSnapshot().solveResult!.path;
+      s.stepBack(3);
+      expect(s.getSnapshot().solveResult).toBeNull();
+      expect(s.solveTracker!.done).toBe(false);
+      expect(s.getSnapshot().phase).toBe('ready');
+      s.runToEnd();
+      expect(s.getSnapshot().solveResult!.path).toEqual(path);
+    });
+  });
 });
