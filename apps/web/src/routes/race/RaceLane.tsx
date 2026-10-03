@@ -3,6 +3,7 @@ import type { CameraState, RenderOptions, RenderTheme } from '@maze/renderer';
 import { cn } from '@maze/ui';
 import { Trophy } from 'lucide-react';
 import type { LaneStanding } from '../../maze/race';
+import { laneStatusShort, laneStatusText } from './raceView';
 import { MazeCanvas, type RenderRequestSink } from '../play/MazeCanvas';
 
 export interface RaceLaneProps {
@@ -21,35 +22,6 @@ export interface RaceLaneProps {
 
 /** Race mazes have a fixed size (it is part of the URL), so lane sizes do not matter. */
 const ignoreSize = (): void => undefined;
-
-export function laneStatusText(s: LaneStanding): string {
-  switch (s.status) {
-    case 'goal':
-      return `reached the goal at tick ${s.finishedAtTick ?? '?'}, path ${s.pathLength ?? '?'} moves`;
-    case 'no-path':
-      return `finished without a path at tick ${s.finishedAtTick ?? '?'}`;
-    case 'out':
-      return `stopped at tick ${s.finishedAtTick ?? '?'}`;
-    case 'running':
-    default:
-      return s.steps === 0 ? 'on the start line' : `racing, ${s.expanded} cells expanded`;
-  }
-}
-
-/** Compact status for narrow lanes (phones, four lanes on a tablet). */
-export function laneStatusShort(s: LaneStanding): string {
-  switch (s.status) {
-    case 'goal':
-      return `Goal at tick ${s.finishedAtTick ?? '?'} · ${s.pathLength ?? '?'} moves`;
-    case 'no-path':
-      return `No path · tick ${s.finishedAtTick ?? '?'}`;
-    case 'out':
-      return `Stopped · tick ${s.finishedAtTick ?? '?'}`;
-    case 'running':
-    default:
-      return s.steps === 0 ? 'Ready' : `${s.expanded} expanded`;
-  }
-}
 
 /** One racer: name, live status and a 2D canvas with that agent's search overlay. */
 export function RaceLane({

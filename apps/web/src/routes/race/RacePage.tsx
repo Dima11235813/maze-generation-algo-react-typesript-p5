@@ -1,4 +1,4 @@
-import { generators, randomSeed, solvers, type RaceScoring } from '@maze/core';
+import { generators, randomSeed, solvers, type RaceScoring, type SolveTracker } from '@maze/core';
 import { useStepPlayer } from '@maze/player/react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import {
@@ -29,8 +29,9 @@ import { usePrefs } from '../../state/prefs';
 import { TimelineBar } from '../play/TimelineBar';
 import { useKeyboardShortcuts } from '../play/useKeyboardShortcuts';
 import { RaceLane } from './RaceLane';
+import { bestColumns, winnerSentence } from './raceView';
 import { RacersPicker, RaceRules } from './RaceSetupPanel';
-import { RaceRanking, RaceStandings, winnerSentence } from './RaceStandings';
+import { RaceRanking, RaceStandings } from './RaceStandings';
 import { RaceToolbar } from './RaceToolbar';
 
 export interface RaceSearch {
@@ -43,31 +44,8 @@ export interface RaceSearch {
 
 /** Nominal cell size for the 2D renderer; it scales the maze to each lane anyway. */
 const LANE_CELL_SIZE = 20;
-/** Height of a lane header, subtracted when choosing how many lanes go in a row. */
-const LANE_HEADER_PX = 33;
 
-/**
- * Picks the column count that gives each (square) maze the most room in a `width` x `height`
- * box: two lanes stack on a phone, sit side by side on a tablet, four make a 2 x 2 grid unless
- * the box is very wide.
- */
-export function bestColumns(n: number, width: number, height: number): number {
-  if (width <= 0 || height <= 0) return Math.min(n, 2);
-  let best = 1;
-  let bestSide = -1;
-  for (let cols = 1; cols <= n; cols++) {
-    const rows = Math.ceil(n / cols);
-    const side = Math.min(width / cols, height / rows - LANE_HEADER_PX);
-    // Another column must clearly help (10%), so near-ties do not flip the layout when the
-    // stage changes height by a few pixels.
-    if (side > bestSide * 1.1) {
-      best = cols;
-      bestSide = side;
-    }
-  }
-  return best;
-}
-
+/** Re-picks the lane column count whenever the lane area changes size. */
 function useLaneColumns(n: number) {
   const ref = useRef<HTMLDivElement>(null);
   const [cols, setCols] = useState(() => Math.min(n, 2));
@@ -320,7 +298,7 @@ export function RacePage() {
                       standing={s}
                       sink={run.renderSink(s.index)}
                       maze={run.state}
-                      tracker={run.trackers[s.index]!}
+                      tracker={run.trackers[s.index] as SolveTracker}
                       theme={theme}
                       options={options}
                       camera={camera}

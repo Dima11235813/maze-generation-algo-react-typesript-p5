@@ -16,16 +16,16 @@ import { formatSpeed, indexToSpeed, speedToIndex } from '../../lib/speed';
 export interface RaceToolbarProps {
   status: PlayerStatus | null;
   canStepBack: boolean;
-  onPlayToggle(): void;
-  onStep(): void;
-  onStepBack(): void;
-  onRunToEnd(): void;
+  onPlayToggle: () => void;
+  onStep: () => void;
+  onStepBack: () => void;
+  onRunToEnd: () => void;
   speed: number;
-  onSpeedChange(speed: number): void;
+  onSpeedChange: (speed: number) => void;
   seed: string;
-  onSeedChange(seed: string): void;
-  onRandomSeed(): void;
-  onCopyLink(): void;
+  onSeedChange: (seed: string) => void;
+  onRandomSeed: () => void;
+  onCopyLink: () => void;
 }
 
 function Hint({ label, keys, children }: { label: string; keys?: string; children: ReactNode }) {

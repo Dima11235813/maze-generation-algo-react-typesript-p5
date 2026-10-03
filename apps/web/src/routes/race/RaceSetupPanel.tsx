@@ -13,7 +13,7 @@ const SIZES = [10, 15, 20, 30, 40] as const;
 
 export interface RacersPickerProps {
   agents: readonly string[];
-  onChange(agents: string[]): void;
+  onChange: (agents: string[]) => void;
 }
 
 /** Checkbox per registry solver; keeps the selection between two and four. */
@@ -64,11 +64,11 @@ export function RacersPicker({ agents, onChange }: RacersPickerProps) {
 
 export interface RaceRulesProps {
   scoring: RaceScoring;
-  onScoringChange(s: RaceScoring): void;
+  onScoringChange: (s: RaceScoring) => void;
   generatorId: string;
-  onGeneratorChange(id: string): void;
+  onGeneratorChange: (id: string) => void;
   size: number;
-  onSizeChange(size: number): void;
+  onSizeChange: (size: number) => void;
 }
 
 /** Scoring rule and the maze the race runs on. */

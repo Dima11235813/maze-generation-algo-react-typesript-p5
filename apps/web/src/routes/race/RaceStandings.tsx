@@ -1,6 +1,7 @@
 import { compositeScores, type RaceResult } from '@maze/core';
 import { cn } from '@maze/ui';
 import { solverName, type LaneStanding } from '../../maze/race';
+import { describeOutcome, winnerSentence } from './raceView';
 
 const STATUS_TEXT: Record<LaneStanding['status'], string> = {
   running: 'Racing',
@@ -72,28 +73,6 @@ export function RaceStandings({ standings, solutionLength }: RaceStandingsProps)
       ) : null}
     </div>
   );
-}
-
-export function describeOutcome(result: RaceResult, id: string): string {
-  const r = result.perAgent[id];
-  if (!r) return '';
-  if (r.disqualified) return `Disqualified (${r.disqualified})`;
-  if (!r.reachedGoal) return 'No path found';
-  return `Goal at tick ${r.finishedAtTick ?? '?'}`;
-}
-
-/** Plain-language winner sentence for the live region and the ranking caption. */
-export function winnerSentence(result: RaceResult): string {
-  const id = result.ranking[0];
-  const r = id ? result.perAgent[id] : undefined;
-  if (!id || !r || !r.reachedGoal || r.disqualified) return 'Race over: nobody reached the goal.';
-  const how =
-    result.config.scoring === 'fewest-expanded'
-      ? `expanding only ${r.expanded} cells`
-      : result.config.scoring === 'composite'
-        ? 'with the best composite score'
-        : `reaching the goal first at tick ${r.finishedAtTick ?? '?'}`;
-  return `Winner: ${solverName(id)}, ${how}.`;
 }
 
 export interface RaceRankingProps {

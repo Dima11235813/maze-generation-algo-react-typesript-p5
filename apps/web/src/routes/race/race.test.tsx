@@ -7,7 +7,7 @@ import { runRaceToEnd, solverName } from '../../maze/race';
 import { RendererFactoriesContext } from '../../maze/rendererFactories';
 import { usePrefs } from '../../state/prefs';
 import { createFakeFactories } from '../../test/fakeRenderer';
-import { bestColumns } from './RacePage';
+import { bestColumns } from './raceView';
 
 const URL =
   '/race?seed=rtl-race&agents=bfs,dfs,astar&scoring=first-to-goal&size=12&gen=recursive-backtracker';
