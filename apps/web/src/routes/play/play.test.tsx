@@ -141,17 +141,16 @@ describe('/play', () => {
   });
   it('collapses the toolbar on narrow screens and moves secondary controls into a sheet', async () => {
     const original = window.matchMedia;
-    window.matchMedia = (query: string): MediaQueryList =>
-      ({
-        matches: query.includes('max-width'),
-        media: query,
-        onchange: null,
-        addEventListener: () => undefined,
-        removeEventListener: () => undefined,
-        addListener: () => undefined,
-        removeListener: () => undefined,
-        dispatchEvent: () => false,
-      }) as unknown as MediaQueryList;
+    window.matchMedia = (query: string): MediaQueryList => ({
+      matches: query.includes('max-width'),
+      media: query,
+      onchange: null,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      dispatchEvent: () => false,
+    });
     try {
       const user = userEvent.setup();
       renderPlay();
@@ -168,5 +167,27 @@ describe('/play', () => {
     } finally {
       window.matchMedia = original;
     }
+  });
+  it('rotates, tilts, zooms and resets the 3D view from the controls and the keyboard', async () => {
+    const user = userEvent.setup();
+    const { factories } = renderPlay();
+    await screen.findByRole('toolbar', { name: /maze controls/i });
+    await waitFor(() => expect(factories.created).toHaveLength(1));
+    const renderer = factories.created[0]!;
+    const controls = screen.getByRole('group', { name: /view controls/i });
+
+    await user.click(within(controls).getByRole('button', { name: /rotate clockwise/i }));
+    await waitFor(() => expect(renderer.lastCamera?.yaw).toBeLessThan(0));
+    await user.click(within(controls).getByRole('button', { name: /look from higher/i }));
+    await waitFor(() => expect(renderer.lastCamera?.pitch).toBeGreaterThan(0));
+    await user.click(within(controls).getByRole('button', { name: /zoom in/i }));
+    await waitFor(() => expect(renderer.lastCamera?.zoom).toBeGreaterThan(1));
+
+    await user.keyboard('0');
+    await waitFor(() => expect(renderer.lastCamera).toMatchObject({ zoom: 1, yaw: 0, pitch: 0 }));
+    await user.keyboard('[[');
+    await waitFor(() => expect(renderer.lastCamera?.yaw).toBeGreaterThan(0));
+    await user.keyboard('-');
+    await waitFor(() => expect(renderer.lastCamera?.zoom).toBeLessThan(1));
   });
 });

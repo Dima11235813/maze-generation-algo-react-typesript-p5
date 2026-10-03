@@ -6,3 +6,4 @@ export * from './types';
 export * from './color';
 export * from './layout';
 export * from './overlay';
+export * from './camera';

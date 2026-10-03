@@ -5,8 +5,17 @@
  */
 import type { GenerationTracker, MazeState, SolveTracker } from '@maze/core';
 import * as THREE from 'three';
+import { wrapAngle } from '../camera';
 import { resolve } from '../color';
-import { cellAt, cellCenter, clampZoom, headingYaw, mazeExtent, wheelZoomFactor, type Point2 } from '../layout';
+import {
+  cellAt,
+  cellCenter,
+  clampZoom,
+  headingYaw,
+  mazeExtent,
+  wheelZoomFactor,
+  type Point2,
+} from '../layout';
 import type {
   CameraState,
   FirstPersonState,
@@ -65,6 +74,9 @@ class ThreeRenderer implements Renderer {
   private readonly pt: Point2 = { x: 0, y: 0 };
   private downX = 0;
   private downY = 0;
+  /** Active pointers (touch fingers / mouse) and the drag-to-orbit gesture in progress. */
+  private readonly pointers = new Map<number, { x: number; y: number }>();
+  private drag: { x: number; y: number; yaw: number; pitch: number; moved: boolean } | null = null;
 
   constructor(opts: RendererFactoryOptions) {
     this.theme = opts.theme;
@@ -112,9 +124,12 @@ class ThreeRenderer implements Renderer {
     canvas.addEventListener('pointerleave', this.onPointerLeave);
     canvas.addEventListener('pointerdown', this.onPointerDown);
     canvas.addEventListener('pointerup', this.onPointerUp);
+    canvas.addEventListener('pointercancel', this.onPointerCancel);
 
     if (typeof ResizeObserver !== 'undefined') {
-      this.observer = new ResizeObserver(() => this.resize());
+      this.observer = new ResizeObserver(() => {
+        this.resize();
+      });
       this.observer.observe(host);
     }
     this.buildMeshes();
@@ -279,7 +294,13 @@ class ThreeRenderer implements Renderer {
     } else {
       const parallax =
         this.camera.followPointer && !this.options.reducedMotion ? this.pointer : null;
-      this.rig.orbit(this.camera.preset, this.camera.zoom, parallax);
+      this.rig.orbit(
+        this.camera.preset,
+        this.camera.zoom,
+        this.drag ? null : parallax,
+        this.camera.yaw ?? 0,
+        this.camera.pitch ?? 0,
+      );
     }
   }
 
@@ -313,6 +334,27 @@ class ThreeRenderer implements Renderer {
   };
 
   private readonly onPointerMove = (e: PointerEvent): void => {
+    if (this.pointers.has(e.pointerId))
+      this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const drag = this.drag;
+    if (drag && this.pointers.size === 1 && !this.fp) {
+      // Drag to orbit: a full canvas width turns the maze half way round; height tilts ~70 deg.
+      const rect = this.gl?.domElement.getBoundingClientRect();
+      const w = Math.max(1, rect?.width ?? 1);
+      const h = Math.max(1, rect?.height ?? 1);
+      const dx = e.clientX - drag.x;
+      const dy = e.clientY - drag.y;
+      if (!drag.moved && Math.hypot(dx, dy) <= CLICK_SLOP_PX) return;
+      drag.moved = true;
+      const limits = this.rig.pitchLimits(this.camera.preset);
+      const yaw = wrapAngle(drag.yaw - (dx / w) * Math.PI);
+      const pitch = Math.min(limits.max, Math.max(limits.min, drag.pitch + (dy / h) * 1.2));
+      this.camera = { ...this.camera, yaw, pitch };
+      this.events.onCameraChange?.(this.camera);
+      this.updateCameraTarget();
+      this.requestRender();
+      return;
+    }
     const p = this.normalizePointer(e);
     this.setPointer(p);
     this.events.onPointerMove?.(p);
@@ -326,10 +368,38 @@ class ThreeRenderer implements Renderer {
   private readonly onPointerDown = (e: PointerEvent): void => {
     this.downX = e.clientX;
     this.downY = e.clientY;
+    this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const primary = e.pointerType !== 'mouse' || e.button === 0;
+    if (primary && this.pointers.size === 1 && !this.fp) {
+      this.drag = {
+        x: e.clientX,
+        y: e.clientY,
+        yaw: this.camera.yaw ?? 0,
+        pitch: this.camera.pitch ?? 0,
+        moved: false,
+      };
+      try {
+        this.gl?.domElement.setPointerCapture(e.pointerId);
+      } catch {
+        /* capture is best effort (synthetic events in tests) */
+      }
+    } else {
+      // A second finger starts a pinch (handled by the host); never orbit during it.
+      this.drag = null;
+    }
+  };
+
+  private readonly onPointerCancel = (e: PointerEvent): void => {
+    this.pointers.delete(e.pointerId);
+    if (this.pointers.size === 0) this.drag = null;
   };
 
   private readonly onPointerUp = (e: PointerEvent): void => {
-    if (e.button !== 0) return;
+    const wasDrag = this.drag?.moved === true;
+    this.pointers.delete(e.pointerId);
+    if (this.pointers.size === 0) this.drag = null;
+    if (wasDrag) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
     if (Math.hypot(e.clientX - this.downX, e.clientY - this.downY) > CLICK_SLOP_PX) return;
     const maze = this.maze;
     if (!maze) {
@@ -375,6 +445,7 @@ class ThreeRenderer implements Renderer {
       canvas.removeEventListener('pointerleave', this.onPointerLeave);
       canvas.removeEventListener('pointerdown', this.onPointerDown);
       canvas.removeEventListener('pointerup', this.onPointerUp);
+      canvas.removeEventListener('pointercancel', this.onPointerCancel);
       gl.dispose();
       canvas.remove();
     }

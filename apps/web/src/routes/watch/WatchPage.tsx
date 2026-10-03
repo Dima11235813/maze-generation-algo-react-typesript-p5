@@ -9,6 +9,8 @@ import { pseudocodeFor } from '../../content/pseudocode';
 import { computeGridDims } from '../../maze/gridSizing';
 import { MazeSession } from '../../maze/session';
 import { buildCamera, buildRenderOptions, buildTheme } from '../../maze/theme';
+import { useCameraView } from '../../maze/view';
+import { ViewControls, handleViewKey } from '../play/ViewControls';
 import { usePrefs } from '../../state/prefs';
 import { MazeCanvas, type HostSize } from '../play/MazeCanvas';
 import { useKeyboardShortcuts } from '../play/useKeyboardShortcuts';
@@ -55,7 +57,8 @@ export function WatchPage() {
 
   const [hostSize, setHostSize] = useState<HostSize | null>(null);
   const [mode, setMode] = useState<ViewMode>('2d');
-  const [zoom, setZoom] = useState(1);
+  const viewControls = useCameraView(prefs.cameraPreset);
+  const { view } = viewControls;
   const [solverId, setSolverId] = useState(() =>
     solvers.has(usePrefs.getState().solverId)
       ? usePrefs.getState().solverId
@@ -105,8 +108,8 @@ export function WatchPage() {
     ],
   );
   const camera = useMemo(
-    () => buildCamera({ cameraPreset: prefs.cameraPreset, followPointer: false }, zoom),
-    [prefs.cameraPreset, zoom],
+    () => buildCamera({ cameraPreset: prefs.cameraPreset, followPointer: false }, view),
+    [prefs.cameraPreset, view],
   );
 
   // ---- generation -----------------------------------------------------------------------
@@ -192,9 +195,12 @@ export function WatchPage() {
     );
   }, []);
 
-  const onCameraChange = useCallback((c: CameraState) => {
-    setZoom(c.zoom);
-  }, []);
+  const onCameraChange = useCallback(
+    (c: CameraState) => {
+      viewControls.fromCamera(c);
+    },
+    [viewControls],
+  );
 
   const changeSolver = useCallback(
     (id: string) => {
@@ -230,6 +236,7 @@ export function WatchPage() {
           generateWith(randomSeed());
           break;
         default:
+          if (handleViewKey(e.key, mode, viewControls)) e.preventDefault();
           break;
       }
     },
@@ -291,6 +298,7 @@ export function WatchPage() {
             onHostSize={onHostSize}
             onCameraChange={onCameraChange}
           />
+          <ViewControls mode={mode} controls={viewControls} className="absolute right-2 bottom-2" />
         </div>
         <aside
           aria-label="Solver details"

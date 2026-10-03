@@ -15,7 +15,14 @@ interface Column {
 const int = (v: number | null): string => (v === null ? '-' : String(v));
 
 export const COLUMNS: readonly Column[] = [
-  { key: 'deadEnds', label: 'Dead ends', best: 'min', rule: 'fewest', value: (m) => m.deadEnds, format: int },
+  {
+    key: 'deadEnds',
+    label: 'Dead ends',
+    best: 'min',
+    rule: 'fewest',
+    value: (m) => m.deadEnds,
+    format: int,
+  },
   {
     key: 'solution',
     label: 'Solution',
@@ -24,7 +31,14 @@ export const COLUMNS: readonly Column[] = [
     value: (m) => m.solutionLength,
     format: (v) => (v === null ? 'none' : `${v} moves`),
   },
-  { key: 'diameter', label: 'Diameter', best: 'max', rule: 'longest', value: (m) => m.diameter, format: int },
+  {
+    key: 'diameter',
+    label: 'Diameter',
+    best: 'max',
+    rule: 'longest',
+    value: (m) => m.diameter,
+    format: int,
+  },
   {
     key: 'degree',
     label: 'Avg degree',
@@ -33,8 +47,22 @@ export const COLUMNS: readonly Column[] = [
     value: (m) => m.averageDegree,
     format: (v) => (v === null ? '-' : v.toFixed(2)),
   },
-  { key: 'junctions', label: 'Junctions', best: 'max', rule: 'most', value: (m) => m.junctions, format: int },
-  { key: 'steps', label: 'Gen. steps', best: 'min', rule: 'fewest', value: (_m, steps) => steps, format: int },
+  {
+    key: 'junctions',
+    label: 'Junctions',
+    best: 'max',
+    rule: 'most',
+    value: (m) => m.junctions,
+    format: int,
+  },
+  {
+    key: 'steps',
+    label: 'Gen. steps',
+    best: 'min',
+    rule: 'fewest',
+    value: (_m, steps) => steps,
+    format: int,
+  },
 ];
 
 /** Indices of lanes holding the best value for a column; empty when all lanes tie or <2 lanes. */
@@ -58,7 +86,12 @@ export function CompareMetricsTable({ lanes }: CompareMetricsTableProps) {
   const rows = lanes.map((l) => {
     const snap = l.session.getSnapshot();
     const steps = l.session.generation?.steps ?? 0;
-    return { algoId: l.algoId, name: generators.get(l.algoId)?.meta.name ?? l.algoId, metrics: snap.metrics, steps };
+    return {
+      algoId: l.algoId,
+      name: generators.get(l.algoId)?.meta.name ?? l.algoId,
+      metrics: snap.metrics,
+      steps,
+    };
   });
   const bestByColumn = COLUMNS.map((c) =>
     bestLanes(
@@ -68,7 +101,10 @@ export function CompareMetricsTable({ lanes }: CompareMetricsTableProps) {
   );
   return (
     <section aria-labelledby="compare-metrics-heading" className="flex flex-col gap-2 px-3 py-2">
-      <h2 id="compare-metrics-heading" className="text-xs font-semibold tracking-wide text-muted uppercase">
+      <h2
+        id="compare-metrics-heading"
+        className="text-xs font-semibold tracking-wide text-muted uppercase"
+      >
         Metrics
       </h2>
       <div className="overflow-x-auto">
@@ -79,11 +115,11 @@ export function CompareMetricsTable({ lanes }: CompareMetricsTableProps) {
           </caption>
           <thead>
             <tr className="text-[10px] tracking-wide text-muted uppercase">
-              <th scope="col" className="py-1 pr-3 font-medium">
+              <th scope="col" className="sticky left-0 bg-bg py-1 pr-3 font-medium">
                 Generator
               </th>
               {COLUMNS.map((c) => (
-                <th key={c.key} scope="col" className="py-1 pr-3 font-medium">
+                <th key={c.key} scope="col" className="py-1 pr-3 font-medium whitespace-nowrap">
                   {c.label} <span className="font-normal normal-case">({c.rule})</span>
                 </th>
               ))}
@@ -91,8 +127,15 @@ export function CompareMetricsTable({ lanes }: CompareMetricsTableProps) {
           </thead>
           <tbody>
             {rows.map((r, i) => (
-              <tr key={`${r.algoId}-${i}`} className="border-t border-border" data-testid="compare-row">
-                <th scope="row" className="py-1.5 pr-3 font-medium">
+              <tr
+                key={`${r.algoId}-${i}`}
+                className="border-t border-border"
+                data-testid="compare-row"
+              >
+                <th
+                  scope="row"
+                  className="sticky left-0 max-w-[9rem] bg-bg py-1.5 pr-3 text-sm font-medium sm:max-w-none"
+                >
                   {r.name}
                   {rows.filter((x) => x.algoId === r.algoId).length > 1 ? (
                     <span className="ml-1 text-xs text-muted">#{i + 1}</span>
@@ -102,8 +145,21 @@ export function CompareMetricsTable({ lanes }: CompareMetricsTableProps) {
                   const v = r.metrics ? c.value(r.metrics, r.steps) : null;
                   const isBest = bestByColumn[ci]?.has(i) ?? false;
                   return (
-                    <td key={c.key} className={cn('py-1.5 pr-3 tabular-nums', isBest && 'font-semibold text-accent')}>
-                      {r.metrics ? c.format(v) : 'generating'}
+                    <td
+                      key={c.key}
+                      className={cn(
+                        'py-1.5 pr-3 whitespace-nowrap tabular-nums',
+                        isBest && 'font-semibold text-accent',
+                      )}
+                    >
+                      {r.metrics ? (
+                        c.format(v)
+                      ) : (
+                        <span className="text-muted">
+                          <span aria-hidden="true">…</span>
+                          <span className="sr-only">generating</span>
+                        </span>
+                      )}
                       {isBest ? <span className="sr-only"> (best)</span> : null}
                     </td>
                   );
