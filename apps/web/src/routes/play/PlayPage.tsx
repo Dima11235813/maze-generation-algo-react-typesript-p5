@@ -31,6 +31,10 @@ import { Workspace } from '../../layout/Workspace';
 import { TimelineBar } from './TimelineBar';
 import { useKeyboardShortcuts } from './useKeyboardShortcuts';
 import { ViewControls, handleViewKey } from './ViewControls';
+import { rendererModeFor, treeOptionsFor, type ViewChoice } from '../../maze/treeView';
+import { TreeControls } from '../tree/TreeControls';
+import { TreeOutline } from '../tree/TreeOutline';
+import type { CellId } from '@maze/core';
 
 function useMazeSession(): MazeSession {
   const ref = useRef<MazeSession | null>(null);
@@ -63,7 +67,11 @@ export function PlayPage() {
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [pullKey, setPullKey] = useState(0);
+  const [treeHighlight, setTreeHighlight] = useState<readonly CellId[] | null>(null);
   const rendererRef = useRef<Renderer | null>(null);
+  const viewChoice: ViewChoice = prefs.treeView ? 'tree' : prefs.mode;
+  const rendererMode = rendererModeFor(viewChoice, prefs.treeLayout);
   const a11yRef = useRef<DomRenderer | null>(null);
 
   const activePlayer = session.activePlayer;
@@ -83,7 +91,11 @@ export function PlayPage() {
   const rows = snap.height || 1;
   const gridCellSize = snap.phase === 'empty' ? prefs.cellSize : snap.cellSize;
   const options = useMemo(
-    () => buildRenderOptions(prefs, rows, reducedMotion, gridCellSize),
+    () => ({
+      ...buildRenderOptions(prefs, rows, reducedMotion, gridCellSize),
+      mode: rendererMode,
+      tree: treeOptionsFor(viewChoice, prefs.treeLayout, prefs.treeMorph, pullKey, treeHighlight),
+    }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       prefs.wallWidth,
@@ -98,6 +110,12 @@ export function PlayPage() {
       rows,
       reducedMotion,
       gridCellSize,
+      rendererMode,
+      viewChoice,
+      prefs.treeLayout,
+      prefs.treeMorph,
+      pullKey,
+      treeHighlight,
     ],
   );
   const camera = useMemo(
@@ -202,9 +220,22 @@ export function PlayPage() {
   const setMode = useCallback(
     (mode: ViewMode) => {
       if (mode === '2d' && session.getSnapshot().firstPerson) session.exitFirstPerson();
-      prefs.set('mode', mode);
+      prefs.patch({ mode, treeView: false });
     },
     [prefs, session],
+  );
+
+  const setView = useCallback(
+    (next: ViewChoice) => {
+      if (next !== 'tree') {
+        setMode(next);
+        return;
+      }
+      if (session.getSnapshot().firstPerson) session.exitFirstPerson();
+      prefs.set('treeView', true);
+      announce('Tree view: the maze pulled out into the tree it is. Start at the root.');
+    },
+    [prefs, session, setMode, announce],
   );
 
   const toggleFirstPerson = useCallback(() => {
@@ -212,7 +243,7 @@ export function PlayPage() {
       session.exitFirstPerson();
       return;
     }
-    if (prefs.mode !== '3d') prefs.set('mode', '3d');
+    if (prefs.mode !== '3d' || prefs.treeView) prefs.patch({ mode: '3d', treeView: false });
     if (session.enterFirstPerson()) {
       document.querySelector<HTMLElement>('[data-testid="maze-canvas-host"]')?.focus();
     }
@@ -336,15 +367,19 @@ export function PlayPage() {
           break;
         case 'v':
         case 'V':
-          if (prefs.mode === '3d') cycleCamera();
+          if (rendererMode === '3d') cycleCamera();
           break;
         case 'f':
         case 'F':
-          if (prefs.mode === '3d') prefs.set('followPointer', !prefs.followPointer);
+          if (rendererMode === '3d') prefs.set('followPointer', !prefs.followPointer);
           break;
         case 't':
         case 'T':
-          setMode(prefs.mode === '3d' ? '2d' : '3d');
+          setMode(prefs.treeView ? prefs.mode : prefs.mode === '3d' ? '2d' : '3d');
+          break;
+        case 'y':
+        case 'Y':
+          setView(prefs.treeView ? prefs.mode : 'tree');
           break;
         case 'r':
         case 'R':
@@ -367,7 +402,7 @@ export function PlayPage() {
           setShortcutsOpen(true);
           break;
         default:
-          if (!fp && handleViewKey(e.key, prefs.mode, viewControls)) e.preventDefault();
+          if (!fp && handleViewKey(e.key, rendererMode, viewControls)) e.preventDefault();
           break;
       }
     },
@@ -380,7 +415,7 @@ export function PlayPage() {
   const canvasLabel =
     snap.phase === 'empty'
       ? 'Maze canvas, waiting to generate'
-      : `Maze canvas: ${snap.width} by ${snap.height} cells, ${snap.phase === 'generating' ? 'generation in progress' : 'complete'}${snap.firstPerson ? ', first-person mode' : ''}`;
+      : `Maze canvas: ${snap.width} by ${snap.height} cells, ${snap.phase === 'generating' ? 'generation in progress' : 'complete'}${snap.firstPerson ? ', first-person mode' : ''}${viewChoice === 'tree' ? ', shown as a tree' : ''}`;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -422,8 +457,9 @@ export function PlayPage() {
         onSpeedChange={(s) => {
           prefs.set('speed', s);
         }}
-        mode={prefs.mode}
-        onModeChange={setMode}
+        mode={rendererMode}
+        view={viewChoice}
+        onViewChange={setView}
         cameraPreset={prefs.cameraPreset}
         onCameraPresetChange={(c) => {
           prefs.set('cameraPreset', c);
@@ -464,7 +500,7 @@ export function PlayPage() {
             <div className="relative flex min-h-0 flex-1 flex-col">
               <MazeCanvas
                 session={session}
-                mode={prefs.mode}
+                mode={rendererMode}
                 theme={theme}
                 options={options}
                 camera={camera}
@@ -481,7 +517,7 @@ export function PlayPage() {
               />
               {snap.firstPerson ? null : (
                 <ViewControls
-                  mode={prefs.mode}
+                  mode={rendererMode}
                   controls={viewControls}
                   className="absolute right-2 bottom-2 sm:right-3 sm:bottom-3"
                 />
@@ -550,6 +586,22 @@ export function PlayPage() {
                 />
               ) : null}
             </div>
+            {viewChoice === 'tree' ? (
+              <TreeControls
+                layout={prefs.treeLayout}
+                onLayoutChange={(l) => {
+                  prefs.set('treeLayout', l);
+                }}
+                morph={prefs.treeMorph}
+                onMorphChange={(m) => {
+                  prefs.set('treeMorph', m);
+                }}
+                onPull={() => {
+                  if (prefs.treeMorph < 0.5) prefs.set('treeMorph', 1);
+                  setPullKey((k) => k + 1);
+                }}
+              />
+            ) : null}
             <TimelineBar
               snapshot={playerSnap}
               label={
@@ -566,6 +618,14 @@ export function PlayPage() {
         }
         side={
           <>
+            {viewChoice === 'tree' ? (
+              <Section id="play-tree" title="Tree" summary="corridors and forks">
+                <TreeOutline
+                  maze={snap.phase === 'ready' ? snap.state : null}
+                  onHighlight={setTreeHighlight}
+                />
+              </Section>
+            ) : null}
             <Section id="play-metrics" title="Metrics" defaultOpen={bp !== 'mobile'}>
               <MetricsPanel session={session} snap={snap} layout="tiles" />
             </Section>

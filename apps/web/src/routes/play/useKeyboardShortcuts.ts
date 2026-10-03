@@ -26,8 +26,18 @@ export function shouldIgnoreShortcut(e: KeyboardEvent): boolean {
   if (!isElement(target)) return false;
   if (target.closest(TEXT_TARGETS)) return true;
   const isArrow = e.key.startsWith('Arrow');
+  // Tree widgets (the Tree view outline) own arrows, Home/End, Space and Enter.
+  if (
+    (isArrow || e.key === 'Home' || e.key === 'End' || e.key === ' ' || e.key === 'Enter') &&
+    target.closest('[role="tree"]')
+  ) {
+    return true;
+  }
   if (isArrow && target.closest(ARROW_TARGETS)) return true;
-  if ((e.key === ' ' || e.key === 'Enter') && target.closest('button, a, [role="button"], [role="switch"]')) {
+  if (
+    (e.key === ' ' || e.key === 'Enter') &&
+    target.closest('button, a, [role="button"], [role="switch"]')
+  ) {
     return true;
   }
   return false;

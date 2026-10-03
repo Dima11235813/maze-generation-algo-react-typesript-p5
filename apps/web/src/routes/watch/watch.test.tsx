@@ -41,7 +41,9 @@ describe('/watch', () => {
     );
     await waitFor(() => expect(screen.getByRole('button', { name: /^play$/i })).toBeEnabled());
     expect(screen.getByRole('log', { name: /solver steps/i })).toBeInTheDocument();
-    expect(screen.getByRole('list', { name: /breadth-first search pseudo-code/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('list', { name: /breadth-first search pseudo-code/i }),
+    ).toBeInTheDocument();
   });
 
   it('runs BFS to completion, shows the path length and highlights pseudo-code', async () => {
@@ -53,7 +55,9 @@ describe('/watch', () => {
     await user.click(run);
 
     const stats = screen.getByLabelText(/solver statistics/i);
-    await waitFor(() => expect(within(stats).getAllByText(/\d+ moves/).length).toBeGreaterThanOrEqual(2));
+    await waitFor(() =>
+      expect(within(stats).getAllByText(/\d+ moves/).length).toBeGreaterThanOrEqual(2),
+    );
     // Path length equals the shortest solution reported for the maze.
     const pathCell = within(stats).getAllByText(/\d+ moves/);
     expect(pathCell.length).toBeGreaterThanOrEqual(2);
@@ -75,15 +79,21 @@ describe('/watch', () => {
 
     await user.click(within(picker).getByRole('radio', { name: /depth-first/i }));
     expect(usePrefs.getState().solverId).toBe('dfs');
-    expect(await screen.findByRole('list', { name: /depth-first search pseudo-code/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('list', { name: /depth-first search pseudo-code/i }),
+    ).toBeInTheDocument();
 
     const step = screen.getByRole('button', { name: /step once/i });
     await waitFor(() => expect(step).toBeEnabled());
     await user.click(step);
     await user.click(step);
     const log = screen.getByRole('log', { name: /solver steps/i });
-    await waitFor(() => expect(within(log).getAllByRole('listitem').length).toBeGreaterThanOrEqual(2));
-    const current = screen.getByRole('list', { name: /pseudo-code/i }).querySelector('[aria-current="step"]');
+    await waitFor(() =>
+      expect(within(log).getAllByRole('listitem').length).toBeGreaterThanOrEqual(2),
+    );
+    const current = screen
+      .getByRole('list', { name: /pseudo-code/i })
+      .querySelector('[aria-current="step"]');
     expect(current).not.toBeNull();
 
     await user.click(screen.getByRole('radio', { name: /expansions only/i }));

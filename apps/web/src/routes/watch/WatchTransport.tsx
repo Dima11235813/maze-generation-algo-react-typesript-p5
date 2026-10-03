@@ -1,19 +1,15 @@
 import { SPEED_PRESETS, type PlayerStatus } from '@maze/player';
-import type { ViewMode } from '@maze/renderer';
 import {
   Button,
   IconButton,
   Kbd,
   Separator,
   Slider,
-  ToggleGroup,
-  ToggleGroupItem,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@maze/ui';
 import {
-  Box,
   FastForward,
   Pause,
   Play,
@@ -21,11 +17,12 @@ import {
   RotateCcw,
   Shuffle,
   SkipForward,
-  Square,
   StepBack,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { formatSpeed, indexToSpeed, speedToIndex } from '../../lib/speed';
+import type { ViewChoice } from '../../maze/treeView';
+import { ViewModeToggle } from '../tree/ViewModeToggle';
 
 export interface WatchTransportProps {
   status: PlayerStatus | null;
@@ -39,8 +36,8 @@ export interface WatchTransportProps {
   onReset(): void;
   speed: number;
   onSpeedChange(speed: number): void;
-  mode: ViewMode;
-  onModeChange(mode: ViewMode): void;
+  view: ViewChoice;
+  onViewChange(view: ViewChoice): void;
   onNewMaze(): void;
   onRegenerate(): void;
   seed: string;
@@ -143,7 +140,9 @@ export function WatchTransport(p: WatchTransportProps) {
           max={SPEED_PRESETS.length - 1}
           step={1}
           valueText={formatSpeed(p.speed)}
-          onValueChange={(i) => { p.onSpeedChange(indexToSpeed(i)); }}
+          onValueChange={(i) => {
+            p.onSpeedChange(indexToSpeed(i));
+          }}
         />
         <span className="w-16 shrink-0 text-xs tabular-nums text-muted sm:w-24" aria-hidden="true">
           {formatSpeed(p.speed)}
@@ -153,21 +152,7 @@ export function WatchTransport(p: WatchTransportProps) {
       <Separator orientation="vertical" className="hidden h-6 sm:block" />
 
       <div role="group" aria-label="View" className="flex items-center gap-1.5">
-        <ToggleGroup
-          type="single"
-          value={p.mode}
-          aria-label="View mode"
-          onValueChange={(v) => {
-            if (v === '2d' || v === '3d') p.onModeChange(v);
-          }}
-        >
-          <ToggleGroupItem value="2d" aria-label="2D view">
-            <Square className="h-3.5 w-3.5" aria-hidden="true" /> 2D
-          </ToggleGroupItem>
-          <ToggleGroupItem value="3d" aria-label="3D view">
-            <Box className="h-3.5 w-3.5" aria-hidden="true" /> 3D
-          </ToggleGroupItem>
-        </ToggleGroup>
+        <ViewModeToggle value={p.view} onChange={p.onViewChange} />
       </div>
 
       <Separator orientation="vertical" className="hidden h-6 sm:block" />

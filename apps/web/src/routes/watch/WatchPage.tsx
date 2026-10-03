@@ -1,6 +1,10 @@
 import { describeSolveStep, randomSeed, solvers } from '@maze/core';
 import { useStepPlayer } from '@maze/player/react';
-import type { CameraState, ViewMode } from '@maze/renderer';
+import type { CameraState } from '@maze/renderer';
+import type { CellId } from '@maze/core';
+import { rendererModeFor, treeOptionsFor, type ViewChoice } from '../../maze/treeView';
+import { TreeControls } from '../tree/TreeControls';
+import { TreeOutline } from '../tree/TreeOutline';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useAnnouncer } from '../../app/Announcer';
@@ -62,7 +66,10 @@ export function WatchPage() {
   const touchLayout = bp === 'mobile' || bp === 'tablet';
 
   const [hostSize, setHostSize] = useState<HostSize | null>(null);
-  const [mode, setMode] = useState<ViewMode>('2d');
+  const [viewChoice, setViewChoice] = useState<ViewChoice>('2d');
+  const [pullKey, setPullKey] = useState(0);
+  const [treeHighlight, setTreeHighlight] = useState<readonly CellId[] | null>(null);
+  const mode = rendererModeFor(viewChoice, prefs.treeLayout);
   const viewControls = useCameraView(prefs.cameraPreset);
   const { view } = viewControls;
   const [solverId, setSolverId] = useState(() =>
@@ -96,7 +103,11 @@ export function WatchPage() {
   const rows = snap.height || 1;
   const gridCellSize = snap.phase === 'empty' ? prefs.cellSize : snap.cellSize;
   const options = useMemo(
-    () => ({ ...buildRenderOptions(prefs, rows, reducedMotion, gridCellSize), mode }),
+    () => ({
+      ...buildRenderOptions(prefs, rows, reducedMotion, gridCellSize),
+      mode,
+      tree: treeOptionsFor(viewChoice, prefs.treeLayout, prefs.treeMorph, pullKey, treeHighlight),
+    }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       prefs.wallWidth,
@@ -111,6 +122,11 @@ export function WatchPage() {
       reducedMotion,
       gridCellSize,
       mode,
+      viewChoice,
+      prefs.treeLayout,
+      prefs.treeMorph,
+      pullKey,
+      treeHighlight,
     ],
   );
   const camera = useMemo(
@@ -302,8 +318,8 @@ export function WatchPage() {
         onSpeedChange={(s) => {
           prefs.set('speed', s);
         }}
-        mode={mode}
-        onModeChange={setMode}
+        view={viewChoice}
+        onViewChange={setViewChoice}
         onNewMaze={() => {
           generateWith(randomSeed());
         }}
@@ -338,6 +354,22 @@ export function WatchPage() {
                 className="absolute right-2 bottom-2"
               />
             </div>
+            {viewChoice === 'tree' ? (
+              <TreeControls
+                layout={prefs.treeLayout}
+                onLayoutChange={(l) => {
+                  prefs.set('treeLayout', l);
+                }}
+                morph={prefs.treeMorph}
+                onMorphChange={(m) => {
+                  prefs.set('treeMorph', m);
+                }}
+                onPull={() => {
+                  if (prefs.treeMorph < 0.5) prefs.set('treeMorph', 1);
+                  setPullKey((k) => k + 1);
+                }}
+              />
+            ) : null}
             <TimelineBar
               snapshot={armed ? playerSnap : null}
               label="Solve"
@@ -362,6 +394,14 @@ export function WatchPage() {
         }
         side={
           <>
+            {viewChoice === 'tree' ? (
+              <Section id="watch-tree" title="Tree" summary="corridors and forks">
+                <TreeOutline
+                  maze={snap.phase === 'ready' ? snap.state : null}
+                  onHighlight={setTreeHighlight}
+                />
+              </Section>
+            ) : null}
             <Section id="watch-stats" title="Statistics">
               <WatchStats
                 snap={snap}
