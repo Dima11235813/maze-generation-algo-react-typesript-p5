@@ -2,6 +2,7 @@ import {
   hexToRgb,
   legacyTheme,
   type CameraState,
+  type CameraView,
   type RenderOptions,
   type RenderTheme,
 } from '@maze/renderer';
@@ -59,7 +60,14 @@ export function buildRenderOptions(
 
 export function buildCamera(
   p: Pick<Prefs, 'cameraPreset' | 'followPointer'>,
-  zoom: number,
+  view: CameraView | number,
 ): CameraState {
-  return { preset: p.cameraPreset, followPointer: p.followPointer, zoom };
+  const v = typeof view === 'number' ? { zoom: view, yaw: 0, pitch: 0 } : view;
+  return {
+    preset: p.cameraPreset,
+    followPointer: p.followPointer,
+    zoom: v.zoom,
+    yaw: v.yaw,
+    pitch: v.pitch,
+  };
 }

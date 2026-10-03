@@ -6,6 +6,7 @@
  * first-person turns) takes the shortest angular path without passing through the eye.
  */
 import * as THREE from 'three';
+import { CAMERA_PRESET_ANGLES, MAX_ELEVATION, MIN_ELEVATION, pitchLimits } from '../camera';
 import type { CameraPreset, PointerState } from '../types';
 
 export interface Pose {
@@ -19,20 +20,10 @@ export interface Pose {
 }
 
 const deg = (d: number): number => (d * Math.PI) / 180;
-
-/** Elevation above the plane and azimuth around the centre (0 = camera south of the maze). */
-const PRESETS: Readonly<Record<CameraPreset, { elevation: number; azimuth: number }>> = {
-  top: { elevation: deg(88), azimuth: 0 },
-  tilt: { elevation: deg(35), azimuth: 0 },
-  isometric: { elevation: deg(45), azimuth: deg(45) },
-  low: { elevation: deg(15), azimuth: 0 },
-  front: { elevation: deg(5), azimuth: 0 },
-};
+const PRESETS = CAMERA_PRESET_ANGLES;
 
 const FOLLOW_YAW = deg(15);
 const FOLLOW_PITCH = deg(10);
-const MIN_ELEVATION = deg(3);
-const MAX_ELEVATION = deg(89);
 /** Time constant of the exponential easing (ms); ~3 tau to settle. */
 const EASE_TAU_MS = 90;
 /** Fraction of the normalised viewport the maze may occupy (leaves a ~4 % margin per side). */
@@ -145,14 +136,27 @@ export class CameraRig {
     return result;
   }
 
+  /** Range of user tilt (radians) that keeps a preset's elevation inside the allowed band. */
+  pitchLimits(preset: CameraPreset): { min: number; max: number } {
+    return pitchLimits(preset);
+  }
+
   /**
    * Orbit pose for a preset around the origin. `pointer` (screen-normalised, y down) adds the
-   * legacy follow-mouse parallax; pass `null` to disable it.
+   * legacy follow-mouse parallax; pass `null` to disable it. `yaw`/`pitch` are the user's own
+   * orbit offsets (drag, buttons, keys). The distance stays the preset's fit distance so the
+   * view does not "breathe" while rotating; zoom is the user's control for distance.
    */
-  orbit(preset: CameraPreset, zoom: number, pointer: PointerState | null): void {
+  orbit(
+    preset: CameraPreset,
+    zoom: number,
+    pointer: PointerState | null,
+    yaw = 0,
+    pitch = 0,
+  ): void {
     const base = PRESETS[preset];
-    let elevation = base.elevation;
-    let azimuth = base.azimuth;
+    let elevation = Math.min(MAX_ELEVATION, Math.max(MIN_ELEVATION, base.elevation + pitch));
+    let azimuth = base.azimuth + yaw;
     if (pointer) {
       azimuth -= pointer.x * FOLLOW_YAW;
       elevation = Math.min(

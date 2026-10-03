@@ -13,8 +13,17 @@ import {
 } from '@maze/ui';
 import { Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { ArrowLeft, Dices, FastForward, Pause, Play, RefreshCw, SkipForward } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from 'react';
 import { useAnnouncer } from '../../app/Announcer';
+import { useIsNarrow } from '../../lib/useMediaQuery';
 import { useReducedMotion } from '../../app/documentPrefs';
 import { formatSpeed, indexToSpeed, speedToIndex } from '../../lib/speed';
 import { CompareController, MAX_COMPARE_LANES, parseAlgos } from '../../maze/compare';
@@ -66,11 +75,19 @@ function useSessionsVersion(sessions: readonly MazeSession[]): number {
           cb();
         }),
       );
-      return () => unsubs.forEach((u) => u());
+      return () => {
+        unsubs.forEach((u) => {
+          u();
+        });
+      };
     },
     [sessions],
   );
-  return useSyncExternalStore(subscribe, () => versionRef.current, () => versionRef.current);
+  return useSyncExternalStore(
+    subscribe,
+    () => versionRef.current,
+    () => versionRef.current,
+  );
 }
 
 /**
@@ -84,9 +101,15 @@ export function ComparePage() {
   const prefs = usePrefs();
   const reducedMotion = useReducedMotion();
   const announce = useAnnouncer();
+  const narrow = useIsNarrow();
 
-  const fallbackAlgo = generators.has(prefs.generatorId) ? prefs.generatorId : (generators.ids[0] ?? '');
-  const algos = useMemo(() => parseAlgos(search.algos, generators.ids, fallbackAlgo), [search.algos, fallbackAlgo]);
+  const fallbackAlgo = generators.has(prefs.generatorId)
+    ? prefs.generatorId
+    : (generators.ids[0] ?? '');
+  const algos = useMemo(
+    () => parseAlgos(search.algos, generators.ids, fallbackAlgo),
+    [search.algos, fallbackAlgo],
+  );
   const [seed] = useState(() => search.seed ?? randomSeed());
   const effectiveSeed = search.seed ?? seed;
   const [hostSize, setHostSize] = useState<HostSize | null>(null);
@@ -115,7 +138,9 @@ export function ComparePage() {
   const lanesRef = useRef<Lanes | null>(null);
   if (!lanesRef.current || lanesRef.current.key !== laneKey) {
     lanesRef.current?.controller.dispose();
-    lanesRef.current?.sessions.forEach((s) => s.dispose());
+    lanesRef.current?.sessions.forEach((s) => {
+      s.dispose();
+    });
     const sessions = algos.map(() => new MazeSession({ speed: prefs.speed, schedule: noSchedule }));
     lanesRef.current = {
       key: laneKey,
@@ -131,9 +156,12 @@ export function ComparePage() {
 
   useEffect(() => {
     const current = lanesRef.current;
+    current?.controller.revive();
     return () => {
       current?.controller.dispose();
-      current?.sessions.forEach((s) => s.dispose());
+      current?.sessions.forEach((s) => {
+        s.dispose();
+      });
     };
   }, []);
 
@@ -141,11 +169,18 @@ export function ComparePage() {
     if (!hostSize) return;
     const dims = computeGridDims(hostSize.width, hostSize.height, prefs.cellSize);
     lanes.sessions.forEach((s, i) => {
-      s.generate({ ...dims, seed: lanes.seed, generatorId: lanes.algos[i] ?? fallbackAlgo, autoplay: false });
+      s.generate({
+        ...dims,
+        seed: lanes.seed,
+        generatorId: lanes.algos[i] ?? fallbackAlgo,
+        autoplay: false,
+      });
     });
     controller.reset();
     if (!reducedMotion) controller.play();
-    announce(`Comparing ${lanes.algos.length} generator${lanes.algos.length === 1 ? '' : 's'} on seed ${lanes.seed}.`);
+    announce(
+      `Comparing ${lanes.algos.length} generator${lanes.algos.length === 1 ? '' : 's'} on seed ${lanes.seed}.`,
+    );
   }, [hostSize, prefs.cellSize, lanes, controller, fallbackAlgo, reducedMotion, announce]);
 
   useEffect(() => {
@@ -154,9 +189,13 @@ export function ComparePage() {
     generateLanes();
   }, [hostSize, laneKey, generateLanes]);
 
-  useEffect(() => controller.setSpeed(prefs.speed), [controller, prefs.speed]);
+  useEffect(() => {
+    controller.setSpeed(prefs.speed);
+  }, [controller, prefs.speed]);
 
-  const ctl = useSyncExternalStore(controller.onChange.bind(controller), () => controller.getSnapshot());
+  const ctl = useSyncExternalStore(controller.onChange.bind(controller), () =>
+    controller.getSnapshot(),
+  );
   const version = useSessionsVersion(sessions);
 
   useEffect(() => {
@@ -178,15 +217,23 @@ export function ComparePage() {
   const rows = first?.height || 1;
   const gridCellSize = first && first.phase !== 'empty' ? first.cellSize : prefs.cellSize;
   const options = useMemo(
-    () => ({ ...buildRenderOptions(prefs, rows, reducedMotion, gridCellSize), mode: '2d' as const }),
+    () => ({
+      ...buildRenderOptions(prefs, rows, reducedMotion, gridCellSize),
+      mode: '2d' as const,
+    }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [prefs.wallWidth, prefs.showGrid, prefs.showStartGoal, rows, reducedMotion, gridCellSize],
   );
-  const camera = useMemo(() => buildCamera({ cameraPreset: 'top', followPointer: false }, zoom), [zoom]);
+  const camera = useMemo(
+    () => buildCamera({ cameraPreset: 'top', followPointer: false }, zoom),
+    [zoom],
+  );
 
   const onHostSize = useCallback((size: HostSize) => {
     setHostSize((prev) =>
-      prev && Math.abs(prev.width - size.width) < 1 && Math.abs(prev.height - size.height) < 1 ? prev : size,
+      prev && Math.abs(prev.width - size.width) < 1 && Math.abs(prev.height - size.height) < 1
+        ? prev
+        : size,
     );
   }, []);
 
@@ -229,15 +276,19 @@ export function ComparePage() {
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col" data-sessions-version={version}>
+    <div
+      className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:overflow-hidden"
+      data-sessions-version={version}
+    >
       <div
         role="toolbar"
         aria-label="Compare controls"
         className="flex flex-wrap items-center gap-2 border-b border-border bg-panel px-3 py-2"
       >
         <Button asChild variant="ghost" size="sm">
-          <Link to="/explore">
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Catalogue
+          <Link to="/explore" aria-label="Back to the catalogue">
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Catalogue</span>
           </Link>
         </Button>
         <Separator orientation="vertical" className="h-6" />
@@ -248,24 +299,46 @@ export function ComparePage() {
               variant="outline"
               aria-label={playing ? 'Pause' : 'Play'}
               aria-pressed={playing}
-              onClick={() => controller.toggle()}
+              onClick={() => {
+                controller.toggle();
+              }}
               disabled={!playable}
             >
-              {playing ? <Pause className="h-4 w-4" aria-hidden="true" /> : <Play className="h-4 w-4" aria-hidden="true" />}
+              {playing ? (
+                <Pause className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Play className="h-4 w-4" aria-hidden="true" />
+              )}
             </IconButton>
           </Hint>
           <Hint label="Step all lanes once" keys=".">
-            <IconButton size="icon-sm" variant="outline" aria-label="Step once" onClick={() => controller.step()} disabled={!playable}>
+            <IconButton
+              size="icon-sm"
+              variant="outline"
+              aria-label="Step once"
+              onClick={() => {
+                controller.step();
+              }}
+              disabled={!playable}
+            >
               <SkipForward className="h-4 w-4" aria-hidden="true" />
             </IconButton>
           </Hint>
           <Hint label="Run every lane to the end">
-            <IconButton size="icon-sm" variant="outline" aria-label="Run to end" onClick={() => controller.runToEnd()} disabled={!playable}>
+            <IconButton
+              size="icon-sm"
+              variant="outline"
+              aria-label="Run to end"
+              onClick={() => {
+                controller.runToEnd();
+              }}
+              disabled={!playable}
+            >
               <FastForward className="h-4 w-4" aria-hidden="true" />
             </IconButton>
           </Hint>
           <Slider
-            className="w-40"
+            className="w-28 sm:w-40"
             label="Speed"
             hideLabel
             value={speedIndex}
@@ -273,9 +346,14 @@ export function ComparePage() {
             max={SPEED_PRESETS.length - 1}
             step={1}
             valueText={formatSpeed(prefs.speed)}
-            onValueChange={(i) => prefs.set('speed', indexToSpeed(i))}
+            onValueChange={(i) => {
+              prefs.set('speed', indexToSpeed(i));
+            }}
           />
-          <span className="w-24 text-xs tabular-nums text-muted" aria-hidden="true">
+          <span
+            className="hidden w-24 text-xs tabular-nums text-muted sm:inline"
+            aria-hidden="true"
+          >
             {formatSpeed(prefs.speed)}
           </span>
         </div>
@@ -302,7 +380,13 @@ export function ComparePage() {
             }}
           />
           <Hint label="Random seed" keys="N">
-            <IconButton size="icon-sm" aria-label="Random seed" onClick={() => setSearch({ seed: randomSeed() })}>
+            <IconButton
+              size="icon-sm"
+              aria-label="Random seed"
+              onClick={() => {
+                setSearch({ seed: randomSeed() });
+              }}
+            >
               <Dices className="h-4 w-4" aria-hidden="true" />
             </IconButton>
           </Hint>
@@ -320,34 +404,61 @@ export function ComparePage() {
             </IconButton>
           </Hint>
         </div>
-        <Separator orientation="vertical" className="h-6" />
-        <fieldset className="flex flex-wrap items-center gap-2">
+      </div>
+
+      <details
+        key={narrow ? 'narrow' : 'wide'}
+        open={!narrow}
+        className="border-b border-border bg-panel px-3 py-2"
+      >
+        <summary className="cursor-pointer text-sm font-medium select-none">
+          Generators ({algos.length} of {MAX_COMPARE_LANES} max)
+          <span className="ml-2 font-normal text-muted">
+            {algos.map((a) => generators.get(a)?.meta.name ?? a).join(', ')}
+          </span>
+        </summary>
+        <fieldset className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-2">
           <legend className="sr-only">Generators to compare (2 to 4)</legend>
           {generators.all.map((g) => {
             const checked = algos.includes(g.meta.id);
             const id = `cmp-${g.meta.id}`;
             return (
-              <span key={g.meta.id} className="flex items-center gap-1 text-xs">
+              <span
+                key={g.meta.id}
+                className="flex min-h-8 items-center gap-1.5 text-sm sm:text-xs"
+              >
                 <input
                   id={id}
                   type="checkbox"
-                  className="h-3.5 w-3.5 accent-[var(--accent)]"
+                  className="h-4 w-4 accent-[var(--accent)]"
                   checked={checked}
-                  disabled={(!checked && algos.length >= MAX_COMPARE_LANES) || (checked && algos.length === 1)}
-                  onChange={(e) => toggleAlgo(g.meta.id, e.target.checked)}
+                  disabled={
+                    (!checked && algos.length >= MAX_COMPARE_LANES) ||
+                    (checked && algos.length === 1)
+                  }
+                  onChange={(e) => {
+                    toggleAlgo(g.meta.id, e.target.checked);
+                  }}
                 />
                 <label htmlFor={id}>{g.meta.name}</label>
               </span>
             );
           })}
           {generators.all.length < 2 ? (
-            <span className="text-xs text-muted">(more generators arrive with the catalogue work)</span>
+            <span className="text-xs text-muted">
+              (more generators arrive with the catalogue work)
+            </span>
           ) : null}
         </fieldset>
-      </div>
+      </details>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-2">
-        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${Math.min(lanes.algos.length, 2)}, minmax(0, 1fr))` }}>
+      <div className="flex flex-none flex-col gap-2 p-2 lg:min-h-0 lg:flex-1 lg:overflow-auto">
+        <div
+          className="grid gap-2"
+          style={{
+            gridTemplateColumns: `repeat(${narrow ? 1 : Math.min(lanes.algos.length, 2)}, minmax(0, 1fr))`,
+          }}
+        >
           {laneEntries.map((l, i) => (
             <CompareLane
               key={`${l.algoId}-${i}`}
@@ -365,7 +476,15 @@ export function ComparePage() {
 
       <CompareMetricsTable lanes={laneEntries} />
       <span className="sr-only">{`Lockstep tick ${ctl.tick}, ${ctl.active.length} generators still running.`}</span>
-      <button type="button" className="sr-only" onClick={() => setZoom(1)} tabIndex={-1} aria-hidden="true">
+      <button
+        type="button"
+        className="sr-only"
+        onClick={() => {
+          setZoom(1);
+        }}
+        tabIndex={-1}
+        aria-hidden="true"
+      >
         reset zoom
       </button>
     </div>

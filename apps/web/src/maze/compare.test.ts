@@ -47,7 +47,12 @@ describe('CompareController', () => {
   it('plays at the shared speed and finishes when every lane is done', () => {
     const clock = fakeClock();
     const sessions = lanes(2);
-    const c = new CompareController({ sessions, stepsPerSecond: 1000, schedule: clock.schedule, now: clock.now });
+    const c = new CompareController({
+      sessions,
+      stepsPerSecond: 1000,
+      schedule: clock.schedule,
+      now: clock.now,
+    });
     c.play();
     expect(c.getSnapshot().status).toBe('playing');
     clock.frame(0);
@@ -72,7 +77,9 @@ describe('CompareController', () => {
     }
     // Same seed and algorithm => identical mazes.
     const [a, b] = sessions;
-    expect(Array.from(a!.getSnapshot().state!.walls)).toEqual(Array.from(b!.getSnapshot().state!.walls));
+    expect(Array.from(a!.getSnapshot().state!.walls)).toEqual(
+      Array.from(b!.getSnapshot().state!.walls),
+    );
   });
 
   it('setSpeed propagates to lanes and reset makes it playable again', () => {
@@ -98,5 +105,17 @@ describe('CompareController', () => {
     expect(parseAlgos('a,b,c,a,b', known, 'a')).toEqual(['a', 'b', 'c', 'a']);
     expect(parseAlgos(undefined, known, 'c')).toEqual(['c']);
     expect(parseAlgos('nope', known, 'b')).toEqual(['b']);
+  });
+
+  it('survives a StrictMode-style dispose and revive', () => {
+    const sessions = [new MazeSession(manual)];
+    sessions[0]!.generate({ width: 4, height: 4, cellSize: 20, seed: 'revive', autoplay: false });
+    const c = new CompareController({ sessions, schedule: () => () => undefined });
+    c.dispose();
+    c.runToEnd();
+    expect(sessions[0]!.getSnapshot().phase).toBe('generating');
+    c.revive();
+    c.runToEnd();
+    expect(sessions[0]!.getSnapshot().phase).toBe('ready');
   });
 });

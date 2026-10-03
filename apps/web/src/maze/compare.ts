@@ -35,10 +35,16 @@ const defaultNow = (): number =>
 const defaultSchedule = (cb: (time: number) => void): (() => void) => {
   if (typeof requestAnimationFrame === 'function') {
     const id = requestAnimationFrame(cb);
-    return () => cancelAnimationFrame(id);
+    return () => {
+      cancelAnimationFrame(id);
+    };
   }
-  const id = setTimeout(() => cb(defaultNow()), 16);
-  return () => clearTimeout(id);
+  const id = setTimeout(() => {
+    cb(defaultNow());
+  }, 16);
+  return () => {
+    clearTimeout(id);
+  };
 };
 
 function clampSpeed(v: number): number {
@@ -165,7 +171,15 @@ export class CompareController {
   dispose(): void {
     this.cancel();
     this.disposed = true;
-    this.listeners.clear();
+  }
+
+  /**
+   * Undoes `dispose()`. React StrictMode runs effect cleanups once on mount in development, so
+   * the page revives its controller when the effect re-runs instead of losing the transport.
+   * Listeners are kept across dispose for the same reason (useSyncExternalStore resubscribes).
+   */
+  revive(): void {
+    this.disposed = false;
   }
 
   // ---- internals ------------------------------------------------------------------------
@@ -236,7 +250,11 @@ export class CompareController {
 }
 
 /** Parses the `algos` search param: comma-separated generator ids, unknown ones dropped, max 4. */
-export function parseAlgos(raw: string | undefined, known: readonly string[], fallback: string): string[] {
+export function parseAlgos(
+  raw: string | undefined,
+  known: readonly string[],
+  fallback: string,
+): string[] {
   const ids = (raw ?? '')
     .split(',')
     .map((s) => s.trim())

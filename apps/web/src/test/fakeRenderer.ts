@@ -1,4 +1,9 @@
-import type { Renderer, RendererFactory, RendererFactoryOptions } from '@maze/renderer';
+import type {
+  CameraState,
+  Renderer,
+  RendererFactory,
+  RendererFactoryOptions,
+} from '@maze/renderer';
 import type { RendererFactories } from '../maze/rendererFactories';
 
 export interface FakeRenderer extends Renderer {
@@ -7,6 +12,7 @@ export interface FakeRenderer extends Renderer {
   lastGeneration: unknown;
   lastSolve: unknown;
   lastFirstPerson: unknown;
+  lastCamera: CameraState | null;
   lastOptions: RendererFactoryOptions['options'];
   lastTheme: RendererFactoryOptions['theme'];
   renderCount: number;
@@ -20,6 +26,7 @@ export function createFakeRenderer(kind: '2d' | '3d', opts: RendererFactoryOptio
     lastGeneration: null,
     lastSolve: null,
     lastFirstPerson: null,
+    lastCamera: null,
     lastOptions: opts.options,
     lastTheme: opts.theme,
     renderCount: 0,
@@ -44,7 +51,10 @@ export function createFakeRenderer(kind: '2d' | '3d', opts: RendererFactoryOptio
       r.lastOptions = o;
       r.calls.push('setOptions');
     },
-    setCamera: () => r.calls.push('setCamera'),
+    setCamera: (c) => {
+      r.lastCamera = c;
+      r.calls.push('setCamera');
+    },
     setFirstPerson: (fp) => {
       r.lastFirstPerson = fp;
       r.calls.push('setFirstPerson');

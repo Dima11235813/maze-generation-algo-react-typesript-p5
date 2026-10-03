@@ -69,6 +69,13 @@ export interface CameraState {
   readonly followPointer: boolean;
   /** Dolly factor; 1 = fit the whole maze. Adjusted by wheel/pinch inside the renderer (P-14). */
   readonly zoom: number;
+  /**
+   * User orbit around the maze centre, in radians, added to the preset's azimuth (3D only).
+   * Positive turns the camera clockwise seen from above. Adjusted by dragging in the renderer.
+   */
+  readonly yaw?: number;
+  /** User tilt in radians added to the preset's elevation (3D only); positive looks more from above. */
+  readonly pitch?: number;
 }
 
 /** First-person "Run Maze" mode (P-17). Cell-snapped; the renderer eases between cells. */

@@ -13,6 +13,7 @@ import { useCoarsePointer, useIsNarrow } from '../../lib/useMediaQuery';
 import { computeGridDims } from '../../maze/gridSizing';
 import { MazeSession } from '../../maze/session';
 import { buildCamera, buildRenderOptions, buildTheme } from '../../maze/theme';
+import { useCameraView } from '../../maze/view';
 import { makeThumbnail, useLibrary, type LibraryItem } from '../../state/library';
 import { usePrefs } from '../../state/prefs';
 import { A11yGridHost } from './A11yGridHost';
@@ -25,6 +26,7 @@ import { PlayToolbar } from './PlayToolbar';
 import { SaveDialog } from './SaveDialog';
 import { StepLogPanel } from './StepLogPanel';
 import { useKeyboardShortcuts } from './useKeyboardShortcuts';
+import { ViewControls, handleViewKey } from './ViewControls';
 
 function useMazeSession(): MazeSession {
   const ref = useRef<MazeSession | null>(null);
@@ -48,7 +50,8 @@ export function PlayPage() {
   const announce = useAnnouncer();
 
   const [hostSize, setHostSize] = useState<HostSize | null>(null);
-  const [zoom, setZoom] = useState(1);
+  const viewControls = useCameraView(prefs.cameraPreset);
+  const { view, resetOrbit } = viewControls;
   const [seedDraft, setSeedDraft] = useState('');
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
@@ -93,8 +96,8 @@ export function PlayPage() {
   );
   const camera = useMemo(
     () =>
-      buildCamera({ cameraPreset: prefs.cameraPreset, followPointer: prefs.followPointer }, zoom),
-    [prefs.cameraPreset, prefs.followPointer, zoom],
+      buildCamera({ cameraPreset: prefs.cameraPreset, followPointer: prefs.followPointer }, view),
+    [prefs.cameraPreset, prefs.followPointer, view],
   );
 
   // ---- session wiring ---------------------------------------------------------------------
@@ -158,9 +161,12 @@ export function PlayPage() {
     );
   }, []);
 
-  const onCameraChange = useCallback((c: CameraState) => {
-    setZoom(c.zoom);
-  }, []);
+  const onCameraChange = useCallback(
+    (c: CameraState) => {
+      viewControls.fromCamera(c);
+    },
+    [viewControls],
+  );
 
   const onRenderer = useCallback((r: Renderer | null) => {
     rendererRef.current = r;
@@ -210,8 +216,9 @@ export function PlayPage() {
     const i = CAMERA_PRESETS.indexOf(prefs.cameraPreset);
     const next = CAMERA_PRESETS[(i + 1) % CAMERA_PRESETS.length] ?? 'tilt';
     prefs.set('cameraPreset', next);
+    resetOrbit();
     announce(`Camera: ${next}`);
-  }, [prefs, announce]);
+  }, [prefs, announce, resetOrbit]);
 
   const copySeed = useCallback(async () => {
     try {
@@ -343,6 +350,7 @@ export function PlayPage() {
           setShortcutsOpen(true);
           break;
         default:
+          if (!fp && handleViewKey(e.key, prefs.mode, viewControls)) e.preventDefault();
           break;
       }
     },
@@ -398,6 +406,7 @@ export function PlayPage() {
         cameraPreset={prefs.cameraPreset}
         onCameraPresetChange={(c) => {
           prefs.set('cameraPreset', c);
+          resetOrbit();
         }}
         followPointer={prefs.followPointer}
         onFollowPointerChange={(v) => {
@@ -444,6 +453,13 @@ export function PlayPage() {
           onCellClick={onCellClick}
           onRenderer={onRenderer}
         />
+        {snap.firstPerson ? null : (
+          <ViewControls
+            mode={prefs.mode}
+            controls={viewControls}
+            className="absolute right-2 bottom-2 sm:right-3 sm:bottom-3"
+          />
+        )}
         {needsRefit && !snap.firstPerson ? (
           <div className="absolute top-2 right-2 left-2 flex items-center justify-between gap-2 rounded-md border border-border bg-panel/95 px-3 py-1.5 text-xs shadow sm:top-3 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 sm:justify-start">
             <span className="hidden sm:inline">
