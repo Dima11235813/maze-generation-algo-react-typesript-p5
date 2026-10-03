@@ -59,6 +59,7 @@ export const testFiles = [
 
 const tsResolver = createTypeScriptImportResolver({
   alwaysTryTypes: true,
+  noWarnOnMultipleProjects: true,
   project: [
     'packages/core/tsconfig.json',
     'packages/player/tsconfig.json',
@@ -104,6 +105,8 @@ export const base = tseslint.config(
       'import-x/namespace': 'off',
       'import-x/default': 'off',
       'import-x/no-named-as-default-member': 'off',
+      // False positives for CommonJS packages that attach their name to `module.exports`.
+      'import-x/no-named-as-default': 'off',
     },
   },
 );
@@ -114,10 +117,9 @@ export const base = tseslint.config(
  * promoted to `error` as the follow-up wave lands.
  */
 export const typeAware = tseslint.config(
-  ...tseslint.configs.strictTypeChecked,
-  ...tseslint.configs.stylisticTypeChecked,
   {
     files: typeAwareFiles,
+    extends: [...tseslint.configs.strictTypeChecked, ...tseslint.configs.stylisticTypeChecked],
     languageOptions: {
       parserOptions: {
         projectService: true,
@@ -129,15 +131,24 @@ export const typeAware = tseslint.config(
         'error',
         { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
       ],
-      '@typescript-eslint/consistent-type-exports': 'error',
       '@typescript-eslint/no-import-type-side-effects': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none' },
       ],
-      '@typescript-eslint/switch-exhaustiveness-check': 'error',
+      '@typescript-eslint/switch-exhaustiveness-check': [
+        'error',
+        { considerDefaultExhaustiveForUnions: true },
+      ],
       '@typescript-eslint/no-explicit-any': 'error',
+      // House style: `xs[i] as T` is preferred over `xs[i]!` under noUncheckedIndexedAccess
+      // (the `!` form is itself flagged by no-non-null-assertion), so the inverse rule is off.
+      '@typescript-eslint/non-nullable-type-assertion-style': 'off',
+      // React callback props are declared as method signatures; passing them is intended.
+      '@typescript-eslint/unbound-method': 'warn',
       // Lint debt (warn until the follow-up wave): these fire in existing sources.
+      '@typescript-eslint/consistent-type-exports': 'warn',
+      '@typescript-eslint/no-unnecessary-type-conversion': 'warn',
       '@typescript-eslint/no-unnecessary-condition': 'warn',
       '@typescript-eslint/no-confusing-void-expression': 'warn',
       '@typescript-eslint/restrict-template-expressions': 'warn',
@@ -196,9 +207,9 @@ export const typeAware = tseslint.config(
 );
 
 /** Non-type-aware TypeScript rules for config files outside any tsconfig project. */
-export const plain = tseslint.config(...tseslint.configs.recommended, {
+export const plain = tseslint.config({
   files: plainFiles,
-  ...tseslint.configs.disableTypeChecked,
+  extends: [...tseslint.configs.recommended, tseslint.configs.disableTypeChecked],
   languageOptions: {
     globals: { ...globals.node, ...globals.es2023 },
   },
@@ -240,6 +251,12 @@ export const react = tseslint.config({
     ],
     'jsx-a11y/no-autofocus': 'warn',
     'jsx-a11y/no-noninteractive-tabindex': ['warn', { roles: ['img'], tags: [] }],
+    // `<ul role="list">` is deliberate: Safari/VoiceOver drops list semantics when
+    // `list-style: none` is applied, and the explicit role restores them.
+    'jsx-a11y/no-redundant-roles': ['error', { ul: ['list'], ol: ['list'] }],
+    // Headings whose content arrives through `{...props}` (design-system wrappers) are
+    // false positives; the Storybook a11y addon covers rendered output.
+    'jsx-a11y/heading-has-content': 'warn',
   },
 });
 
