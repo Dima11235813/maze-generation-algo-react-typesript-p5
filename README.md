@@ -45,6 +45,17 @@ pnpm build        # production build of apps/web into apps/web/dist
 
 Per package: `pnpm --filter @maze/core test`, `pnpm --filter @maze/web dev`, and so on.
 
+### Try it on a phone
+
+```bash
+pnpm --filter @maze/web dev -- --host    # prints a Network URL such as http://192.168.x.y:5173
+```
+
+Open that URL on a phone on the same Wi-Fi. The layout collapses to a one-row toolbar with a
+"More controls" sheet, the metrics strip scrolls sideways, pinch zooms the maze, and first-person
+mode shows an on-screen D-pad. `pnpm --filter @maze/web build && pnpm --filter @maze/web preview`
+serves the production build (installable as a PWA) on port 4173.
+
 ## What works today (parity phase)
 
 The current milestone is feature parity with the legacy app on the new stack

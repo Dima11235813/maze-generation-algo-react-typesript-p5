@@ -139,4 +139,34 @@ describe('/play', () => {
     await screen.findByRole('toolbar', { name: /maze controls/i });
     expect(screen.queryByRole('grid')).not.toBeInTheDocument();
   });
+  it('collapses the toolbar on narrow screens and moves secondary controls into a sheet', async () => {
+    const original = window.matchMedia;
+    window.matchMedia = (query: string): MediaQueryList =>
+      ({
+        matches: query.includes('max-width'),
+        media: query,
+        onchange: null,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        dispatchEvent: () => false,
+      }) as unknown as MediaQueryList;
+    try {
+      const user = userEvent.setup();
+      renderPlay();
+      const toolbar = await screen.findByRole('toolbar', { name: /maze controls/i });
+      // Essentials stay in the bar; the library button is not rendered inline.
+      expect(within(toolbar).getByRole('button', { name: /^generate$/i })).toBeInTheDocument();
+      expect(within(toolbar).getByRole('button', { name: /^options$/i })).toBeInTheDocument();
+      expect(within(toolbar).queryByRole('button', { name: /^library$/i })).not.toBeInTheDocument();
+      await user.click(within(toolbar).getByRole('button', { name: /more controls/i }));
+      const sheet = await screen.findByRole('dialog', { name: /maze controls/i });
+      expect(within(sheet).getByRole('button', { name: /^library$/i })).toBeInTheDocument();
+      expect(within(sheet).getByLabelText(/^seed$/i)).toBeInTheDocument();
+      expect(within(sheet).getByRole('combobox', { name: /generator/i })).toBeInTheDocument();
+    } finally {
+      window.matchMedia = original;
+    }
+  });
 });

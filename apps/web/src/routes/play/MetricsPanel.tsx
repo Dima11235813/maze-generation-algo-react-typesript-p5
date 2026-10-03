@@ -10,14 +10,17 @@ export interface MetricsPanelProps {
 
 function Stat({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <div className="flex min-w-[5.5rem] flex-col leading-tight">
+    <div className="flex min-w-[5.5rem] shrink-0 flex-col leading-tight">
       <dt className="text-[10px] tracking-wide text-muted uppercase">{label}</dt>
       <dd className="text-sm font-medium tabular-nums">{value}</dd>
     </div>
   );
 }
 
-/** Live generation/solve metrics (P-22) with correct mm:ss formatting (P-27). */
+/**
+ * Live generation/solve metrics (P-22) with correct mm:ss formatting (P-27).
+ * One horizontally scrollable row on phones, wrapping rows from `md` up.
+ */
 export function MetricsPanel({ session, snap }: MetricsPanelProps) {
   const gen = useStepPlayer(snap.genPlayer);
   const solve = useStepPlayer(snap.solvePlayer);
@@ -30,7 +33,7 @@ export function MetricsPanel({ session, snap }: MetricsPanelProps) {
   return (
     <dl
       aria-label="Maze metrics"
-      className="flex flex-wrap items-start gap-x-6 gap-y-2 border-t border-border bg-panel px-3 py-2"
+      className="flex flex-nowrap items-start gap-x-6 gap-y-2 overflow-x-auto border-t border-border bg-panel px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:flex-wrap md:overflow-visible"
     >
       <Stat label="Grid" value={snap.width && snap.height ? `${snap.width} x ${snap.height}` : '-'} />
       <Stat label="Cells" value={snap.width * snap.height || '-'} />

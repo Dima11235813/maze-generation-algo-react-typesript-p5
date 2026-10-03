@@ -4,7 +4,13 @@
 #root {
   display: flex;
   flex-direction: column;
-  min-height: 100%;
+  /* Fill the visible viewport on mobile browsers whose URL bar collapses (dvh), with fallbacks. */
+  min-height: 100vh;
+  height: 100vh;
+  min-height: 100dvh;
+  height: 100dvh;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 .skip-link {

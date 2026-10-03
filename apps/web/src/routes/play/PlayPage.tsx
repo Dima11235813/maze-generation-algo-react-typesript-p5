@@ -9,6 +9,7 @@ import { useNarrator } from '../../a11y/useNarrator';
 import { useAnnouncer } from '../../app/Announcer';
 import { useReducedMotion } from '../../app/documentPrefs';
 import { log } from '../../lib/log';
+import { useCoarsePointer, useIsNarrow } from '../../lib/useMediaQuery';
 import { computeGridDims } from '../../maze/gridSizing';
 import { MazeSession } from '../../maze/session';
 import { buildCamera, buildRenderOptions, buildTheme } from '../../maze/theme';
@@ -41,6 +42,9 @@ export function PlayPage() {
   const prefs = usePrefs();
   const addToLibrary = useLibrary((s) => s.add);
   const reducedMotion = useReducedMotion();
+  const coarsePointer = useCoarsePointer();
+  const narrowLayout = useIsNarrow();
+  const showTouchPad = coarsePointer || narrowLayout;
   const announce = useAnnouncer();
 
   const [hostSize, setHostSize] = useState<HostSize | null>(null);
@@ -397,8 +401,9 @@ export function PlayPage() {
           onRenderer={onRenderer}
         />
         {needsRefit && !snap.firstPerson ? (
-          <div className="absolute top-3 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-md border border-border bg-panel/95 px-3 py-1.5 text-xs shadow">
-            The window changed size. The maze keeps its shape; regenerate to refit.
+          <div className="absolute top-2 right-2 left-2 flex items-center justify-between gap-2 rounded-md border border-border bg-panel/95 px-3 py-1.5 text-xs shadow sm:top-3 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 sm:justify-start">
+            <span className="hidden sm:inline">The window changed size. The maze keeps its shape; regenerate to refit.</span>
+            <span className="sm:hidden">Screen size changed.</span>
             <Button size="sm" variant="secondary" onClick={() => generate(snap.seed)}>
               Regenerate to refit
             </Button>
@@ -415,6 +420,12 @@ export function PlayPage() {
             firstPerson={snap.firstPerson}
             reachedGoal={snap.reachedGoal}
             onExit={() => session.exitFirstPerson()}
+            showPad={showTouchPad}
+            onForward={() => session.fpForward()}
+            onBackward={() => session.fpBackward()}
+            onTurnLeft={() => session.fpTurnLeft()}
+            onTurnRight={() => session.fpTurnRight()}
+            onPeekChange={(peek) => session.setPeek(peek)}
           />
         ) : null}
         {prefs.screenReaderGrid ? (
