@@ -34,6 +34,35 @@ already runs agents in lockstep and ranks them; there is no UI.
   winner announced); phone/tablet/desktop check; a11y names on lanes and standings.
 - Branch: `feat/race-page`. Blocked by: nothing.
 
+### BUG-01 Maze tools widget: the floating view controls cover part of the maze - TODO
+
+Reported by the owner 2026-10-03 (phone screenshot): the "View controls" panel (rotate, tilt,
+zoom, reset) floats over the bottom-right of the maze canvas on Play and Watch, so part of the
+maze is always hidden, worst on phones where the panel is large relative to the canvas.
+
+- Scope: replace `ViewControls` with a **maze tools widget** shared by Play and Watch (and Race
+  where it applies).
+  - Phone and tablet (touch layouts): render the widget as an in-flow **row below the maze**
+    (above the timeline), never over the canvas, so the full maze panel is always visible. The
+    row scrolls horizontally inside itself if it does not fit; no page-level overflow.
+  - Desktop/wide: a **draggable floating widget** over the canvas. Drag by a grip handle (mouse,
+    pen, touch); the grip also moves it with the arrow keys; the position is clamped to the
+    stage, persisted in prefs, and "Reset position" (or double-click on the grip) docks it back
+    to the corner. A collapse button shrinks it to the grip so it can be tucked away.
+  - Actions in the widget, not only camera moves: **Play/Pause**, **Step back**, **Step**,
+    **Run to end**, **Solve / Clear solve** (current solver), plus the existing zoom in/out,
+    reset view and 3D rotate/tilt.
+  - Proposed quick actions (owner to confirm or trim): New maze (N), 2D/3D toggle (T),
+    first-person walk (R, Play only), cycle camera preset (V, 3D), fullscreen the maze panel,
+    save a PNG snapshot of the canvas.
+  - Every action has a **tooltip** with its name and keyboard shortcut, an accessible name, and
+    disabled states that match the toolbar (e.g. Solve disabled while generating).
+- Acceptance: RTL tests for the widget (actions call the session; tooltips/labels present;
+  keyboard move of the grip; touch layout renders the row variant, not an overlay); a
+  Playwright check that on a 390px viewport the widget's box does not intersect the canvas box;
+  phone/tablet/desktop check; the 3D walkthrough HUD is unaffected.
+- Branch: `fix/maze-tools-widget`. Blocked by: nothing.
+
 ### WI-02 Run Maze as a game: timer, moves, undo, hint, recorded solves - TODO
 
 The owner especially enjoys the first-person walkthrough. Make it a complete experience.
