@@ -92,12 +92,15 @@ export function PlayPage() {
     ],
   );
   const camera = useMemo(
-    () => buildCamera({ cameraPreset: prefs.cameraPreset, followPointer: prefs.followPointer }, zoom),
+    () =>
+      buildCamera({ cameraPreset: prefs.cameraPreset, followPointer: prefs.followPointer }, zoom),
     [prefs.cameraPreset, prefs.followPointer, zoom],
   );
 
   // ---- session wiring ---------------------------------------------------------------------
-  useEffect(() => session.setSpeed(prefs.speed), [session, prefs.speed]);
+  useEffect(() => {
+    session.setSpeed(prefs.speed);
+  }, [session, prefs.speed]);
 
   // Narration: session statuses and (depending on verbosity) algorithm steps reach the live
   // region or, while the step log is open, the log itself. Statuses are never announced twice.
@@ -108,7 +111,9 @@ export function PlayPage() {
     announce,
   });
 
-  useEffect(() => setSeedDraft(snap.seed), [snap.seed]);
+  useEffect(() => {
+    setSeedDraft(snap.seed);
+  }, [snap.seed]);
 
   const generate = useCallback(
     (seed?: string) => {
@@ -147,11 +152,15 @@ export function PlayPage() {
   // ---- actions --------------------------------------------------------------------------
   const onHostSize = useCallback((size: HostSize) => {
     setHostSize((prev) =>
-      prev && Math.abs(prev.width - size.width) < 1 && Math.abs(prev.height - size.height) < 1 ? prev : size,
+      prev && Math.abs(prev.width - size.width) < 1 && Math.abs(prev.height - size.height) < 1
+        ? prev
+        : size,
     );
   }, []);
 
-  const onCameraChange = useCallback((c: CameraState) => setZoom(c.zoom), []);
+  const onCameraChange = useCallback((c: CameraState) => {
+    setZoom(c.zoom);
+  }, []);
 
   const onRenderer = useCallback((r: Renderer | null) => {
     rendererRef.current = r;
@@ -178,10 +187,13 @@ export function PlayPage() {
     [snap.state, announce],
   );
 
-  const setMode = useCallback((mode: ViewMode) => {
-    if (mode === '2d' && session.getSnapshot().firstPerson) session.exitFirstPerson();
-    prefs.set('mode', mode);
-  }, [prefs, session]);
+  const setMode = useCallback(
+    (mode: ViewMode) => {
+      if (mode === '2d' && session.getSnapshot().firstPerson) session.exitFirstPerson();
+      prefs.set('mode', mode);
+    },
+    [prefs, session],
+  );
 
   const toggleFirstPerson = useCallback(() => {
     if (session.getSnapshot().firstPerson) {
@@ -347,40 +359,72 @@ export function PlayPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      <h1 className="sr-only">Play</h1>
       <PlayToolbar
         phase={snap.phase}
         playerStatus={playerSnap?.status ?? null}
         seed={seedDraft}
         onSeedChange={setSeedDraft}
-        onGenerate={() => generate()}
-        onRegenerate={() => (seedDraft.trim() ? generate(seedDraft.trim()) : session.regenerate())}
-        onRandomSeed={() => generate(randomSeed())}
+        onGenerate={() => {
+          generate();
+        }}
+        onRegenerate={() => {
+          if (seedDraft.trim()) generate(seedDraft.trim());
+          else session.regenerate();
+        }}
+        onRandomSeed={() => {
+          generate(randomSeed());
+        }}
         onCopySeed={() => void copySeed()}
         generatorId={prefs.generatorId}
-        onGeneratorChange={(id) => prefs.set('generatorId', id)}
-        onPlayToggle={() => session.toggle()}
-        onStep={() => session.step()}
-        onRunToEnd={() => session.runToEnd()}
+        onGeneratorChange={(id) => {
+          prefs.set('generatorId', id);
+        }}
+        onPlayToggle={() => {
+          session.toggle();
+        }}
+        onStep={() => {
+          session.step();
+        }}
+        onRunToEnd={() => {
+          session.runToEnd();
+        }}
         speed={prefs.speed}
-        onSpeedChange={(s) => prefs.set('speed', s)}
+        onSpeedChange={(s) => {
+          prefs.set('speed', s);
+        }}
         mode={prefs.mode}
         onModeChange={setMode}
         cameraPreset={prefs.cameraPreset}
-        onCameraPresetChange={(c) => prefs.set('cameraPreset', c)}
+        onCameraPresetChange={(c) => {
+          prefs.set('cameraPreset', c);
+        }}
         followPointer={prefs.followPointer}
-        onFollowPointerChange={(v) => prefs.set('followPointer', v)}
+        onFollowPointerChange={(v) => {
+          prefs.set('followPointer', v);
+        }}
         solverId={prefs.solverId}
-        onSolverChange={(id) => prefs.set('solverId', id)}
+        onSolverChange={(id) => {
+          prefs.set('solverId', id);
+        }}
         onSolve={() => session.startSolve(prefs.solverId)}
-        onClearSolve={() => session.clearSolve()}
+        onClearSolve={() => {
+          session.clearSolve();
+        }}
         canSolve={snap.phase === 'ready'}
         solveActive={snap.solvePlayer !== null}
         firstPerson={snap.firstPerson !== null}
         onFirstPersonToggle={toggleFirstPerson}
         canSave={snap.phase === 'ready'}
-        onSave={() => setSaveOpen(true)}
-        onOpenLibrary={() => setLibraryOpen(true)}
-        onOpenOptions={() => setOptionsOpen(true)}
+        onSave={() => {
+          setSaveOpen(true);
+        }}
+        onOpenLibrary={() => {
+          setLibraryOpen(true);
+        }}
+        onOpenOptions={() => {
+          setOptionsOpen(true);
+        }}
       />
 
       <div className="relative flex min-h-0 flex-1 flex-col">
@@ -402,9 +446,17 @@ export function PlayPage() {
         />
         {needsRefit && !snap.firstPerson ? (
           <div className="absolute top-2 right-2 left-2 flex items-center justify-between gap-2 rounded-md border border-border bg-panel/95 px-3 py-1.5 text-xs shadow sm:top-3 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 sm:justify-start">
-            <span className="hidden sm:inline">The window changed size. The maze keeps its shape; regenerate to refit.</span>
+            <span className="hidden sm:inline">
+              The window changed size. The maze keeps its shape; regenerate to refit.
+            </span>
             <span className="sm:hidden">Screen size changed.</span>
-            <Button size="sm" variant="secondary" onClick={() => generate(snap.seed)}>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                generate(snap.seed);
+              }}
+            >
               Regenerate to refit
             </Button>
           </div>
@@ -419,13 +471,25 @@ export function PlayPage() {
             state={snap.state}
             firstPerson={snap.firstPerson}
             reachedGoal={snap.reachedGoal}
-            onExit={() => session.exitFirstPerson()}
+            onExit={() => {
+              session.exitFirstPerson();
+            }}
             showPad={showTouchPad}
-            onForward={() => session.fpForward()}
-            onBackward={() => session.fpBackward()}
-            onTurnLeft={() => session.fpTurnLeft()}
-            onTurnRight={() => session.fpTurnRight()}
-            onPeekChange={(peek) => session.setPeek(peek)}
+            onForward={() => {
+              session.fpForward();
+            }}
+            onBackward={() => {
+              session.fpBackward();
+            }}
+            onTurnLeft={() => {
+              session.fpTurnLeft();
+            }}
+            onTurnRight={() => {
+              session.fpTurnRight();
+            }}
+            onPeekChange={(peek) => {
+              session.setPeek(peek);
+            }}
           />
         ) : null}
         {prefs.screenReaderGrid ? (
@@ -437,7 +501,9 @@ export function PlayPage() {
             maze={snap.state}
             generation={session.generation}
             solve={session.solveTracker}
-            onDescribe={(text) => announce(text)}
+            onDescribe={(text) => {
+              announce(text);
+            }}
             onRenderer={onA11yRenderer}
           />
         ) : null}
@@ -447,15 +513,26 @@ export function PlayPage() {
         <StepLogPanel
           entries={narrationLog}
           verbosity={prefs.narratorVerbosity}
-          onVerbosityChange={(v) => prefs.set('narratorVerbosity', v)}
-          onClose={() => prefs.set('showStepLog', false)}
-          onClear={() => narrator.clearLog()}
+          onVerbosityChange={(v) => {
+            prefs.set('narratorVerbosity', v);
+          }}
+          onClose={() => {
+            prefs.set('showStepLog', false);
+          }}
+          onClear={() => {
+            narrator.clearLog();
+          }}
         />
       ) : null}
 
       <MetricsPanel session={session} snap={snap} />
 
-      <OptionsSheet open={optionsOpen} onOpenChange={setOptionsOpen} hostWidth={hostSize?.width ?? 1280} rows={rows} />
+      <OptionsSheet
+        open={optionsOpen}
+        onOpenChange={setOptionsOpen}
+        hostWidth={hostSize?.width ?? 1280}
+        rows={rows}
+      />
       <LibrarySheet open={libraryOpen} onOpenChange={setLibraryOpen} onLoad={loadItem} />
       <SaveDialog
         open={saveOpen}

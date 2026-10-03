@@ -11,7 +11,9 @@ test.describe('landing page', () => {
       await expect(page.getByRole('heading', { name: new RegExp(`^${title}`) })).toBeVisible();
     }
     await expect(page.getByRole('link', { name: 'Open Play' })).toBeVisible();
-    await expect(page.getByRole('link', { name: /^Preview/ })).toHaveCount(5);
+    // Play, Watch and Explore are live; Race, Build and Learn are previews.
+    await expect(page.getByRole('link', { name: /^Open/ })).toHaveCount(3);
+    await expect(page.getByRole('link', { name: /^Preview/ })).toHaveCount(3);
 
     await page.getByRole('link', { name: 'Start playing' }).click();
     await expect(page).toHaveURL(/\/play$/);
@@ -23,7 +25,8 @@ test.describe('landing page', () => {
     const nav = page.getByRole('navigation', { name: 'Primary' });
     for (const label of ['Watch', 'Race', 'Build', 'Learn', 'Explore']) {
       await nav.getByRole('link', { name: label }).click();
-      await expect(page).toHaveURL(new RegExp(`/${label.toLowerCase()}$`));
+      // Watch canonicalises its URL with a seed search param.
+      await expect(page).toHaveURL(new RegExp(`/${label.toLowerCase()}([?].*)?$`));
       await expect(page.getByRole('heading', { level: 1, name: label })).toBeVisible();
     }
   });

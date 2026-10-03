@@ -57,7 +57,9 @@ export function WatchPage() {
   const [mode, setMode] = useState<ViewMode>('2d');
   const [zoom, setZoom] = useState(1);
   const [solverId, setSolverId] = useState(() =>
-    solvers.has(usePrefs.getState().solverId) ? usePrefs.getState().solverId : (solvers.ids[0] ?? 'bfs'),
+    solvers.has(usePrefs.getState().solverId)
+      ? usePrefs.getState().solverId
+      : (solvers.ids[0] ?? 'bfs'),
   );
   const [verbosity, setVerbosity] = useState<LogVerbosity>('all');
   const [entries, setEntries] = useState<readonly LogEntry[]>([]);
@@ -66,7 +68,10 @@ export function WatchPage() {
   const bufferRef = useRef<LogEntry[]>([]);
 
   const playerSnap = useStepPlayer(snap.solvePlayer);
-  const listing = useMemo(() => pseudocodeFor(snap.solverId ?? solverId), [snap.solverId, solverId]);
+  const listing = useMemo(
+    () => pseudocodeFor(snap.solverId ?? solverId),
+    [snap.solverId, solverId],
+  );
 
   // ---- renderer inputs ------------------------------------------------------------------
   const theme = useMemo(
@@ -149,7 +154,9 @@ export function WatchPage() {
     if (snap.phase === 'ready' && !snap.solvePlayer) session.startSolve(solverId, false);
   }, [snap.phase, snap.solvePlayer, solverId, session]);
 
-  useEffect(() => session.setSpeed(prefs.speed), [session, prefs.speed]);
+  useEffect(() => {
+    session.setSpeed(prefs.speed);
+  }, [session, prefs.speed]);
 
   useEffect(() => {
     if (snap.statusSeq > 0 && snap.status) announce(snap.status);
@@ -179,11 +186,15 @@ export function WatchPage() {
   // ---- actions --------------------------------------------------------------------------
   const onHostSize = useCallback((size: HostSize) => {
     setHostSize((prev) =>
-      prev && Math.abs(prev.width - size.width) < 1 && Math.abs(prev.height - size.height) < 1 ? prev : size,
+      prev && Math.abs(prev.width - size.width) < 1 && Math.abs(prev.height - size.height) < 1
+        ? prev
+        : size,
     );
   }, []);
 
-  const onCameraChange = useCallback((c: CameraState) => setZoom(c.zoom), []);
+  const onCameraChange = useCallback((c: CameraState) => {
+    setZoom(c.zoom);
+  }, []);
 
   const changeSolver = useCallback(
     (id: string) => {
@@ -224,7 +235,9 @@ export function WatchPage() {
     },
   });
 
-  const solverName = snap.solverId ? (solvers.get(snap.solverId)?.meta.name ?? snap.solverId) : null;
+  const solverName = snap.solverId
+    ? (solvers.get(snap.solverId)?.meta.name ?? snap.solverId)
+    : null;
   const canvasLabel =
     snap.phase === 'empty'
       ? 'Maze canvas, waiting to generate'
@@ -234,19 +247,32 @@ export function WatchPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      <h1 className="sr-only">Watch</h1>
       <WatchTransport
         status={playerSnap?.status ?? null}
         armed={armed}
-        onPlayToggle={() => session.toggle()}
-        onStep={() => session.step()}
-        onRunToEnd={() => session.runToEnd()}
+        onPlayToggle={() => {
+          session.toggle();
+        }}
+        onStep={() => {
+          session.step();
+        }}
+        onRunToEnd={() => {
+          session.runToEnd();
+        }}
         onReset={resetSolver}
         speed={prefs.speed}
-        onSpeedChange={(s) => prefs.set('speed', s)}
+        onSpeedChange={(s) => {
+          prefs.set('speed', s);
+        }}
         mode={mode}
         onModeChange={setMode}
-        onNewMaze={() => generateWith(randomSeed())}
-        onRegenerate={() => generateWith(snap.seed || undefined)}
+        onNewMaze={() => {
+          generateWith(randomSeed());
+        }}
+        onRegenerate={() => {
+          generateWith(snap.seed || undefined);
+        }}
         seed={snap.seed}
       />
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">

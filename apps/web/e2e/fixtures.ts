@@ -48,9 +48,9 @@ export function metrics(page: Page): Locator {
   return page.getByLabel('Maze metrics');
 }
 
-/** Polite live region used for status announcements. */
+/** The visually hidden polite live region used for status announcements (not the PWA toast). */
 export function liveStatus(page: Page): Locator {
-  return page.locator('[aria-live="polite"]');
+  return page.locator('.sr-only[aria-live="polite"]');
 }
 
 /** Opens /play and waits for generation to finish (speed is seeded to the maximum). */
