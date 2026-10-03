@@ -32,7 +32,12 @@ export {
 } from './growingTree';
 export { ellers, ellersMeta, type EllersParams } from './ellers';
 export { sidewinder, sidewinderMeta, type SidewinderParams } from './sidewinder';
-export { binaryTree, binaryTreeMeta, type BinaryTreeBias, type BinaryTreeParams } from './binaryTree';
+export {
+  binaryTree,
+  binaryTreeMeta,
+  type BinaryTreeBias,
+  type BinaryTreeParams,
+} from './binaryTree';
 export {
   recursiveDivision,
   recursiveDivisionMeta,
@@ -41,8 +46,6 @@ export {
 export { originShift, originShiftMeta, type OriginShiftParams } from './originShift';
 export { DisjointSet } from './disjointSet';
 export { BinaryHeap, type HeapEntry } from './binaryHeap';
-// Replay lives next to the step vocabulary but is re-exported here so `@maze/core` exposes it.
-export { applyGenStep, replayGenSteps } from '../replay';
 
 /** All generators. Add a file + an entry here; menus, tests and enums follow automatically. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

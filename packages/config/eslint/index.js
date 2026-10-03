@@ -31,6 +31,7 @@ export const ignores = [
 export const typeAwareFiles = [
   'packages/*/src/**/*.{ts,tsx}',
   'packages/*/test/**/*.{ts,tsx}',
+  'packages/*/bench/**/*.ts',
   'apps/web/src/**/*.{ts,tsx}',
   'apps/web/e2e/**/*.ts',
 ];

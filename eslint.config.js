@@ -19,4 +19,22 @@ export default defineConfig([
   ...react,
   ...boundaries,
   ...logging,
+  // Node build/maintenance scripts (icon generation, bundle-size gate): plain Node globals, console allowed.
+  {
+    files: ['**/scripts/**/*.{mjs,js,cjs}'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        Buffer: 'readonly',
+        console: 'readonly',
+        URL: 'readonly',
+        __dirname: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+      },
+    },
+    rules: { 'no-console': 'off' },
+  },
+  // Benchmarks print their results table on purpose.
+  { files: ['**/bench/**/*.ts'], rules: { 'no-console': 'off' } },
 ]);

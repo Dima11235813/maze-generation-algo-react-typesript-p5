@@ -17,9 +17,9 @@ const here = dirname(fileURLToPath(import.meta.url));
 const publicDir = join(here, '..', 'public');
 
 // ---- palette (matches favicon.svg and the app tokens) -----------------------------------
-const BG = [0x71, 0xad, 0xf5];      // brand blue
-const INK = [0x0f, 0x14, 0x20];     // dark navy (walls)
-const GOAL = [0x41, 0x75, 0x05];    // cell green
+const BG = [0x71, 0xad, 0xf5]; // brand blue
+const INK = [0x0f, 0x14, 0x20]; // dark navy (walls)
+const GOAL = [0x41, 0x75, 0x05]; // cell green
 
 // ---- glyph in a 32x32 viewBox: stroked polylines + one filled circle --------------------
 const STROKE = 2.5;
@@ -83,7 +83,7 @@ function rasterise(size, { maskable }) {
 
   for (let py = 0; py < size; py++) {
     for (let px = 0; px < size; px++) {
-      let acc = [0, 0, 0, 0];
+      const acc = [0, 0, 0, 0];
       for (let sy = 0; sy < SS; sy++) {
         for (let sx = 0; sx < SS; sx++) {
           const x = px + (sx + 0.5) / SS;
@@ -159,7 +159,12 @@ function encodePng(rgba, size) {
     rgba.copy(raw, y * (stride + 1) + 1, y * stride, (y + 1) * stride);
   }
   const idat = deflateSync(raw, { level: 9 });
-  return Buffer.concat([signature, chunk('IHDR', ihdr), chunk('IDAT', idat), chunk('IEND', Buffer.alloc(0))]);
+  return Buffer.concat([
+    signature,
+    chunk('IHDR', ihdr),
+    chunk('IDAT', idat),
+    chunk('IEND', Buffer.alloc(0)),
+  ]);
 }
 
 function write(relPath, size, opts) {
