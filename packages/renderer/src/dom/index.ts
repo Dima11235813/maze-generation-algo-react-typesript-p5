@@ -572,7 +572,9 @@ function nowMs(): number {
 
 function scheduleFrame(cb: () => void): number {
   if (typeof requestAnimationFrame === 'function') return requestAnimationFrame(cb);
-  return setTimeout(cb, 0);
+  // Number(): with both DOM and Node timer types loaded, which `setTimeout` overload TypeScript
+  // picks depends on file order; a numeric id works with `clearTimeout` everywhere.
+  return Number(setTimeout(cb, 0));
 }
 
 function cancelFrame(id: number): void {
