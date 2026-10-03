@@ -5,10 +5,11 @@ import {
   type RouterHistory,
 } from '@tanstack/react-router';
 import { LandingPage } from '../routes/LandingPage';
-import { AccountPage, BuildPage, LearnPage, NotFoundPage, RacePage } from '../routes/StubPage';
+import { AccountPage, BuildPage, LearnPage, NotFoundPage } from '../routes/StubPage';
 import { ComparePage, type CompareSearch } from '../routes/explore/ComparePage';
 import { ExplorePage } from '../routes/explore/ExplorePage';
 import { PlayPage } from '../routes/play/PlayPage';
+import { RacePage, type RaceSearch } from '../routes/race/RacePage';
 import { WatchPage, type WatchSearch } from '../routes/watch/WatchPage';
 import { RootLayout } from './RootLayout';
 
@@ -47,6 +48,8 @@ const raceRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/race',
   component: RacePage,
+  validateSearch: (raw: Record<string, unknown>): RaceSearch =>
+    pickStrings(raw, ['seed', 'agents', 'scoring', 'size', 'gen']),
 });
 const buildRoute = createRoute({
   getParentRoute: () => rootRoute,

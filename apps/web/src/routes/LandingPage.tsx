@@ -25,8 +25,8 @@ const PILLARS: readonly Pillar[] = [
   {
     to: '/race',
     title: 'Race',
-    blurb: 'Two algorithms, one seed, lockstep. See which wins and why.',
-    live: false,
+    blurb: 'Two to four solvers, one seed, lockstep. See which wins and why.',
+    live: true,
   },
   {
     to: '/build',
