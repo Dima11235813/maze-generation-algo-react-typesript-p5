@@ -4,7 +4,15 @@ import { Link } from '@tanstack/react-router';
 import { GitCompareArrows } from 'lucide-react';
 import { AlgorithmCard } from './AlgorithmCard';
 
-function CatalogueSection({ id, title, items }: { id: string; title: string; items: readonly AlgorithmMeta[] }) {
+function CatalogueSection({
+  id,
+  title,
+  items,
+}: {
+  id: string;
+  title: string;
+  items: readonly AlgorithmMeta[];
+}) {
   return (
     <section aria-labelledby={`${id}-heading`} className="flex flex-col gap-3">
       <h2 id={`${id}-heading`} className="text-lg font-semibold">
@@ -34,8 +42,8 @@ export function ExplorePage() {
       <header className="flex flex-col gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">Explore</h1>
         <p className="max-w-2xl text-muted">
-          Every algorithm Maze Lab knows, with its complexity, bias and tunable parameters. Pick a few
-          generators and compare them side by side on the same seed to see how texture differs.
+          Every algorithm Maze Lab knows, with its complexity, bias and tunable parameters. Pick a
+          few generators and compare them side by side on the same seed to see how texture differs.
         </p>
         <div>
           <Button asChild size="md">
@@ -47,7 +55,9 @@ export function ExplorePage() {
       </header>
       <CatalogueSection id="generators" title="Generators" items={gens} />
       <CatalogueSection id="solvers" title="Solvers" items={sols} />
-      {posts.length > 0 ? <CatalogueSection id="postprocessors" title="Post-processors" items={posts} /> : null}
+      {posts.length > 0 ? (
+        <CatalogueSection id="postprocessors" title="Post-processors" items={posts} />
+      ) : null}
     </div>
   );
 }

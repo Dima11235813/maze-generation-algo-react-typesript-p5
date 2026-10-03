@@ -151,3 +151,29 @@ describe('Tree view on /watch', () => {
     );
   });
 });
+
+describe('Tree view on /explore/compare', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    usePrefs.getState().reset();
+  });
+
+  it('draws every lane as a tree and compares tree shapes in the metrics table', async () => {
+    const user = userEvent.setup();
+    const { factories } = renderAt(
+      '/explore/compare?seed=tree-cmp&algos=recursive-backtracker,prims',
+    );
+    await screen.findByRole('toolbar', { name: /compare controls/i });
+    await waitFor(() => expect(factories.created).toHaveLength(2));
+    await user.click(screen.getByRole('radio', { name: /^trees$/i }));
+    await waitFor(() =>
+      expect(factories.created.every((r) => r.lastOptions.tree?.layout === 'tidy')).toBe(true),
+    );
+    await user.click(screen.getByRole('button', { name: /run to end/i }));
+    const table = screen.getByTestId('compare-metrics');
+    expect(within(table).getByRole('columnheader', { name: /tree height/i })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(within(table).getAllByRole('row')[1]!.textContent).not.toMatch(/generating/),
+    );
+  });
+});
