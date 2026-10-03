@@ -81,8 +81,7 @@ export function sanitizeParams<P extends Record<string, unknown>>(
         out[p.key] = typeof v === 'boolean' ? v : p.default;
         break;
       case 'enum':
-        out[p.key] =
-          typeof v === 'string' && p.options.some((o) => o.value === v) ? v : p.default;
+        out[p.key] = typeof v === 'string' && p.options.some((o) => o.value === v) ? v : p.default;
         break;
     }
   }

@@ -19,9 +19,19 @@ export { bfs, bfsMeta } from './bfs';
 export { dfs, dfsMeta } from './dfs';
 export { dijkstra, dijkstraMeta, type DijkstraParams } from './dijkstra';
 export { astar, astarMeta, type AStarParams } from './astar';
-export { greedyBestFirst, greedyBestFirstMeta, type GreedyBestFirstParams } from './greedyBestFirst';
+export {
+  greedyBestFirst,
+  greedyBestFirstMeta,
+  type GreedyBestFirstParams,
+} from './greedyBestFirst';
 export { bidirectionalBfs, bidirectionalBfsMeta } from './bidirectionalBfs';
-export { wallFollower, wallFollowerMeta, handOrder, type Hand, type WallFollowerParams } from './wallFollower';
+export {
+  wallFollower,
+  wallFollowerMeta,
+  handOrder,
+  type Hand,
+  type WallFollowerParams,
+} from './wallFollower';
 export { tremaux, tremauxMeta, type TremauxParams } from './tremaux';
 export { pledge, pledgeMeta, quarterTurns, type PledgeParams } from './pledge';
 export { deadEndFilling, deadEndFillingMeta } from './deadEndFilling';

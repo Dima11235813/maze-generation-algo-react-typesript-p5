@@ -56,7 +56,10 @@ export const prims: MazeGenerator<PrimsParams> = {
   },
 };
 
-function* runSimplified(grid: Grid, rng: Rng): Generator<GenStep, ReturnType<typeof createMazeState>> {
+function* runSimplified(
+  grid: Grid,
+  rng: Rng,
+): Generator<GenStep, ReturnType<typeof createMazeState>> {
   const total = cellCount(grid);
   const walls = createWalls(grid);
   const inTree = new Uint8Array(total);
@@ -106,9 +109,11 @@ function* runSimplified(grid: Grid, rng: Rng): Generator<GenStep, ReturnType<typ
     inTree[cell] = 1;
 
     const added = expand(cell);
-    yield (added.length > 0
-      ? { t: 'frontier', remove: [cell], add: added }
-      : { t: 'frontier', remove: [cell] }) satisfies GenStep;
+    yield (
+      added.length > 0
+        ? { t: 'frontier', remove: [cell], add: added }
+        : { t: 'frontier', remove: [cell] }
+    ) satisfies GenStep;
   }
 
   yield { t: 'done' } satisfies GenStep;
@@ -120,7 +125,10 @@ interface Edge {
   readonly to: CellId;
 }
 
-function* runWeighted(grid: Grid, rng: Rng): Generator<GenStep, ReturnType<typeof createMazeState>> {
+function* runWeighted(
+  grid: Grid,
+  rng: Rng,
+): Generator<GenStep, ReturnType<typeof createMazeState>> {
   const total = cellCount(grid);
   const walls = createWalls(grid);
   const inTree = new Uint8Array(total);
@@ -160,9 +168,11 @@ function* runWeighted(grid: Grid, rng: Rng): Generator<GenStep, ReturnType<typeo
     inFrontier[to] = 0;
 
     const added = pushEdges(to);
-    yield (added.length > 0
-      ? { t: 'frontier', remove: [to], add: added }
-      : { t: 'frontier', remove: [to] }) satisfies GenStep;
+    yield (
+      added.length > 0
+        ? { t: 'frontier', remove: [to], add: added }
+        : { t: 'frontier', remove: [to] }
+    ) satisfies GenStep;
   }
 
   yield { t: 'done' } satisfies GenStep;

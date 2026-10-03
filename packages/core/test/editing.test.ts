@@ -73,7 +73,9 @@ describe('editing', () => {
   });
 
   it('EditHistory supports undo/redo and drops the redo stack on a new edit', () => {
-    const start = runToEnd(generators.require('recursive-backtracker').run(createGrid(5, 4), createRng('edit')));
+    const start = runToEnd(
+      generators.require('recursive-backtracker').run(createGrid(5, 4), createRng('edit')),
+    );
     const h = new EditHistory(start);
     expect(h.canUndo).toBe(false);
     h.apply({ t: 'toggleWall', a: 0, b: 1 });

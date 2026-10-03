@@ -35,12 +35,22 @@ function config(agents: Agent[], scoring: RaceConfig['scoring'] = 'first-to-goal
 }
 
 /** A fake solver for disqualification scenarios. */
-function fakeSolver(id: string, body: () => Generator<SolveStep, { path: number[] | null }>): Agent {
+function fakeSolver(
+  id: string,
+  body: () => Generator<SolveStep, { path: number[] | null }>,
+): Agent {
   const solver: MazeSolver<Record<string, unknown>> = {
     meta: { ...bfs.meta, id, name: id },
     *run() {
       const r = yield* body();
-      const stats = { expanded: 1, discovered: 1, frontierPeak: 1, pathLength: r.path ? r.path.length - 1 : null, optimal: null, steps: 1 };
+      const stats = {
+        expanded: 1,
+        discovered: 1,
+        frontierPeak: 1,
+        pathLength: r.path ? r.path.length - 1 : null,
+        optimal: null,
+        steps: 1,
+      };
       return { path: r.path, stats };
     },
   };
@@ -51,18 +61,25 @@ describe('runRace', () => {
   it('validates the configuration', () => {
     expect(() => collect(runRace(config([createAgent('bfs')])))).toThrow(RangeError);
     expect(() =>
-      collect(runRace(config(['a', 'b', 'c', 'd', 'e'].map((id) => createAgent('bfs', {}, { id }))))),
+      collect(
+        runRace(config(['a', 'b', 'c', 'd', 'e'].map((id) => createAgent('bfs', {}, { id })))),
+      ),
     ).toThrow(RangeError);
-    expect(() => collect(runRace(config([createAgent('bfs'), createAgent('bfs')])))).toThrow(/Duplicate/);
+    expect(() => collect(runRace(config([createAgent('bfs'), createAgent('bfs')])))).toThrow(
+      /Duplicate/,
+    );
     expect(() =>
-      collect(runRace(config([createAgent('bfs'), createAgent('dfs', {}, { budget: { maxSteps: 0 } })]))),
+      collect(
+        runRace(config([createAgent('bfs'), createAgent('dfs', {}, { budget: { maxSteps: 0 } })])),
+      ),
     ).toThrow(RangeError);
     expect(MIN_AGENTS).toBe(2);
     expect(MAX_AGENTS).toBe(4);
   });
 
   it('is deterministic and ticks until the last agent finishes', () => {
-    const make = () => config([createAgent('bfs'), createAgent('random-mouse'), createAgent('dfs')]);
+    const make = () =>
+      config([createAgent('bfs'), createAgent('random-mouse'), createAgent('dfs')]);
     const a = collect(runRace(make()));
     const b = collect(runRace(make()));
     expect(a.result.ranking).toEqual(b.result.ranking);
@@ -80,44 +97,62 @@ describe('runRace', () => {
   it('BFS beats the random mouse on first-to-goal', () => {
     const { result } = collect(runRace(config([createAgent('random-mouse'), createAgent('bfs')])));
     expect(result.ranking[0]).toBe('bfs');
-    expect(result.perAgent['bfs']!.reachedGoal).toBe(true);
-    expect(result.perAgent['bfs']!.optimal).toBe(true);
+    expect(result.perAgent.bfs!.reachedGoal).toBe(true);
+    expect(result.perAgent.bfs!.optimal).toBe(true);
   });
 
   it('fewest-expanded orders DFS and BFS by their expansion counts', () => {
-    const { result } = collect(runRace(config([createAgent('dfs'), createAgent('bfs')], 'fewest-expanded')));
-    const d = result.perAgent['dfs']!.expanded;
-    const b = result.perAgent['bfs']!.expanded;
+    const { result } = collect(
+      runRace(config([createAgent('dfs'), createAgent('bfs')], 'fewest-expanded')),
+    );
+    const d = result.perAgent.dfs!.expanded;
+    const b = result.perAgent.bfs!.expanded;
     expect(result.ranking[0]).toBe(d < b ? 'dfs' : b < d ? 'bfs' : 'bfs');
   });
 
   it('disqualifies an agent that exceeds its step budget and ranks it last', () => {
     const { result } = collect(
-      runRace(config([createAgent('bfs', {}, { id: 'tiny', budget: { maxSteps: 5 } }), createAgent('dfs')])),
+      runRace(
+        config([
+          createAgent('bfs', {}, { id: 'tiny', budget: { maxSteps: 5 } }),
+          createAgent('dfs'),
+        ]),
+      ),
     );
-    expect(result.perAgent['tiny']!.disqualified).toBe('budget');
-    expect(result.perAgent['tiny']!.steps).toBe(5);
+    expect(result.perAgent.tiny!.disqualified).toBe('budget');
+    expect(result.perAgent.tiny!.steps).toBe(5);
     expect(result.ranking).toEqual(['dfs', 'tiny']);
   });
 
   it('breaks exact ties by agent id', () => {
     const { result } = collect(
-      runRace(config([createAgent('bfs', {}, { id: 'zeta' }), createAgent('bfs', {}, { id: 'alpha' })])),
+      runRace(
+        config([createAgent('bfs', {}, { id: 'zeta' }), createAgent('bfs', {}, { id: 'alpha' })]),
+      ),
     );
     expect(result.ranking).toEqual(['alpha', 'zeta']);
   });
 
   it('calls onTick for every tick', () => {
     const ticks: number[] = [];
-    const { result } = collect(runRace(config([createAgent('bfs'), createAgent('astar')]), { onTick: (t) => ticks.push(t.tick) }));
+    const { result } = collect(
+      runRace(config([createAgent('bfs'), createAgent('astar')]), {
+        onTick: (t) => ticks.push(t.tick),
+      }),
+    );
     expect(ticks).toEqual(Array.from({ length: result.ticks }, (_, i) => i + 1));
   });
 
   it('gives each randomised agent its own forked stream', () => {
     const { result } = collect(
-      runRace(config([createAgent('random-mouse', {}, { id: 'm1' }), createAgent('random-mouse', {}, { id: 'm2' })])),
+      runRace(
+        config([
+          createAgent('random-mouse', {}, { id: 'm1' }),
+          createAgent('random-mouse', {}, { id: 'm2' }),
+        ]),
+      ),
     );
-    expect(result.perAgent['m1']!.steps).not.toBe(result.perAgent['m2']!.steps);
+    expect(result.perAgent.m1!.steps).not.toBe(result.perAgent.m2!.steps);
   });
 
   it('disqualifies illegal moves, invalid paths and throwing solvers', () => {
@@ -128,7 +163,17 @@ describe('runRace', () => {
     const badPath = fakeSolver('bad-path', function* () {
       yield { t: 'expand', cell: 0 };
       yield { t: 'path', cells: [0, 79] };
-      yield { t: 'done', stats: { expanded: 1, discovered: 1, frontierPeak: 1, pathLength: 1, optimal: null, steps: 3 } };
+      yield {
+        t: 'done',
+        stats: {
+          expanded: 1,
+          discovered: 1,
+          frontierPeak: 1,
+          pathLength: 1,
+          optimal: null,
+          steps: 3,
+        },
+      };
       return { path: [0, 79] };
     });
     const thrower = fakeSolver('thrower', function* () {
@@ -136,9 +181,9 @@ describe('runRace', () => {
       throw new Error('boom');
     });
     const { result } = collect(runRace(config([illegal, badPath, thrower, createAgent('bfs')])));
-    expect(result.perAgent['illegal']!.disqualified).toBe('illegal-move');
+    expect(result.perAgent.illegal!.disqualified).toBe('illegal-move');
     expect(result.perAgent['bad-path']!.disqualified).toBe('invalid-path');
-    expect(result.perAgent['thrower']!.disqualified).toMatch(/^error: boom/);
+    expect(result.perAgent.thrower!.disqualified).toMatch(/^error: boom/);
     expect(result.ranking).toEqual(['bfs', 'bad-path', 'illegal', 'thrower']);
   });
 
@@ -146,11 +191,27 @@ describe('runRace', () => {
     const failer = fakeSolver('failer', function* () {
       yield { t: 'expand', cell: 0 };
       yield { t: 'fail' };
-      yield { t: 'done', stats: { expanded: 1, discovered: 1, frontierPeak: 1, pathLength: null, optimal: null, steps: 3 } };
+      yield {
+        t: 'done',
+        stats: {
+          expanded: 1,
+          discovered: 1,
+          frontierPeak: 1,
+          pathLength: null,
+          optimal: null,
+          steps: 3,
+        },
+      };
       return { path: null };
     });
     const { result } = collect(
-      runRace(config([failer, createAgent('bfs', {}, { id: 'tiny', budget: { maxSteps: 2 } }), createAgent('dfs')])),
+      runRace(
+        config([
+          failer,
+          createAgent('bfs', {}, { id: 'tiny', budget: { maxSteps: 2 } }),
+          createAgent('dfs'),
+        ]),
+      ),
     );
     expect(result.ranking).toEqual(['dfs', 'failer', 'tiny']);
   });
@@ -162,25 +223,42 @@ describe('raceRanking and compositeScores', () => {
     slowOptimal: { ...base, expanded: 50, pathLength: 20, finishedAtTick: 100 },
     fastLong: { ...base, expanded: 20, pathLength: 40, finishedAtTick: 40 },
     failed: { ...base, expanded: 5, pathLength: null, finishedAtTick: 10, reachedGoal: false },
-    dq: { ...base, expanded: 1, pathLength: null, finishedAtTick: 3, reachedGoal: false, disqualified: 'budget' },
+    dq: {
+      ...base,
+      expanded: 1,
+      pathLength: null,
+      finishedAtTick: 3,
+      reachedGoal: false,
+      disqualified: 'budget',
+    },
   };
 
   it('orders by each scoring rule', () => {
-    expect(raceRanking(perAgent, 'first-to-goal')).toEqual(['fastLong', 'slowOptimal', 'failed', 'dq']);
-    expect(raceRanking(perAgent, 'fewest-expanded')).toEqual(['fastLong', 'slowOptimal', 'failed', 'dq']);
+    expect(raceRanking(perAgent, 'first-to-goal')).toEqual([
+      'fastLong',
+      'slowOptimal',
+      'failed',
+      'dq',
+    ]);
+    expect(raceRanking(perAgent, 'fewest-expanded')).toEqual([
+      'fastLong',
+      'slowOptimal',
+      'failed',
+      'dq',
+    ]);
     const composite = raceRanking(perAgent, 'composite', { solutionLength: 20 });
     expect(composite.slice(2)).toEqual(['failed', 'dq']);
     const scores = compositeScores(perAgent, ['slowOptimal', 'fastLong'], { solutionLength: 20 });
     // fastLong: 0.5*1 + 0.3*1 + 0.2*(2-1) = 1.0 ; slowOptimal: 0.5*2.5 + 0.3*2.5 + 0 = 2.0
-    expect(scores['fastLong']).toBeCloseTo(1.0);
-    expect(scores['slowOptimal']).toBeCloseTo(2.0);
+    expect(scores.fastLong).toBeCloseTo(1.0);
+    expect(scores.slowOptimal).toBeCloseTo(2.0);
     expect(composite[0]).toBe('fastLong');
     expect(compositeScores(perAgent, [], { solutionLength: null })).toEqual({});
   });
 
   it('falls back to the best finisher path when the solution length is unknown', () => {
     const scores = compositeScores(perAgent, ['slowOptimal', 'fastLong'], { solutionLength: null });
-    expect(scores['slowOptimal']).toBeCloseTo(2.0);
-    expect(scores['fastLong']).toBeCloseTo(1.0);
+    expect(scores.slowOptimal).toBeCloseTo(2.0);
+    expect(scores.fastLong).toBeCloseTo(1.0);
   });
 });

@@ -254,7 +254,7 @@ describe('dijkstra', () => {
     // Reference: Bellman-Ford style relaxation until stable gives the exact minimum cost.
     const ref = new Float64Array(64).fill(Number.POSITIVE_INFINITY);
     ref[braided.start] = 0;
-    for (let changed = true; changed; ) {
+    for (let changed = true; changed;) {
       changed = false;
       for (let a = 0; a < 64; a++) {
         if (!Number.isFinite(ref[a]!)) continue;
@@ -357,7 +357,9 @@ describe('dead-end filling and flood fill', () => {
   it('dead-end filling marks every dead end except start/goal and stays optimal on braids', () => {
     const maze = randomMaze(10, 8, 'def');
     const { steps, result } = collect(deadEndFilling.run(maze));
-    const filled = new Set(steps.filter((s) => s.t === 'deadend').map((s) => (s as { cell: number }).cell));
+    const filled = new Set(
+      steps.filter((s) => s.t === 'deadend').map((s) => (s as { cell: number }).cell),
+    );
     expect(filled.has(maze.start)).toBe(false);
     expect(filled.has(maze.goal)).toBe(false);
     for (const cell of result.path!) expect(filled.has(cell)).toBe(false);
@@ -406,7 +408,8 @@ describe('wall follower and pledge', () => {
     const g = createGrid(3, 3);
     const walls = createWalls(g);
     const ring = [0, 1, 2, 5, 8, 7, 6, 3];
-    for (let i = 0; i < ring.length; i++) removeWall(walls, g, ring[i]!, ring[(i + 1) % ring.length]!);
+    for (let i = 0; i < ring.length; i++)
+      removeWall(walls, g, ring[i]!, ring[(i + 1) % ring.length]!);
     const island = createMazeState(g, walls, 0, 4);
     const { steps, result } = collect(wallFollower.run(island));
     expect(result.path).toBeNull();
@@ -434,7 +437,9 @@ describe('wall follower and pledge', () => {
       }
     }
     expect(solved).toBeGreaterThan(total / 2);
-    expect(collect(pledge.run(randomMaze(6, 6, 'p-left'), { hand: 'left' })).result.path).not.toBeNull();
+    expect(
+      collect(pledge.run(randomMaze(6, 6, 'p-left'), { hand: 'left' })).result.path,
+    ).not.toBeNull();
   });
 });
 
@@ -477,13 +482,16 @@ describe('random mouse', () => {
     expect(a.result.path).not.toBeNull();
     let solved = 0;
     for (let i = 0; i < 20; i++) {
-      if (collect(randomMouse.run(maze, { maxMoves: 5000 }, createRng(`m-${i}`))).result.path) solved++;
+      if (collect(randomMouse.run(maze, { maxMoves: 5000 }, createRng(`m-${i}`))).result.path)
+        solved++;
     }
     expect(solved).toBeGreaterThanOrEqual(18);
     // Without an rng it still runs (fixed internal seed) and respects the budget.
     const tight = collect(randomMouse.run(randomMaze(10, 10, 'mouse-b'), { maxMoves: 2 })).result;
     expect(tight.path).toBeNull();
-    const backtracking = collect(randomMouse.run(maze, { noBacktrack: false, maxMoves: 5000 }, createRng('bt')));
+    const backtracking = collect(
+      randomMouse.run(maze, { noBacktrack: false, maxMoves: 5000 }, createRng('bt')),
+    );
     expect(backtracking.result.stats.steps).toBe(backtracking.steps.length);
   });
 });

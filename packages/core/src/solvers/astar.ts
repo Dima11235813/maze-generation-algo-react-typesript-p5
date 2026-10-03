@@ -4,7 +4,13 @@ import type { SolveStep } from '../steps';
 import { MinHeap } from '../util/heap';
 import { hasWall, type MazeState } from '../walls';
 import { CORE_VERSION } from '../version';
-import { HEURISTIC_PARAM, StepCounter, heuristicFn, parseHeuristic, type HeuristicId } from './shared';
+import {
+  HEURISTIC_PARAM,
+  StepCounter,
+  heuristicFn,
+  parseHeuristic,
+  type HeuristicId,
+} from './shared';
 import { reconstructPath, type MazeSolver, type SolveResult } from './types';
 
 export interface AStarParams extends Record<string, unknown> {
@@ -127,10 +133,22 @@ export const astar: MazeSolver<AStarParams> = {
           heap.push({ cell: nb, g: ng, h: hn, f: ng + hn, seq: seq++ });
           c.frontier(heap.size);
           if (wasSeen) {
-            yield c.count({ t: 'relax', cell: nb, from: e.cell, oldG: old, newG: ng } satisfies SolveStep);
+            yield c.count({
+              t: 'relax',
+              cell: nb,
+              from: e.cell,
+              oldG: old,
+              newG: ng,
+            } satisfies SolveStep);
           } else {
             c.discovered++;
-            yield c.count({ t: 'discover', cell: nb, from: e.cell, g: ng, f: ng + hn } satisfies SolveStep);
+            yield c.count({
+              t: 'discover',
+              cell: nb,
+              from: e.cell,
+              g: ng,
+              f: ng + hn,
+            } satisfies SolveStep);
           }
         }
       }

@@ -43,9 +43,9 @@ describe('meta', () => {
     expect(
       sanitizeParams(meta, { size: 99.6, bias: -3, braid: true, mode: 'random', extra: 1 }),
     ).toEqual({ size: 10, bias: 0, braid: true, mode: 'random' });
-    expect(sanitizeParams(meta, { size: 'big', bias: Number.NaN, braid: 'yes', mode: 'nope' })).toEqual(
-      { size: 5, bias: 0.5, braid: false, mode: 'newest' },
-    );
+    expect(
+      sanitizeParams(meta, { size: 'big', bias: Number.NaN, braid: 'yes', mode: 'nope' }),
+    ).toEqual({ size: 5, bias: 0.5, braid: false, mode: 'newest' });
     expect(sanitizeParams(meta, undefined)).toEqual(defaultParams(meta));
     expect(sanitizeParams(meta, { size: 3.4 })).toMatchObject({ size: 3 });
   });

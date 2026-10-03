@@ -18,7 +18,11 @@ export type GenStep =
   /** Wall added between adjacent cells `a` and `b` (wall-adding algorithms, tree rotations). */
   | { readonly t: 'seal'; readonly a: CellId; readonly b: CellId }
   | { readonly t: 'backtrack'; readonly from: CellId; readonly to: CellId }
-  | { readonly t: 'frontier'; readonly add?: readonly CellId[]; readonly remove?: readonly CellId[] }
+  | {
+      readonly t: 'frontier';
+      readonly add?: readonly CellId[];
+      readonly remove?: readonly CellId[];
+    }
   | { readonly t: 'union'; readonly a: CellId; readonly b: CellId }
   | { readonly t: 'walk'; readonly cell: CellId; readonly erased?: readonly CellId[] }
   | {

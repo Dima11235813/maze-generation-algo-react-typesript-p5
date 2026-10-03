@@ -85,11 +85,13 @@ function resizeWalls(state: MazeState, grid: Grid): Uint8Array {
   // Re-seal the new perimeter: cells on the cut edge may have been open towards cropped cells.
   for (let r = 0; r < rows; r++) {
     const last = idOf(grid, r, cols - 1);
-    if (cols < state.grid.width && neighbor(grid, last, 1) === NO_CELL) walls[last] = (walls[last] ?? 0) | 2;
+    if (cols < state.grid.width && neighbor(grid, last, 1) === NO_CELL)
+      walls[last] = (walls[last] ?? 0) | 2;
   }
   for (let c = 0; c < cols; c++) {
     const last = idOf(grid, rows - 1, c);
-    if (rows < state.grid.height && neighbor(grid, last, 2) === NO_CELL) walls[last] = (walls[last] ?? 0) | 4;
+    if (rows < state.grid.height && neighbor(grid, last, 2) === NO_CELL)
+      walls[last] = (walls[last] ?? 0) | 4;
   }
   return walls;
 }
@@ -158,11 +160,7 @@ export function applyPatch(state: MazeState, patch: Patch): MazeState {
 }
 
 export type ValidationCode =
-  | 'goal-unreachable'
-  | 'isolated-cells'
-  | 'start-equals-goal'
-  | 'not-perfect'
-  | 'asymmetric-walls';
+  'goal-unreachable' | 'isolated-cells' | 'start-equals-goal' | 'not-perfect' | 'asymmetric-walls';
 
 export interface ValidationIssue {
   readonly severity: 'error' | 'warning';
@@ -209,7 +207,11 @@ export function validateMaze(state: MazeState): ValidationIssue[] {
       cells: isolated,
     });
   }
-  if (isolated.length === 0 && isConnected(state) && passageCount(state) !== cellCount(state.grid) - 1) {
+  if (
+    isolated.length === 0 &&
+    isConnected(state) &&
+    passageCount(state) !== cellCount(state.grid) - 1
+  ) {
     issues.push({
       severity: 'warning',
       code: 'not-perfect',
@@ -232,7 +234,10 @@ export class EditHistory {
   private inverseFuture: Patch[] = [];
   private current: MazeState;
 
-  constructor(initial: MazeState, readonly limit = 500) {
+  constructor(
+    initial: MazeState,
+    readonly limit = 500,
+  ) {
     this.current = initial;
   }
 

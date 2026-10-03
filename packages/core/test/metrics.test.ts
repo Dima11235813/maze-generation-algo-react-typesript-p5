@@ -91,7 +91,9 @@ describe('metrics', () => {
   });
 
   it('diameter is at least the solution length on generated mazes; extended metrics are sane', () => {
-    const s = runToEnd(generators.require('recursive-backtracker').run(createGrid(12, 9), createRng('m')));
+    const s = runToEnd(
+      generators.require('recursive-backtracker').run(createGrid(12, 9), createRng('m')),
+    );
     const m = computeMetrics(s);
     expect(m.diameter).toBeGreaterThanOrEqual(m.solutionLength ?? 0);
     expect(m.deadEnds).toBeGreaterThan(0);
@@ -105,9 +107,33 @@ describe('metrics', () => {
   });
 
   it('difficultyScore clamps each term', () => {
-    expect(difficultyScore({ cells: 100, solutionLength: null, deadEndRatio: 1, twistiness: 1, junctionsOnPath: 50 })).toBe(0);
-    expect(difficultyScore({ cells: 100, solutionLength: 100, deadEndRatio: 0.3, twistiness: 1, junctionsOnPath: 100 })).toBe(100);
-    expect(difficultyScore({ cells: 100, solutionLength: 20, deadEndRatio: 0, twistiness: 0, junctionsOnPath: 0 })).toBe(7);
+    expect(
+      difficultyScore({
+        cells: 100,
+        solutionLength: null,
+        deadEndRatio: 1,
+        twistiness: 1,
+        junctionsOnPath: 50,
+      }),
+    ).toBe(0);
+    expect(
+      difficultyScore({
+        cells: 100,
+        solutionLength: 100,
+        deadEndRatio: 0.3,
+        twistiness: 1,
+        junctionsOnPath: 100,
+      }),
+    ).toBe(100);
+    expect(
+      difficultyScore({
+        cells: 100,
+        solutionLength: 20,
+        deadEndRatio: 0,
+        twistiness: 0,
+        junctionsOnPath: 0,
+      }),
+    ).toBe(7);
   });
 
   it('solverRelativeMetrics compares a solve with the maze', () => {
@@ -117,7 +143,10 @@ describe('metrics', () => {
     expect(solverRelativeMetrics(stats, m)).toEqual({ expandedRatio: 1, optimalityRatio: 1 });
     expect(solverRelativeMetrics({ ...stats, pathLength: null }, m).optimalityRatio).toBeNull();
     expect(solverRelativeMetrics(stats, { cells: 0, solutionLength: null }).expandedRatio).toBe(0);
-    expect(solverRelativeMetrics({ ...stats, pathLength: 0 }, { cells: 1, solutionLength: 0 }).optimalityRatio).toBe(1);
+    expect(
+      solverRelativeMetrics({ ...stats, pathLength: 0 }, { cells: 1, solutionLength: 0 })
+        .optimalityRatio,
+    ).toBe(1);
   });
 
   it('formats durations as mm:ss (legacy bug fixed)', () => {

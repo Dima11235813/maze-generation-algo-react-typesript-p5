@@ -4,7 +4,13 @@ import type { SolveStep } from '../steps';
 import { MinHeap } from '../util/heap';
 import { hasWall, type MazeState } from '../walls';
 import { CORE_VERSION } from '../version';
-import { HEURISTIC_PARAM, StepCounter, heuristicFn, parseHeuristic, type HeuristicId } from './shared';
+import {
+  HEURISTIC_PARAM,
+  StepCounter,
+  heuristicFn,
+  parseHeuristic,
+  type HeuristicId,
+} from './shared';
 import { reconstructPath, type MazeSolver, type SolveResult } from './types';
 
 export interface GreedyBestFirstParams extends Record<string, unknown> {
@@ -60,7 +66,12 @@ export const greedyBestFirst: MazeSolver<GreedyBestFirstParams> = {
     while (heap.size > 0) {
       const e = heap.pop() as Entry;
       c.expanded++;
-      yield c.count({ t: 'expand', cell: e.cell, g: depth[e.cell] ?? 0, h: e.h } satisfies SolveStep);
+      yield c.count({
+        t: 'expand',
+        cell: e.cell,
+        g: depth[e.cell] ?? 0,
+        h: e.h,
+      } satisfies SolveStep);
 
       if (e.cell === goal) {
         const path = reconstructPath(parent, start, goal);
@@ -81,7 +92,12 @@ export const greedyBestFirst: MazeSolver<GreedyBestFirstParams> = {
         heap.push({ cell: nb, h: hn, seq: seq++ });
         c.discovered++;
         c.frontier(heap.size);
-        yield c.count({ t: 'discover', cell: nb, from: e.cell, g: depth[nb] ?? 0 } satisfies SolveStep);
+        yield c.count({
+          t: 'discover',
+          cell: nb,
+          from: e.cell,
+          g: depth[nb] ?? 0,
+        } satisfies SolveStep);
       }
     }
 

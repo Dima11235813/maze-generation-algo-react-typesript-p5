@@ -53,8 +53,7 @@ export const originShift: MazeGenerator<OriginShiftParams> = {
   *run(grid: Grid, rng: Rng, params?: Partial<OriginShiftParams>) {
     const total = cellCount(grid);
     const requested = Math.floor(params?.iterations ?? 0);
-    const iterations =
-      requested > 0 ? requested : Math.min(MAX_AUTO_ITERATIONS, total * 10);
+    const iterations = requested > 0 ? requested : Math.min(MAX_AUTO_ITERATIONS, total * 10);
     const walls = createWalls(grid);
     /** parent[c] = next cell towards the root; -1 for the root itself. */
     const parent = new Int32Array(total).fill(-1);

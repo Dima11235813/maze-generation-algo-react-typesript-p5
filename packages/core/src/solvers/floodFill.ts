@@ -52,7 +52,12 @@ export const floodFill: MazeSolver = {
         queue.push(nb);
         c.discovered++;
         c.frontier(queue.length - head);
-        yield c.count({ t: 'discover', cell: nb, from: cell, g: dist[nb] ?? 0 } satisfies SolveStep);
+        yield c.count({
+          t: 'discover',
+          cell: nb,
+          from: cell,
+          g: dist[nb] ?? 0,
+        } satisfies SolveStep);
       }
     }
 
