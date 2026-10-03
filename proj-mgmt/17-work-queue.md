@@ -5,18 +5,19 @@
 > marked **NEXT**, follow `AGENTS.md` section 2, and update this file when it is done.
 > Status values: `NEXT`, `TODO`, `BLOCKED (H-x)`, `DONE yyyy-mm-dd (commit)`.
 
-## Where we are (2026-10-03, `develop` == `main` == 551e277, not pushed)
+## Where we are (2026-10-03, `develop` == `main` == 17c7471 + docs, not pushed)
 
 Shipped: monorepo foundation and legacy parity; 12 generators + braid; 12 solvers; race scheduler
 in core (no UI yet); Watch (pseudo-code, step log, stats); Explore catalogue + Compare; a11y grid
 and narrator; PWA + chunking; 3D view controls (orbit/tilt/zoom/reset); timeline (play, pause,
 step back, restart, scrub) for generation and solving; responsive workspace (phone column,
-tablet grid, desktop/wide columns). Gate: core 280, player 21, renderer 34, web 53 tests; lint 0
-errors (339 warnings); e2e 16/16.
+tablet grid, desktop/wide columns); Race page (2-4 solvers, lockstep transport, standings,
+ranking, deep link). Gate: core 280, player 21, renderer 34, web 67 tests; lint 0 errors (353
+warnings); e2e 18/18.
 
 ## Queue
 
-### WI-01 Race page: two to four solvers compete on one maze - **NEXT**
+### WI-01 Race page: two to four solvers compete on one maze - DONE 2026-10-03 (17c7471)
 
 The original brief's "see two AIs compete" pillar. `runRace` (`packages/core/src/agents/race.ts`)
 already runs agents in lockstep and ranks them; there is no UI.
@@ -33,8 +34,13 @@ already runs agents in lockstep and ranks them; there is no UI.
   and shows a ranking after run-to-end; one Playwright journey (pick two solvers, run to end,
   winner announced); phone/tablet/desktop check; a11y names on lanes and standings.
 - Branch: `feat/race-page`. Blocked by: nothing.
+- Delivered: `/race?seed=&agents=&scoring=&size=&gen=` (size and generator are in the URL too, so
+  the URL alone fixes the race on every device); `RaceRun` (`apps/web/src/maze/race.ts`) wraps
+  `runRace` in a `StepPlayer` and folds ticks into one `SolveTracker` per lane; lanes pick their
+  column count by measuring the stage (2 stack on phones, 4 make a 2 x 2 grid); winning lane gets
+  a trophy and "(winner)" in its name; axe check and e2e journey added.
 
-### BUG-01 Maze tools widget: the floating view controls cover part of the maze - TODO
+### BUG-01 Maze tools widget: the floating view controls cover part of the maze - **NEXT**
 
 Reported by the owner 2026-10-03 (phone screenshot): the "View controls" panel (rotate, tilt,
 zoom, reset) floats over the bottom-right of the maze canvas on Play and Watch, so part of the
@@ -130,3 +136,4 @@ Tauri 2 builds; starts with the 2-day WKWebView WebGL spike (ADR-012).
 | 3D view controls + Compare phone fix | 2026-10-02 | dc450bf |
 | Timeline: play, pause, step back, restart, scrub | 2026-10-02 | eaf0104 |
 | Responsive workspace (phone/tablet/desktop/wide) | 2026-10-03 | 551e277 |
+| WI-01 Race page | 2026-10-03 | 17c7471 |

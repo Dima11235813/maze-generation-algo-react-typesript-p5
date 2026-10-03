@@ -75,3 +75,16 @@ reduced motion or run-to-end for visual checks.
 **L-17 What the owner values.** The 3D views (stack-depth cube projection, mirror) and the
 first-person walkthrough are favourites; phone usability is checked on every change; progress
 should land in small merged slices with the app always runnable.
+
+**L-18 Measured layouts need hysteresis.** The Race page picks its lane column count from the
+measured stage size. When a race finished, the winner sentence wrapped to two lines, the stage lost
+20 px of height, two near-equal layouts swapped (stacked vs side by side) and the canvases were
+caught mid-resize (blank). *Rule:* a measured layout only switches when the new option is clearly
+better (10% here), and status lines that change text keep a fixed height (`truncate`).
+
+**L-19 Browser checks without the MCP browsers.** The Playwright MCP browser can be locked by
+another profile, and a dev server may already hold port 5180 from an earlier session (check with
+`netstat -ano | grep :5180` before starting one). *Rule:* a throwaway Node script that imports
+`chromium` from `@playwright/test` (run from `apps/web`) can open real viewports (390/820/1280/1680,
+`hasTouch`/`isMobile`), measure `scrollWidth` against `clientWidth` and save screenshots to the
+session scratchpad; delete the script afterwards.
