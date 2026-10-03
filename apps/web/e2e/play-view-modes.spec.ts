@@ -9,7 +9,10 @@ test.describe('play: 2D / 3D view modes', () => {
 
     // Default is 3D (legacy `use3d: true`). With WebGL the three.js canvas is labelled;
     // without it the app shows the fallback alert instead of crashing.
-    await expect(view.getByRole('radio', { name: '3D view' })).toHaveAttribute('aria-checked', 'true');
+    await expect(view.getByRole('radio', { name: '3D view' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
     if (webgl) {
       await expect(host.locator('canvas[aria-label="Maze, 3D view"]')).toHaveCount(1);
     } else {
@@ -17,7 +20,10 @@ test.describe('play: 2D / 3D view modes', () => {
     }
 
     await view.getByRole('radio', { name: '2D view' }).click();
-    await expect(view.getByRole('radio', { name: '2D view' })).toHaveAttribute('aria-checked', 'true');
+    await expect(view.getByRole('radio', { name: '2D view' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
     await expect(host.locator('canvas[aria-label="Maze, top-down view"]')).toHaveCount(1);
     await expect(host.locator('canvas')).toHaveCount(1);
     // The maze itself is untouched by a view change.

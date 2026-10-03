@@ -1,4 +1,4 @@
-import { canvasHost, expect, metrics, test, toolbar } from './fixtures';
+import { canvasHost, expect, metrics, runToEndIfNeeded, test, toolbar } from './fixtures';
 
 test.describe('play: generation', () => {
   test('generates a maze and reaches "complete" after Run to end', async ({ page }) => {
@@ -9,11 +9,10 @@ test.describe('play: generation', () => {
     const host = canvasHost(page);
     await expect(host).toHaveAttribute('aria-label', /Maze canvas: \d+ by \d+ cells/);
 
-    const runToEnd = toolbar(page).getByRole('button', { name: 'Run to end' });
-    if (await runToEnd.isEnabled()) await runToEnd.click();
+    await runToEndIfNeeded(page);
 
     await expect(host).toHaveAttribute('aria-label', /complete/);
-    await expect(runToEnd).toBeDisabled();
+    await expect(toolbar(page).getByRole('button', { name: 'Run to end' })).toBeDisabled();
 
     const strip = metrics(page);
     await expect(strip).toContainText('Grid');
@@ -29,14 +28,26 @@ test.describe('play: generation', () => {
     await expect(host).toHaveAttribute('aria-label', /complete/);
     const seed = page.getByRole('textbox', { name: 'Seed' });
     await expect(seed).not.toHaveValue('');
-    const before = await metrics(page).textContent();
+    const seedValue = await seed.inputValue();
 
-    await toolbar(page).getByRole('button', { name: 'Regenerate same seed' }).click();
+    // The metrics strip grows after the first completion, which can shrink the canvas host
+    // and therefore the grid of the next generation. Regenerate twice from a stable layout
+    // and compare the last two runs: same seed + same grid must give the same maze.
+    const regenerate = toolbar(page).getByRole('button', { name: 'Regenerate same seed' });
+    // Everything except the timing stats (Elapsed, Rate), which legitimately vary per run.
+    const structural = (s: string | null) =>
+      /Grid.*?Junctions\s*\d+/.exec((s ?? '').replace(/Elapsed.*?(?=Dead ends)/, ''))?.[0];
+
+    await regenerate.click();
     await expect(host).toHaveAttribute('aria-label', /complete/);
-    const after = await metrics(page).textContent();
+    const first = structural(await metrics(page).textContent());
 
-    // Structural metrics (dead ends, solution, diameter) are seed-determined.
-    const pick = (s: string | null) => (s ?? '').match(/Dead ends.*?Junctions\s*\d+/)?.[0];
-    expect(pick(after)).toBe(pick(before));
+    await regenerate.click();
+    await expect(host).toHaveAttribute('aria-label', /complete/);
+    const second = structural(await metrics(page).textContent());
+
+    expect(first).toBeTruthy();
+    expect(second).toBe(first);
+    await expect(seed).toHaveValue(seedValue);
   });
 });

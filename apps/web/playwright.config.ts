@@ -10,10 +10,14 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 2 : 0,
-  workers: isCI ? 2 : undefined,
+  // Software-rendered WebGL is CPU heavy: four parallel pages starve each other into
+  // navigation timeouts on a busy machine, two are reliable. Override with --workers.
+  workers: 2,
   timeout: 45_000,
   expect: { timeout: 10_000 },
-  reporter: isCI ? [['github'], ['html', { open: 'never' }]] : [['list'], ['html', { open: 'never' }]],
+  reporter: isCI
+    ? [['github'], ['html', { open: 'never' }]]
+    : [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL,
     trace: 'retain-on-failure',
@@ -37,10 +41,12 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `pnpm exec vite --port ${E2E_PORT} --strictPort --host 127.0.0.1`,
+    // A production build served by `vite preview`: the dev server's dependency optimiser
+    // reloads pages mid-navigation on a cold cache, which aborts `page.goto`.
+    command: `pnpm exec vite build --logLevel warn && pnpm exec vite preview --port ${E2E_PORT} --strictPort --host 127.0.0.1`,
     url: `${baseURL}/`,
     reuseExistingServer: !isCI,
-    timeout: 120_000,
+    timeout: 180_000,
     stdout: 'ignore',
     stderr: 'pipe',
   },

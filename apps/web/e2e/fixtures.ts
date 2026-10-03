@@ -56,11 +56,29 @@ export function liveStatus(page: Page): Locator {
 /** Opens /play and waits for generation to finish (speed is seeded to the maximum). */
 export async function openPlayReady(page: Page): Promise<void> {
   await page.goto('/play');
-  await expect(toolbar(page)).toBeVisible();
-  await expect(canvasHost(page)).toHaveAttribute('aria-label', /cells, (generation in progress|complete)/);
+  // First paint can be slow when several software-rendered WebGL pages start at once.
+  await expect(toolbar(page)).toBeVisible({ timeout: 30_000 });
+  await expect(canvasHost(page)).toHaveAttribute(
+    'aria-label',
+    /cells, (generation in progress|complete)/,
+    { timeout: 30_000 },
+  );
+  await runToEndIfNeeded(page);
+  await expect(canvasHost(page)).toHaveAttribute('aria-label', /complete/, { timeout: 30_000 });
+}
+
+/**
+ * Clicks "Run to end" unless generation has already finished. The button becomes disabled
+ * the moment the generator completes, so a check-then-click would race; a bounded click that
+ * tolerates "disabled" is the robust form.
+ */
+export async function runToEndIfNeeded(page: Page): Promise<void> {
   const runToEnd = toolbar(page).getByRole('button', { name: 'Run to end' });
-  if (await runToEnd.isEnabled()) await runToEnd.click();
-  await expect(canvasHost(page)).toHaveAttribute('aria-label', /complete/);
+  try {
+    await runToEnd.click({ timeout: 3_000 });
+  } catch {
+    // Already complete (button disabled): nothing to do.
+  }
 }
 
 /** True when headless Chromium can create a WebGL context (SwiftShader in CI). */

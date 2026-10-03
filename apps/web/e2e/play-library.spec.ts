@@ -1,4 +1,12 @@
-import { canvasHost, expect, LIBRARY_KEY, liveStatus, openPlayReady, test, toolbar } from './fixtures';
+import {
+  canvasHost,
+  expect,
+  LIBRARY_KEY,
+  liveStatus,
+  openPlayReady,
+  test,
+  toolbar,
+} from './fixtures';
 
 test.describe('play: save and library', () => {
   test('saves the maze and loads it back from the library', async ({ page }) => {
