@@ -1,6 +1,6 @@
 # 19 - Tree View ("treeify the maze")
 
-> Status: Proposed | Last updated: 2026-10-03 | Owner: Dmitri Larionov
+> Status: Implemented (WI-09, merge 3183337) | Last updated: 2026-10-03 | Owner: Dmitri Larionov
 > Queue item: WI-09 in [17-work-queue.md](./17-work-queue.md)
 > Related: [02-domain-model-and-algorithms.md](./02-domain-model-and-algorithms.md) (step engine,
 > trackers), [ADR-004](./adr/ADR-004-rendering-abstraction.md) (renderer port),
@@ -92,7 +92,19 @@ tree now has 120 cells, height 34, 18 leaves").
 5. **Solvers and metrics:** Watch overlays on the tree, tree metrics in Explore/Compare,
    braided-maze loop edges.
 
-## 7. Open questions for the owner
+## 7. Decisions (owner, 2026-10-03)
+
+- Root: the growing forest is rooted at each piece's oldest cell (`GenerationTracker.seenOrder`);
+  when generation finishes the tree re-roots at the start with an animated ease.
+- Placement: a third view mode (2D / 3D / Tree) on Play and Watch, Maze/Tree on Compare.
+- Implementation notes: the renderer port gained `RenderOptions.tree` (layout, morph, pullKey,
+  highlight) instead of a new `ViewMode`; tidy/radial draw on the canvas adapter and the 3D tree
+  on the three.js adapter. The 3D tree uses one silhouette for every maze (widest branch = 45 %
+  of the height) so deep backtracker trees and bushy Prim's trees both read as trees.
+- Still open: a size cap for the 3D tree on phones (instancing handled the default sizes
+  without trouble in testing).
+
+## 8. Original open questions
 
 - Root at the start cell (trunk = solution) or at the generator's first cell (shows the growth
   order truthfully)? Proposal: grow from the generator's root while generating, re-root to the

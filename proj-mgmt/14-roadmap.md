@@ -18,7 +18,7 @@
 | 5 Learn | Not started | WI-06 |
 | 6 Desktop & mobile | Blocked (H-9, H-10) | PWA works today |
 | 7 Hardening | Ongoing | lint/knip/a11y debt = WI-05 |
-| New: Tree view | Proposed | maze as a growing spanning tree, 2D + 3D = WI-09 ([19-tree-view.md](./19-tree-view.md)) |
+| New: Tree view | Done | maze as a growing spanning tree, 2D + 3D = WI-09 ([19-tree-view.md](./19-tree-view.md)) |
 
 Work is sequenced in [17-work-queue.md](./17-work-queue.md).
 

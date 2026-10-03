@@ -5,15 +5,16 @@
 > marked **NEXT**, follow `AGENTS.md` section 2, and update this file when it is done.
 > Status values: `NEXT`, `TODO`, `BLOCKED (H-x)`, `DONE yyyy-mm-dd (commit)`.
 
-## Where we are (2026-10-03, `develop` == `main` == 17c7471 + docs, not pushed)
+## Where we are (2026-10-03, `develop` == `main` == 3183337 + docs, not pushed)
 
 Shipped: monorepo foundation and legacy parity; 12 generators + braid; 12 solvers; race scheduler
 in core (no UI yet); Watch (pseudo-code, step log, stats); Explore catalogue + Compare; a11y grid
 and narrator; PWA + chunking; 3D view controls (orbit/tilt/zoom/reset); timeline (play, pause,
 step back, restart, scrub) for generation and solving; responsive workspace (phone column,
 tablet grid, desktop/wide columns); Race page (2-4 solvers, lockstep transport, standings,
-ranking, deep link). Gate: core 280, player 21, renderer 34, web 67 tests; lint 0 errors (353
-warnings); e2e 18/18.
+ranking, deep link); Tree view (maze as its spanning tree: upright, radial, 3D; growth, morph,
+outline, Compare). Gate: core 289, player 21, renderer 39, web 73 tests; lint 0 errors (323
+warnings); e2e 20/20.
 
 ## Queue
 
@@ -101,7 +102,7 @@ The owner especially enjoys the first-person walkthrough. Make it a complete exp
   every solver has a listing whose `stepToLine` covers every step type (exhaustive test).
 - Branch: `feat/algorithm-params`. Blocked by: nothing.
 
-### WI-09 Tree view: "treeify" the maze in 2D and 3D - TODO
+### WI-09 Tree view: "treeify" the maze in 2D and 3D - DONE 2026-10-03 (3183337)
 
 Owner idea 2026-10-03. A perfect maze is a spanning tree; "pulled and stretched out in the proper
 way" it looks like a tree (Wikipedia, Maze generation algorithm). Design:
@@ -117,6 +118,15 @@ way" it looks like a tree (Wikipedia, Maze generation algorithm). Design:
   goal depth = solution length, layouts overlap-free and deterministic.
 - Branch: `feat/tree-core` (then `feat/tree-view-2d`, ...). Blocked by: nothing; slice 2 wants
   BUG-01's maze tools widget for the morph slider.
+- Delivered (owner asked to build it straight after roadmapping, ahead of BUG-01): all five
+  slices. Core `treeify`/`tidyLayout`/`radialLayout`/`layout3d`/`treeMetrics` with property tests;
+  `TreeScene` (shared tween/re-root state) with 2D drawing (upright fir layout, radial with ring
+  arcs) and a 3D botanical tree (instanced branches thickening towards the root, golden-angle
+  branches, morph-aware camera fit); 2D/3D/Tree toggle (Y) on Play and Watch; tree controls row
+  below the canvas (layout, maze-to-tree morph, replay pull); ARIA tree outline of corridors and
+  forks highlighted on the canvas; live growth during generation (forest rooted at the oldest
+  cells, re-rooted at the start when done); Compare lanes as trees and tree-shape columns.
+  The morph slider lives in the tree row for now; BUG-01's widget can absorb it.
 
 ### WI-05 Quality debt sweep - TODO
 
@@ -154,3 +164,4 @@ Tauri 2 builds; starts with the 2-day WKWebView WebGL spike (ADR-012).
 | Timeline: play, pause, step back, restart, scrub | 2026-10-02 | eaf0104 |
 | Responsive workspace (phone/tablet/desktop/wide) | 2026-10-03 | 551e277 |
 | WI-01 Race page | 2026-10-03 | 17c7471 |
+| WI-09 Tree view (all five slices) | 2026-10-03 | 26c4c69, 3183337 |

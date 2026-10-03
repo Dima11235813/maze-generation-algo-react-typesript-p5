@@ -88,3 +88,23 @@ another profile, and a dev server may already hold port 5180 from an earlier ses
 `chromium` from `@playwright/test` (run from `apps/web`) can open real viewports (390/820/1280/1680,
 `hasTouch`/`isMobile`), measure `scrollWidth` against `clientWidth` and save screenshots to the
 session scratchpad; delete the script afterwards.
+
+**L-20 `setTimeout` typing depends on file order.** With both the DOM lib and Node types loaded
+(vitest globals bring Node in), TypeScript picks the first `setTimeout` overload it sees. Adding
+one export to `@maze/renderer` reordered files and `return setTimeout(...)` (typed `number`)
+stopped compiling in the web typecheck only. *Rule:* never rely on the timer id's type; store
+`ReturnType<typeof setTimeout>` or convert with `Number(...)`. Bisect with
+`git checkout <sha>` + `tsc --noEmit -p apps/web` when a typecheck breaks without an obvious cause.
+
+**L-21 Overlay colours must survive a new background.** The solver colours were tuned as tints
+over green cells; drawn on their own as tree branches, "expanded" (120,170,255) vanished into
+the blue background (113,173,245). *Rule:* derive overlay colours by mixing with the base colour
+(`mix(base, mark, SOLVE_TINT_ALPHA)`) and resolve the theme (invert) exactly once.
+
+**L-22 Check the RTL assumption before "fixing" a widget.** A failing keyboard test in the tree
+outline was the test's assumption (root collapsed), not the widget (root starts expanded, per the
+ARIA pattern). *Rule:* log the state the handler sees before changing component code.
+
+**L-23 e2e under load.** A full Playwright run while the LAN dev server and screenshot scripts
+were busy took 1.6 min and timed out two journeys; the rerun was 20/20 in 37 s. *Rule:* rerun
+once before treating an e2e timeout as a regression, and report both runs.
