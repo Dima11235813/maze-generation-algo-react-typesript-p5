@@ -16,6 +16,8 @@ pre-commit:
         - 'apps/legacy/**'
         - 'pnpm-lock.yaml'
         - 'CHANGELOG.md'
+        # Planning docs follow their own ~100-column prose style (proj-mgmt/README.md).
+        - 'proj-mgmt/**'
       run: pnpm exec prettier --check {staged_files}
 
 commit-msg:

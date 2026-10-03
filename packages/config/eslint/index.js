@@ -283,7 +283,8 @@ export const boundaries = tseslint.config(
               target: './packages/core',
               from: './packages',
               except: ['./core'],
-              message: '@maze/core is dependency-free: it must not import other workspace packages.',
+              message:
+                '@maze/core is dependency-free: it must not import other workspace packages.',
             },
           ],
         },
