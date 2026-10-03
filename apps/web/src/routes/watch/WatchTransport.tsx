@@ -55,7 +55,7 @@ function Hint({ label, keys, children }: { label: string; keys?: string; childre
   );
 }
 
-/** Media-style transport for the Watch page. */
+/** Media-style transport for the Watch page; collapses gracefully on phones. */
 export function WatchTransport(p: WatchTransportProps) {
   const playing = p.status === 'playing';
   const playable = p.armed && p.status !== null && p.status !== 'done';
@@ -64,9 +64,9 @@ export function WatchTransport(p: WatchTransportProps) {
     <div
       role="toolbar"
       aria-label="Watch controls"
-      className="flex flex-wrap items-center gap-2 border-b border-border bg-panel px-3 py-2"
+      className="flex flex-wrap items-center gap-2 border-b border-border bg-panel px-2 py-1.5 sm:px-3 sm:py-2"
     >
-      <div role="group" aria-label="Playback" className="flex items-center gap-1.5">
+      <div role="group" aria-label="Playback" className="flex w-full min-w-0 items-center gap-1.5 sm:w-auto">
         <Hint label={playing ? 'Pause' : 'Play'} keys="Space">
           <IconButton
             size="icon-sm"
@@ -95,7 +95,7 @@ export function WatchTransport(p: WatchTransportProps) {
           </IconButton>
         </Hint>
         <Slider
-          className="w-40"
+          className="min-w-0 flex-1 sm:w-40 sm:flex-none"
           label="Speed"
           hideLabel
           value={speedIndex}
@@ -105,12 +105,12 @@ export function WatchTransport(p: WatchTransportProps) {
           valueText={formatSpeed(p.speed)}
           onValueChange={(i) => p.onSpeedChange(indexToSpeed(i))}
         />
-        <span className="w-24 text-xs tabular-nums text-muted" aria-hidden="true">
+        <span className="w-16 shrink-0 text-xs tabular-nums text-muted sm:w-24" aria-hidden="true">
           {formatSpeed(p.speed)}
         </span>
       </div>
 
-      <Separator orientation="vertical" className="h-6" />
+      <Separator orientation="vertical" className="hidden h-6 sm:block" />
 
       <div role="group" aria-label="View" className="flex items-center gap-1.5">
         <ToggleGroup
@@ -130,10 +130,10 @@ export function WatchTransport(p: WatchTransportProps) {
         </ToggleGroup>
       </div>
 
-      <Separator orientation="vertical" className="h-6" />
+      <Separator orientation="vertical" className="hidden h-6 sm:block" />
 
       <div role="group" aria-label="Maze" className="ml-auto flex items-center gap-1.5">
-        <span className="font-mono text-xs text-muted" aria-label={`Seed ${p.seed}`}>
+        <span className="hidden font-mono text-xs text-muted md:inline" aria-label={`Seed ${p.seed}`}>
           {p.seed}
         </span>
         <Hint label="Same seed again">
@@ -142,8 +142,9 @@ export function WatchTransport(p: WatchTransportProps) {
           </IconButton>
         </Hint>
         <Hint label="New maze with a fresh seed" keys="N">
-          <Button size="sm" variant="secondary" onClick={p.onNewMaze}>
-            <Shuffle className="h-4 w-4" aria-hidden="true" /> New maze
+          <Button size="sm" variant="secondary" onClick={p.onNewMaze} aria-label="New maze">
+            <Shuffle className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden min-[420px]:inline">New maze</span>
           </Button>
         </Hint>
       </div>

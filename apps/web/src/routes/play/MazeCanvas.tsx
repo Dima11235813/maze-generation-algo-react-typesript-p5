@@ -37,10 +37,19 @@ export interface MazeCanvasProps {
   className?: string;
 }
 
+const ZOOM_MIN = 0.25;
+const ZOOM_MAX = 8;
+
+interface Pinch {
+  startDistance: number;
+  startZoom: number;
+}
+
 /**
  * Owns the renderer lifecycle: creates the adapter for `mode` (lazy chunk for three.js),
  * mounts it in the host, pushes every input through the port, and re-fits on resize without
- * touching the maze (P-13).
+ * touching the maze (P-13). Also translates two-finger pinches into camera zoom so touch
+ * devices get the same control the mouse wheel gives (P-14).
  */
 export function MazeCanvas({
   session,
@@ -65,8 +74,12 @@ export function MazeCanvas({
   const [error, setError] = useState<string | null>(null);
 
   // Latest inputs for renderer creation and for stable event delegation.
-  const latest = useRef({ theme, options, camera, onCameraChange, onCellClick, mode });
-  latest.current = { theme, options, camera, onCameraChange, onCellClick, mode };
+  const latest = useRef({ theme, options, camera, onCameraChange, onCellClick, mode, firstPerson });
+  latest.current = { theme, options, camera, onCameraChange, onCellClick, mode, firstPerson };
+
+  // Active touch points for pinch-to-zoom.
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const pinch = useRef<Pinch | null>(null);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -157,9 +170,44 @@ export function MazeCanvas({
     return () => ro.disconnect();
   }, [renderer, onHostSize]);
 
-  // Pointer position (normalised) for follow-pointer parallax and the mouse-following light.
+  // ---- pointer handling: parallax pointer, pinch zoom ------------------------------------
+
+  const distanceBetween = (): number => {
+    const pts = [...pointers.current.values()];
+    const a = pts[0];
+    const b = pts[1];
+    return a && b ? Math.hypot(a.x - b.x, a.y - b.y) : 0;
+  };
+
+  const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== 'touch') return;
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.current.size === 2) {
+      pinch.current = { startDistance: distanceBetween(), startZoom: latest.current.camera.zoom };
+    }
+  }, []);
+
+  const endPointer = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    pointers.current.delete(e.pointerId);
+    if (pointers.current.size < 2) pinch.current = null;
+  }, []);
+
   const onPointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
+      if (pointers.current.has(e.pointerId)) {
+        pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      }
+      const active = pinch.current;
+      if (active && pointers.current.size >= 2 && !latest.current.firstPerson) {
+        const d = distanceBetween();
+        if (active.startDistance > 0 && d > 0) {
+          const zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, active.startZoom * (d / active.startDistance)));
+          if (Math.abs(zoom - latest.current.camera.zoom) > 1e-3) {
+            latest.current.onCameraChange?.({ ...latest.current.camera, zoom });
+          }
+        }
+        return;
+      }
       if (!renderer) return;
       const rect = e.currentTarget.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) return;
@@ -173,10 +221,14 @@ export function MazeCanvas({
     [renderer],
   );
 
-  const onPointerLeave = useCallback(() => {
-    renderer?.setPointer(null);
-    renderer?.requestRender();
-  }, [renderer]);
+  const onPointerLeave = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      endPointer(e);
+      renderer?.setPointer(null);
+      renderer?.requestRender();
+    },
+    [renderer, endPointer],
+  );
 
   return (
     <div
@@ -186,7 +238,10 @@ export function MazeCanvas({
       aria-label={label}
       tabIndex={0}
       className={cn('relative min-h-0 flex-1 touch-none overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset', className)}
+      onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
+      onPointerUp={endPointer}
+      onPointerCancel={endPointer}
       onPointerLeave={onPointerLeave}
     >
       {error ? (

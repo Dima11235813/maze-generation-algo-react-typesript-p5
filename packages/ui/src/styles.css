@@ -126,3 +126,35 @@
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
 }
+
+/* ---- Touch ergonomics (WCAG 2.5.8 target size, no double-tap zoom delay) ---------------- */
+@layer base {
+  button,
+  [role='button'],
+  [role='switch'],
+  [role='radio'],
+  [role='slider'],
+  [role='combobox'],
+  a {
+    touch-action: manipulation;
+  }
+}
+
+@media (pointer: coarse) {
+  /* Toolbar controls grow to a comfortable 44px hit area on touch devices. */
+  [role='toolbar'] button,
+  [role='toolbar'] [role='combobox'],
+  [role='toolbar'] input,
+  [role='dialog'] button,
+  [role='dialog'] [role='combobox'] {
+    min-height: 2.75rem;
+  }
+  [role='toolbar'] button:not(:has(span:not(.sr-only))),
+  [role='toolbar'] [role='switch'] {
+    min-width: 2.75rem;
+  }
+  [role='slider'] {
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+  }
+}
