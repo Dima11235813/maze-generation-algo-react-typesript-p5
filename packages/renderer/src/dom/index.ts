@@ -99,7 +99,7 @@ class DomGridRenderer implements DomRenderer {
   private lastWindow: RowWindow = { start: 0, end: 0 };
 
   constructor(opts: RendererFactoryOptions) {
-    this.events = (opts.events ?? {}) as DomRendererEvents;
+    this.events = (opts.events ?? {});
   }
 
   get element(): HTMLElement | null {
@@ -194,7 +194,7 @@ class DomGridRenderer implements DomRenderer {
   }
 
   setEvents(events: RendererEvents): void {
-    this.events = events as DomRendererEvents;
+    this.events = events;
   }
 
   resize(): void {
@@ -310,7 +310,7 @@ class DomGridRenderer implements DomRenderer {
         el.setAttribute('role', 'gridcell');
         el.setAttribute('aria-colindex', String(c + 1));
         el.className = `${CLASS_ROOT}__cell`;
-        el.dataset['cell'] = String(cell);
+        el.dataset.cell = String(cell);
         el.tabIndex = cell === focusTarget ? 0 : -1;
         el.setAttribute('aria-label', this.cellName(maze, cell));
         if (this.isCurrentLocation(cell)) el.setAttribute('aria-current', 'location');
@@ -342,7 +342,7 @@ class DomGridRenderer implements DomRenderer {
       existing.every((b, i) => b.textContent === items[i]?.label);
     if (same) {
       existing.forEach((b, i) => {
-        b.dataset['cell'] = String(items[i]?.cell ?? NO_CELL);
+        b.dataset.cell = String(items[i]?.cell ?? NO_CELL);
       });
       return;
     }
@@ -351,7 +351,7 @@ class DomGridRenderer implements DomRenderer {
       const b = document.createElement('button');
       b.type = 'button';
       b.textContent = item.label;
-      b.dataset['cell'] = String(item.cell);
+      b.dataset.cell = String(item.cell);
       b.className = `${CLASS_ROOT}__link`;
       b.addEventListener('click', this.onLinkClick);
       frag.appendChild(b);
@@ -418,7 +418,12 @@ class DomGridRenderer implements DomRenderer {
     if (total <= VIRTUALIZE_ABOVE_CELLS || height <= WINDOW_ROWS) return { start: 0, end: height };
     // Keep the previous window while the anchor stays inside it (less churn for readers).
     const prev = this.lastWindow;
-    if (prev.end > prev.start && anchorRow >= prev.start && anchorRow < prev.end && prev.end <= height) {
+    if (
+      prev.end > prev.start &&
+      anchorRow >= prev.start &&
+      anchorRow < prev.end &&
+      prev.end <= height
+    ) {
       return prev;
     }
     let start = anchorRow - Math.floor(WINDOW_ROWS / 2);
@@ -495,7 +500,7 @@ class DomGridRenderer implements DomRenderer {
   private readonly onFocusIn = (e: FocusEvent): void => {
     const target = e.target;
     if (!(target instanceof HTMLElement)) return;
-    const raw = target.dataset['cell'];
+    const raw = target.dataset.cell;
     if (raw === undefined) return;
     this.hasFocus = true;
     const cell = Number(raw);
@@ -517,7 +522,7 @@ class DomGridRenderer implements DomRenderer {
   private readonly onLinkClick = (e: Event): void => {
     const btn = e.currentTarget;
     if (!(btn instanceof HTMLElement)) return;
-    const cell = Number(btn.dataset['cell']);
+    const cell = Number(btn.dataset.cell);
     if (Number.isInteger(cell) && cell >= 0) this.focusCell(cell);
   };
 
@@ -567,10 +572,10 @@ function nowMs(): number {
 
 function scheduleFrame(cb: () => void): number {
   if (typeof requestAnimationFrame === 'function') return requestAnimationFrame(cb);
-  return setTimeout(cb, 0) as unknown as number;
+  return setTimeout(cb, 0);
 }
 
 function cancelFrame(id: number): void {
   if (typeof cancelAnimationFrame === 'function') cancelAnimationFrame(id);
-  else clearTimeout(id as unknown as ReturnType<typeof setTimeout>);
+  else clearTimeout(id);
 }

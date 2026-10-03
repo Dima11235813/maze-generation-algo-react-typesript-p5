@@ -7,3 +7,4 @@ export * from './color';
 export * from './layout';
 export * from './overlay';
 export * from './camera';
+export * from './tree';

@@ -29,6 +29,7 @@ import {
   type SegmentBuffer,
 } from '../layout';
 import { SOLVE_TINT_ALPHA, solveMarkColor } from '../overlay';
+import { TreeScene, smoothstep } from '../tree';
 import type {
   CameraState,
   FirstPersonState,
@@ -39,6 +40,7 @@ import type {
   RendererEvents,
   RendererFactoryOptions,
 } from '../types';
+import { drawTree2d, nearestTreeCell } from './tree';
 
 const DEFAULT_CAMERA: CameraState = { preset: 'top', followPointer: false, zoom: 1 };
 /** CSS pixels of breathing room around the maze at zoom 1. */
@@ -91,6 +93,11 @@ class Canvas2dRenderer implements Renderer {
   private layout: Layout = { scale: 1, ox: 0, oy: 0 };
   private downX = 0;
   private downY = 0;
+  /** Tree view state while `options.tree` asks for a 2D tree layout; null otherwise. */
+  private treeScene: TreeScene | null = null;
+  private treeX = new Float64Array(0);
+  private treeY = new Float64Array(0);
+  private lastFrameTime = 0;
 
   constructor(opts: RendererFactoryOptions) {
     this.theme = opts.theme;
@@ -122,7 +129,7 @@ class Canvas2dRenderer implements Renderer {
     canvas.addEventListener('pointerup', this.onPointerUp);
 
     if (typeof ResizeObserver !== 'undefined') {
-      this.observer = new ResizeObserver(() => this.resize());
+      this.observer = new ResizeObserver(() => { this.resize(); });
       this.observer.observe(host);
     }
     this.resize();
@@ -193,14 +200,14 @@ class Canvas2dRenderer implements Renderer {
   requestRender(): void {
     if (this.rafId !== null || this.timerId !== null || !this.ctx) return;
     if (typeof requestAnimationFrame === 'function') {
-      this.rafId = requestAnimationFrame(() => {
+      this.rafId = requestAnimationFrame((time) => {
         this.rafId = null;
-        this.draw();
+        this.draw(time);
       });
     } else {
       this.timerId = setTimeout(() => {
         this.timerId = null;
-        this.draw();
+        this.draw(this.lastFrameTime + 16);
       }, 16);
     }
   }
@@ -217,6 +224,7 @@ class Canvas2dRenderer implements Renderer {
     this.gen = null;
     this.solve = null;
     this.segments = null;
+    this.treeScene = null;
     this.cellColorCache.clear();
   }
 
@@ -263,6 +271,16 @@ class Canvas2dRenderer implements Renderer {
   private cellFromClient(clientX: number, clientY: number): CellId | null {
     const rect = this.canvas?.getBoundingClientRect();
     if (!rect || !this.maze) return null;
+    if (this.treeScene && smoothstep(this.treeScene.morph) > 0.5) {
+      return nearestTreeCell(
+        this.treeScene,
+        this.treeX,
+        this.treeY,
+        (clientX - rect.left) * this.dpr,
+        (clientY - rect.top) * this.dpr,
+        16 * this.dpr,
+      );
+    }
     const { scale, ox, oy } = this.layout;
     if (!(scale > 0)) return null;
     const lx = ((clientX - rect.left) * this.dpr - ox) / scale;
@@ -308,9 +326,12 @@ class Canvas2dRenderer implements Renderer {
     };
   }
 
-  private draw(): void {
+  private draw(time?: number): void {
     const ctx = this.ctx;
     if (!ctx) return;
+    const now = time ?? (this.lastFrameTime > 0 ? this.lastFrameTime + 16 : 0);
+    const dt = this.lastFrameTime > 0 ? Math.min(100, Math.max(0, now - this.lastFrameTime)) : 16;
+    this.lastFrameTime = now;
     const { theme, widthPx: W, heightPx: H } = this;
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -336,6 +357,14 @@ class Canvas2dRenderer implements Renderer {
     for (let c = 0; c <= w; c++) xs[c] = Math.round(layout.ox + c * px);
     for (let r = 0; r <= h; r++) ys[r] = Math.round(layout.oy + r * px);
 
+    const view = this.options.tree;
+    if (view && view.layout !== '3d') {
+      this.drawTreeView(ctx, maze, xs, ys, px, dt);
+      return;
+    }
+    this.treeScene = null;
+    this.lastFrameTime = 0;
+
     this.drawCells(ctx, maze, xs, ys);
     if (this.options.showGrid) this.drawGrid(ctx, xs, ys, w, h);
     if (this.solve) this.drawSolveTint(ctx, this.solve, xs, ys, w, h);
@@ -347,6 +376,60 @@ class Canvas2dRenderer implements Renderer {
     }
     if (this.options.showStartGoal) this.drawMarkers(ctx, maze, xs, ys, px);
     if (this.fp) this.drawAvatar(ctx, maze, this.fp, xs, ys, px);
+  }
+
+  /**
+   * Tree view: the maze fades out while its passages are pulled into the tree. Keeps
+   * requesting frames while the tree is still easing into place.
+   */
+  private drawTreeView(
+    ctx: CanvasRenderingContext2D,
+    maze: MazeState,
+    xs: Float64Array,
+    ys: Float64Array,
+    px: number,
+    dt: number,
+  ): void {
+    const view = this.options.tree;
+    if (!view) return;
+    const scene = (this.treeScene ??= new TreeScene());
+    scene.update(maze, this.gen, view);
+    scene.step(dt, view.morph, this.options.reducedMotion);
+
+    const fade = 1 - smoothstep(scene.morph / 0.35);
+    if (fade > 0.01) {
+      ctx.globalAlpha = fade;
+      this.drawCells(ctx, maze, xs, ys);
+      this.drawWalls(ctx, maze, xs, ys, this.layout.scale);
+      ctx.globalAlpha = 1;
+    }
+    const n = maze.grid.width * maze.grid.height;
+    if (this.treeX.length !== n) {
+      this.treeX = new Float64Array(n);
+      this.treeY = new Float64Array(n);
+    }
+    const w = maze.grid.width;
+    drawTree2d({
+      ctx,
+      width: this.widthPx,
+      height: this.heightPx,
+      dpr: this.dpr,
+      zoom: this.camera.zoom,
+      theme: this.theme,
+      view,
+      showStartGoal: this.options.showStartGoal,
+      maze,
+      gen: this.gen,
+      solve: this.solve,
+      scene,
+      gridX: (c) => this.centerX(xs, c % w),
+      gridY: (c) => this.centerY(ys, Math.floor(c / w)),
+      cellPx: px,
+      outX: this.treeX,
+      outY: this.treeY,
+    });
+    if (scene.animating) this.requestRender();
+    else this.lastFrameTime = 0;
   }
 
   private cellCss(visitCount: number, depthAtVisit: number): string {

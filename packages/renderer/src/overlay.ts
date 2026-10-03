@@ -3,7 +3,13 @@
  * (three.js instance colours). The 2D adapter layers translucent fills instead, which is
  * visually equivalent for the alphas used here.
  */
-import { CellMark, NO_CELL, type CellId, type GenerationTracker, type SolveTracker } from '@maze/core';
+import {
+  CellMark,
+  NO_CELL,
+  type CellId,
+  type GenerationTracker,
+  type SolveTracker,
+} from '@maze/core';
 import { legacyCellColor, legacyCurrentColor, mix, resolve } from './color';
 import type { RGB, RenderTheme } from './types';
 

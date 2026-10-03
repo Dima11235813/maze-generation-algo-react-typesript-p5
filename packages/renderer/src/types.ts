@@ -35,6 +35,20 @@ export interface RenderTheme {
 
 export type ViewMode = '2d' | '3d';
 
+/** How the Tree view arranges the maze's spanning tree (proj-mgmt/19-tree-view.md). */
+export type TreeLayoutKind = 'tidy' | 'radial' | '3d';
+
+export interface TreeViewOptions {
+  /** `tidy` and `radial` draw on the 2D canvas, `3d` on the three.js renderer. */
+  readonly layout: TreeLayoutKind;
+  /** 0 = cells where they sit in the maze, 1 = the tree. The renderer eases towards it. */
+  readonly morph: number;
+  /** Changing this replays the "pull the paths out" animation from the flat maze. */
+  readonly pullKey?: number;
+  /** Cells to emphasise (e.g. the branch selected in the tree outline). */
+  readonly highlight?: readonly CellId[] | null;
+}
+
 export interface RenderOptions {
   /** Pixel size of one cell at zoom 1 (2D) / world unit scale (3D). */
   readonly cellSize: number;
@@ -58,6 +72,8 @@ export interface RenderOptions {
   readonly showStartGoal: boolean;
   /** Disables parallax, mouse-following light and eased camera moves. */
   readonly reducedMotion: boolean;
+  /** Draw the maze as its spanning tree instead of the grid (null or absent: the grid). */
+  readonly tree?: TreeViewOptions | null;
 }
 
 export type CameraPreset = 'top' | 'tilt' | 'isometric' | 'low' | 'front';
