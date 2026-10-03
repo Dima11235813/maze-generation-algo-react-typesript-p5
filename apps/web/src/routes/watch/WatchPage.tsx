@@ -15,6 +15,9 @@ import { ViewControls, handleViewKey } from '../play/ViewControls';
 import { usePrefs } from '../../state/prefs';
 import { MazeCanvas, type HostSize } from '../play/MazeCanvas';
 import { useKeyboardShortcuts } from '../play/useKeyboardShortcuts';
+import { useBreakpoint } from '../../layout/breakpoints';
+import { Section } from '../../layout/Section';
+import { Workspace } from '../../layout/Workspace';
 import { OverlayLegend } from './OverlayLegend';
 import { PseudocodePanel } from './PseudocodePanel';
 import { SolverPicker } from './SolverPicker';
@@ -55,6 +58,8 @@ export function WatchPage() {
   const prefs = usePrefs();
   const reducedMotion = useReducedMotion();
   const announce = useAnnouncer();
+  const bp = useBreakpoint();
+  const touchLayout = bp === 'mobile' || bp === 'tablet';
 
   const [hostSize, setHostSize] = useState<HostSize | null>(null);
   const [mode, setMode] = useState<ViewMode>('2d');
@@ -307,49 +312,81 @@ export function WatchPage() {
         }}
         seed={snap.seed}
       />
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        <div className="relative flex min-h-[40vh] flex-1 flex-col">
-          <MazeCanvas
-            session={session}
-            mode={mode}
-            theme={theme}
-            options={options}
-            camera={camera}
-            firstPerson={null}
-            maze={snap.state}
-            generation={null}
-            solve={session.solveTracker}
-            label={canvasLabel}
-            onHostSize={onHostSize}
-            onCameraChange={onCameraChange}
-          />
-          <ViewControls
-            mode={mode}
-            controls={viewControls}
-            className="absolute right-2 bottom-14"
-          />
-          <TimelineBar
-            snapshot={armed ? playerSnap : null}
-            label="Solve"
-            onSeek={(n) => {
-              session.seek(n);
-            }}
-            onRestart={() => {
-              session.restart();
-            }}
-          />
-        </div>
-        <aside
-          aria-label="Solver details"
-          className="flex w-full shrink-0 flex-col gap-5 overflow-y-auto border-t border-border bg-panel p-3 lg:w-[26rem] lg:border-t-0 lg:border-l"
-        >
-          <SolverPicker value={solverId} onChange={changeSolver} />
-          <WatchStats snap={snap} tracker={session.solveTracker} player={playerSnap} />
-          <PseudocodePanel listing={listing} currentLine={currentLine} />
-          <StepLog entries={entries} verbosity={verbosity} onVerbosityChange={setVerbosity} />
-          <OverlayLegend theme={theme} />
-        </aside>
-      </div>
+      <Workspace
+        stageLabel="Maze"
+        stage={
+          <>
+            <div className="relative flex min-h-0 flex-1 flex-col">
+              <MazeCanvas
+                session={session}
+                mode={mode}
+                theme={theme}
+                options={options}
+                camera={camera}
+                firstPerson={null}
+                maze={snap.state}
+                generation={null}
+                solve={session.solveTracker}
+                label={canvasLabel}
+                onHostSize={onHostSize}
+                onCameraChange={onCameraChange}
+                pageScroll={touchLayout}
+              />
+              <ViewControls
+                mode={mode}
+                controls={viewControls}
+                className="absolute right-2 bottom-2"
+              />
+            </div>
+            <TimelineBar
+              snapshot={armed ? playerSnap : null}
+              label="Solve"
+              onSeek={(n) => {
+                session.seek(n);
+              }}
+              onRestart={() => {
+                session.restart();
+              }}
+            />
+          </>
+        }
+        left={
+          <Section
+            id="watch-solver"
+            title="Solver"
+            summary={solvers.get(solverId)?.meta.name}
+            defaultOpen={bp === 'wide'}
+          >
+            <SolverPicker value={solverId} onChange={changeSolver} hideHeading />
+          </Section>
+        }
+        side={
+          <>
+            <Section id="watch-stats" title="Statistics">
+              <WatchStats
+                snap={snap}
+                tracker={session.solveTracker}
+                player={playerSnap}
+                hideHeading
+              />
+            </Section>
+            <Section id="watch-pseudocode" title="Pseudo-code" summary={listing.title}>
+              <PseudocodePanel listing={listing} currentLine={currentLine} hideHeading />
+            </Section>
+            <Section id="watch-steplog" title="Step log" defaultOpen={!touchLayout}>
+              <StepLog
+                entries={entries}
+                verbosity={verbosity}
+                onVerbosityChange={setVerbosity}
+                hideHeading
+              />
+            </Section>
+            <Section id="watch-legend" title="Legend" defaultOpen={bp !== 'mobile'}>
+              <OverlayLegend theme={theme} hideHeading />
+            </Section>
+          </>
+        }
+      />
     </div>
   );
 }

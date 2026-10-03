@@ -2,21 +2,31 @@ import { resolve, rgbToCss, type RenderTheme } from '@maze/renderer';
 
 export interface OverlayLegendProps {
   theme: RenderTheme;
+  hideHeading?: boolean;
 }
 
 /** Colour swatches with text labels so the solve overlay is never colour-only. */
-export function OverlayLegend({ theme }: OverlayLegendProps) {
-  const items: { label: string; color: string; shape?: 'square' | 'disc' | 'diamond' | 'line' }[] = [
-    { label: 'Frontier (discovered, waiting)', color: rgbToCss(resolve(theme, theme.solveFrontier)) },
-    { label: 'Expanded (visited)', color: rgbToCss(resolve(theme, theme.solveExpanded)) },
-    { label: 'Dead end', color: rgbToCss(resolve(theme, theme.solveDeadEnd)) },
-    { label: 'Path found', color: rgbToCss(resolve(theme, theme.path)), shape: 'line' },
-    { label: 'Start', color: rgbToCss(resolve(theme, theme.start)), shape: 'disc' },
-    { label: 'Goal', color: rgbToCss(resolve(theme, theme.goal)), shape: 'diamond' },
-  ];
+export function OverlayLegend({ theme, hideHeading = false }: OverlayLegendProps) {
+  const items: { label: string; color: string; shape?: 'square' | 'disc' | 'diamond' | 'line' }[] =
+    [
+      {
+        label: 'Frontier (discovered, waiting)',
+        color: rgbToCss(resolve(theme, theme.solveFrontier)),
+      },
+      { label: 'Expanded (visited)', color: rgbToCss(resolve(theme, theme.solveExpanded)) },
+      { label: 'Dead end', color: rgbToCss(resolve(theme, theme.solveDeadEnd)) },
+      { label: 'Path found', color: rgbToCss(resolve(theme, theme.path)), shape: 'line' },
+      { label: 'Start', color: rgbToCss(resolve(theme, theme.start)), shape: 'disc' },
+      { label: 'Goal', color: rgbToCss(resolve(theme, theme.goal)), shape: 'diamond' },
+    ];
   return (
     <section aria-labelledby="legend-heading" className="flex flex-col gap-2">
-      <h3 id="legend-heading" className="text-xs font-semibold tracking-wide text-muted uppercase">
+      <h3
+        id="legend-heading"
+        className={
+          hideHeading ? 'sr-only' : 'text-xs font-semibold tracking-wide text-muted uppercase'
+        }
+      >
         Legend
       </h3>
       <ul className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs" role="list">

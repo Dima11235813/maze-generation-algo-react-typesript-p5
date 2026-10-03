@@ -13,7 +13,14 @@ export interface LogEntry {
 export const LOG_LIMIT = 200;
 
 /** Step kinds shown at the "expansions only" verbosity. */
-const COARSE: ReadonlySet<SolveStep['t']> = new Set(['expand', 'deadend', 'path', 'fail', 'done', 'move']);
+const COARSE: ReadonlySet<SolveStep['t']> = new Set([
+  'expand',
+  'deadend',
+  'path',
+  'fail',
+  'done',
+  'move',
+]);
 
 export function isCoarse(kind: SolveStep['t']): boolean {
   return COARSE.has(kind);
@@ -22,11 +29,17 @@ export function isCoarse(kind: SolveStep['t']): boolean {
 export interface StepLogProps {
   entries: readonly LogEntry[];
   verbosity: LogVerbosity;
+  hideHeading?: boolean;
   onVerbosityChange(v: LogVerbosity): void;
 }
 
 /** Textual log of the last steps (a11y alternative to the canvas overlay). */
-export function StepLog({ entries, verbosity, onVerbosityChange }: StepLogProps) {
+export function StepLog({
+  entries,
+  verbosity,
+  onVerbosityChange,
+  hideHeading = false,
+}: StepLogProps) {
   const listRef = useRef<HTMLOListElement>(null);
   const visible = verbosity === 'all' ? entries : entries.filter((e) => isCoarse(e.kind));
 
@@ -39,7 +52,12 @@ export function StepLog({ entries, verbosity, onVerbosityChange }: StepLogProps)
   return (
     <section aria-labelledby="steplog-heading" className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
-        <h3 id="steplog-heading" className="text-xs font-semibold tracking-wide text-muted uppercase">
+        <h3
+          id="steplog-heading"
+          className={
+            hideHeading ? 'sr-only' : 'text-xs font-semibold tracking-wide text-muted uppercase'
+          }
+        >
           Step log
         </h3>
         <ToggleGroup
@@ -70,7 +88,10 @@ export function StepLog({ entries, verbosity, onVerbosityChange }: StepLogProps)
         ) : (
           visible.map((e) => (
             <li key={e.seq} className="flex gap-2">
-              <span className="w-10 shrink-0 text-right font-mono tabular-nums text-muted" aria-hidden="true">
+              <span
+                className="w-10 shrink-0 text-right font-mono tabular-nums text-muted"
+                aria-hidden="true"
+              >
                 {e.seq}
               </span>
               <span>{e.text}</span>

@@ -10,7 +10,10 @@ export const VERBOSITY_LABELS: Record<NarratorVerbosity, string> = {
   high: 'Every step (rate limited)',
 };
 
-export const VERBOSITY_OPTIONS = NARRATOR_VERBOSITIES.map((v) => ({ value: v, label: VERBOSITY_LABELS[v] }));
+export const VERBOSITY_OPTIONS = NARRATOR_VERBOSITIES.map((v) => ({
+  value: v,
+  label: VERBOSITY_LABELS[v],
+}));
 
 export interface StepLogPanelProps {
   entries: readonly NarratorLogEntry[];
@@ -24,20 +27,32 @@ export interface StepLogPanelProps {
  * Textual step log (S3.7, proj-mgmt/10 section 3). The list is a `role="log"` live region, so
  * while this panel is open the narrator does not also feed the hidden announcer.
  */
-export function StepLogPanel({ entries, verbosity, onVerbosityChange, onClose, onClear }: StepLogPanelProps) {
+export function StepLogPanel({
+  entries,
+  verbosity,
+  onVerbosityChange,
+  onClose,
+  onClear,
+}: StepLogPanelProps) {
   const endRef = useRef<HTMLLIElement>(null);
   useEffect(() => {
-    endRef.current?.scrollIntoView?.({ block: 'end' });
+    // Scroll only the log's own viewport; scrollIntoView would also scroll the page on phones.
+    const end = endRef.current;
+    const viewport = end?.closest('[data-radix-scroll-area-viewport]');
+    if (viewport instanceof HTMLElement) viewport.scrollTop = viewport.scrollHeight;
   }, [entries.length]);
 
   return (
     <aside
       aria-labelledby="step-log-title"
       data-testid="step-log"
-      className="flex max-h-56 min-h-0 flex-col border-t border-border bg-panel"
+      className="flex h-72 min-h-0 shrink-0 flex-col rounded-lg border border-border bg-panel"
     >
       <div className="flex flex-wrap items-center gap-3 px-3 py-1.5">
-        <h2 id="step-log-title" className="text-xs font-semibold tracking-wide text-muted uppercase">
+        <h2
+          id="step-log-title"
+          className="text-xs font-semibold tracking-wide text-muted uppercase"
+        >
           Step log
         </h2>
         <div className="min-w-56">
@@ -59,7 +74,13 @@ export function StepLogPanel({ entries, verbosity, onVerbosityChange, onClose, o
         </Button>
       </div>
       <ScrollArea className="min-h-0 flex-1 px-3 pb-2">
-        <ol role="log" aria-live="polite" aria-relevant="additions" aria-label="Narrated steps" className="flex flex-col gap-0.5 text-sm">
+        <ol
+          role="log"
+          aria-live="polite"
+          aria-relevant="additions"
+          aria-label="Narrated steps"
+          className="flex flex-col gap-0.5 text-sm"
+        >
           {entries.length === 0 ? (
             <li className="text-muted">Nothing narrated yet. Generate or solve a maze.</li>
           ) : (

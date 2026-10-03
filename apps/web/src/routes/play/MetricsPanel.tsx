@@ -6,6 +6,8 @@ import type { MazeSession, SessionSnapshot } from '../../maze/session';
 export interface MetricsPanelProps {
   session: MazeSession;
   snap: SessionSnapshot;
+  /** `strip`: one scrolling row; `tiles`: a wrapping grid for side panels and phones. */
+  layout?: 'strip' | 'tiles';
 }
 
 function Stat({ label, value }: { label: string; value: ReactNode }) {
@@ -21,7 +23,7 @@ function Stat({ label, value }: { label: string; value: ReactNode }) {
  * Live generation/solve metrics (P-22) with correct mm:ss formatting (P-27).
  * One horizontally scrollable row on phones, wrapping rows from `md` up.
  */
-export function MetricsPanel({ session, snap }: MetricsPanelProps) {
+export function MetricsPanel({ session, snap, layout = 'strip' }: MetricsPanelProps) {
   const gen = useStepPlayer(snap.genPlayer);
   const solve = useStepPlayer(snap.solvePlayer);
   const tracker = session.generation;
@@ -33,9 +35,16 @@ export function MetricsPanel({ session, snap }: MetricsPanelProps) {
   return (
     <dl
       aria-label="Maze metrics"
-      className="flex flex-nowrap items-start gap-x-6 gap-y-2 overflow-x-auto border-t border-border bg-panel px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:flex-wrap md:overflow-visible"
+      className={
+        layout === 'tiles'
+          ? 'grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3 lg:grid-cols-2'
+          : 'flex flex-nowrap items-start gap-x-6 gap-y-2 overflow-x-auto border-t border-border bg-panel px-3 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:flex-wrap md:overflow-visible'
+      }
     >
-      <Stat label="Grid" value={snap.width && snap.height ? `${snap.width} x ${snap.height}` : '-'} />
+      <Stat
+        label="Grid"
+        value={snap.width && snap.height ? `${snap.width} x ${snap.height}` : '-'}
+      />
       <Stat label="Cells" value={snap.width * snap.height || '-'} />
       {tracker ? (
         <>
@@ -44,20 +53,29 @@ export function MetricsPanel({ session, snap }: MetricsPanelProps) {
           <Stat label="Backtracks" value={tracker.backtracks} />
           <Stat label="Depth / max" value={`${tracker.depth} / ${tracker.maxDepth}`} />
           <Stat label="Elapsed" value={formatDuration(gen?.elapsedMs ?? 0)} />
-          <Stat label="Rate" value={gen?.status === 'playing' ? `${rate} steps/s` : rate ? `${rate} avg` : '-'} />
+          <Stat
+            label="Rate"
+            value={gen?.status === 'playing' ? `${rate} steps/s` : rate ? `${rate} avg` : '-'}
+          />
         </>
       ) : null}
       {m ? (
         <>
           <Stat label="Dead ends" value={`${m.deadEnds} (${Math.round(m.deadEndRatio * 100)}%)`} />
-          <Stat label="Solution" value={m.solutionLength === null ? 'none' : `${m.solutionLength} moves`} />
+          <Stat
+            label="Solution"
+            value={m.solutionLength === null ? 'none' : `${m.solutionLength} moves`}
+          />
           <Stat label="Diameter" value={m.diameter} />
           <Stat label="Junctions" value={m.junctions} />
         </>
       ) : null}
       {solveTracker && solve ? (
         <>
-          <Stat label="Solver" value={snap.solverId ? (solvers.get(snap.solverId)?.meta.name ?? snap.solverId) : '-'} />
+          <Stat
+            label="Solver"
+            value={snap.solverId ? (solvers.get(snap.solverId)?.meta.name ?? snap.solverId) : '-'}
+          />
           <Stat label="Expanded" value={solveTracker.expanded} />
           <Stat label="Discovered" value={solveTracker.discovered} />
           <Stat

@@ -15,7 +15,15 @@ export interface CompareLaneProps {
 }
 
 /** One side-by-side lane: algorithm heading, 2D canvas and a status line. */
-export function CompareLane({ index, algoId, session, theme, options, camera, onHostSize }: CompareLaneProps) {
+export function CompareLane({
+  index,
+  algoId,
+  session,
+  theme,
+  options,
+  camera,
+  onHostSize,
+}: CompareLaneProps) {
   const snap = useSyncExternalStore(session.subscribe, session.getSnapshot, session.getSnapshot);
   const name = generators.get(algoId)?.meta.name ?? algoId;
   const tracker = session.generation;
@@ -29,7 +37,7 @@ export function CompareLane({ index, algoId, session, theme, options, camera, on
     <section
       aria-labelledby={`lane-${index}-heading`}
       data-testid="compare-lane"
-      className="flex min-h-[18rem] min-w-0 flex-1 flex-col rounded-md border border-border bg-panel"
+      className="flex h-[60svh] min-h-[18rem] min-w-0 flex-col rounded-md border border-border bg-panel md:h-[46svh] 2xl:h-[56svh]"
     >
       <header className="flex items-center justify-between gap-2 border-b border-border px-2 py-1">
         <h3 id={`lane-${index}-heading`} className="truncate text-sm font-medium">
@@ -49,7 +57,6 @@ export function CompareLane({ index, algoId, session, theme, options, camera, on
         solve={null}
         label={`${name}: ${snap.width && snap.height ? `${snap.width} by ${snap.height} cells, ` : ''}${status}`}
         onHostSize={onHostSize}
-        className="min-h-[16rem]"
       />
     </section>
   );

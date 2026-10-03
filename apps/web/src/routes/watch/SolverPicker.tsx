@@ -6,14 +6,27 @@ export interface SolverPickerProps {
   value: string;
   onChange(id: string): void;
   disabled?: boolean;
+  /** The surrounding Section already shows a visible title. */
+  hideHeading?: boolean;
 }
 
 /** Radio list of every solver in the registry with its tags and summary. */
-export function SolverPicker({ value, onChange, disabled }: SolverPickerProps) {
+export function SolverPicker({
+  value,
+  onChange,
+  disabled,
+  hideHeading = false,
+}: SolverPickerProps) {
   const name = useId();
   return (
     <fieldset className="flex flex-col gap-2" disabled={disabled}>
-      <legend className="text-xs font-semibold tracking-wide text-muted uppercase">Solver</legend>
+      <legend
+        className={
+          hideHeading ? 'sr-only' : 'text-xs font-semibold tracking-wide text-muted uppercase'
+        }
+      >
+        Solver
+      </legend>
       <ul className="flex flex-col gap-1.5" role="list">
         {solvers.all.map((s) => {
           const id = `${name}-${s.meta.id}`;
@@ -35,7 +48,7 @@ export function SolverPicker({ value, onChange, disabled }: SolverPickerProps) {
                     name={name}
                     value={s.meta.id}
                     checked={selected}
-                    onChange={() => onChange(s.meta.id)}
+                    onChange={() => { onChange(s.meta.id); }}
                     className="h-3.5 w-3.5 accent-[var(--accent)]"
                   />
                   <span className="font-medium">{s.meta.name}</span>

@@ -25,6 +25,9 @@ import { OptionsSheet } from './OptionsSheet';
 import { PlayToolbar } from './PlayToolbar';
 import { SaveDialog } from './SaveDialog';
 import { StepLogPanel } from './StepLogPanel';
+import { useBreakpoint } from '../../layout/breakpoints';
+import { Section } from '../../layout/Section';
+import { Workspace } from '../../layout/Workspace';
 import { TimelineBar } from './TimelineBar';
 import { useKeyboardShortcuts } from './useKeyboardShortcuts';
 import { ViewControls, handleViewKey } from './ViewControls';
@@ -48,6 +51,8 @@ export function PlayPage() {
   const coarsePointer = useCoarsePointer();
   const narrowLayout = useIsNarrow();
   const showTouchPad = coarsePointer || narrowLayout;
+  const bp = useBreakpoint();
+  const touchLayout = bp === 'mobile' || bp === 'tablet';
   const announce = useAnnouncer();
 
   const [hostSize, setHostSize] = useState<HostSize | null>(null);
@@ -452,122 +457,136 @@ export function PlayPage() {
         }}
       />
 
-      <div className="relative flex min-h-0 flex-1 flex-col">
-        <MazeCanvas
-          session={session}
-          mode={prefs.mode}
-          theme={theme}
-          options={options}
-          camera={camera}
-          firstPerson={snap.firstPerson}
-          maze={snap.state}
-          generation={session.generation}
-          solve={session.solveTracker}
-          label={canvasLabel}
-          onHostSize={onHostSize}
-          onCameraChange={onCameraChange}
-          onCellClick={onCellClick}
-          onRenderer={onRenderer}
-        />
-        {snap.firstPerson ? null : (
-          <ViewControls
-            mode={prefs.mode}
-            controls={viewControls}
-            className="absolute right-2 bottom-2 sm:right-3 sm:bottom-3"
-          />
-        )}
-        {needsRefit && !snap.firstPerson ? (
-          <div className="absolute top-2 right-2 left-2 flex items-center justify-between gap-2 rounded-md border border-border bg-panel/95 px-3 py-1.5 text-xs shadow sm:top-3 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 sm:justify-start">
-            <span className="hidden sm:inline">
-              The window changed size. The maze keeps its shape; regenerate to refit.
-            </span>
-            <span className="sm:hidden">Screen size changed.</span>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => {
-                generate(snap.seed);
+      <Workspace
+        stageLabel="Maze"
+        stage={
+          <>
+            <div className="relative flex min-h-0 flex-1 flex-col">
+              <MazeCanvas
+                session={session}
+                mode={prefs.mode}
+                theme={theme}
+                options={options}
+                camera={camera}
+                firstPerson={snap.firstPerson}
+                maze={snap.state}
+                generation={session.generation}
+                solve={session.solveTracker}
+                label={canvasLabel}
+                onHostSize={onHostSize}
+                onCameraChange={onCameraChange}
+                onCellClick={onCellClick}
+                onRenderer={onRenderer}
+                pageScroll={touchLayout}
+              />
+              {snap.firstPerson ? null : (
+                <ViewControls
+                  mode={prefs.mode}
+                  controls={viewControls}
+                  className="absolute right-2 bottom-2 sm:right-3 sm:bottom-3"
+                />
+              )}
+              {needsRefit && !snap.firstPerson ? (
+                <div className="absolute top-2 right-2 left-2 flex items-center justify-between gap-2 rounded-md border border-border bg-panel/95 px-3 py-1.5 text-xs shadow sm:top-3 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 sm:justify-start">
+                  <span className="hidden sm:inline">
+                    The window changed size. The maze keeps its shape; regenerate to refit.
+                  </span>
+                  <span className="sm:hidden">Screen size changed.</span>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => {
+                      generate(snap.seed);
+                    }}
+                  >
+                    Regenerate to refit
+                  </Button>
+                </div>
+              ) : null}
+              {snap.sourceName && snap.phase === 'ready' ? (
+                <div className="absolute top-3 left-3 rounded-md border border-border bg-panel/95 px-2 py-1 text-xs shadow">
+                  Loaded: <strong>{snap.sourceName}</strong>
+                </div>
+              ) : null}
+              {snap.firstPerson && snap.state ? (
+                <FirstPersonHud
+                  state={snap.state}
+                  firstPerson={snap.firstPerson}
+                  reachedGoal={snap.reachedGoal}
+                  onExit={() => {
+                    session.exitFirstPerson();
+                  }}
+                  showPad={showTouchPad}
+                  onForward={() => {
+                    session.fpForward();
+                  }}
+                  onBackward={() => {
+                    session.fpBackward();
+                  }}
+                  onTurnLeft={() => {
+                    session.fpTurnLeft();
+                  }}
+                  onTurnRight={() => {
+                    session.fpTurnRight();
+                  }}
+                  onPeekChange={(peek) => {
+                    session.setPeek(peek);
+                  }}
+                />
+              ) : null}
+              {prefs.screenReaderGrid ? (
+                <A11yGridHost
+                  session={session}
+                  theme={theme}
+                  options={options}
+                  firstPerson={snap.firstPerson}
+                  maze={snap.state}
+                  generation={session.generation}
+                  solve={session.solveTracker}
+                  onDescribe={(text) => {
+                    announce(text);
+                  }}
+                  onRenderer={onA11yRenderer}
+                />
+              ) : null}
+            </div>
+            <TimelineBar
+              snapshot={playerSnap}
+              label={
+                activePlayer !== null && activePlayer === snap.solvePlayer ? 'Solve' : 'Generation'
+              }
+              onSeek={(n) => {
+                session.seek(n);
               }}
-            >
-              Regenerate to refit
-            </Button>
-          </div>
-        ) : null}
-        {snap.sourceName && snap.phase === 'ready' ? (
-          <div className="absolute top-3 left-3 rounded-md border border-border bg-panel/95 px-2 py-1 text-xs shadow">
-            Loaded: <strong>{snap.sourceName}</strong>
-          </div>
-        ) : null}
-        {snap.firstPerson && snap.state ? (
-          <FirstPersonHud
-            state={snap.state}
-            firstPerson={snap.firstPerson}
-            reachedGoal={snap.reachedGoal}
-            onExit={() => {
-              session.exitFirstPerson();
-            }}
-            showPad={showTouchPad}
-            onForward={() => {
-              session.fpForward();
-            }}
-            onBackward={() => {
-              session.fpBackward();
-            }}
-            onTurnLeft={() => {
-              session.fpTurnLeft();
-            }}
-            onTurnRight={() => {
-              session.fpTurnRight();
-            }}
-            onPeekChange={(peek) => {
-              session.setPeek(peek);
-            }}
-          />
-        ) : null}
-        {prefs.screenReaderGrid ? (
-          <A11yGridHost
-            session={session}
-            theme={theme}
-            options={options}
-            firstPerson={snap.firstPerson}
-            maze={snap.state}
-            generation={session.generation}
-            solve={session.solveTracker}
-            onDescribe={(text) => {
-              announce(text);
-            }}
-            onRenderer={onA11yRenderer}
-          />
-        ) : null}
-      </div>
-
-      {prefs.showStepLog ? (
-        <StepLogPanel
-          entries={narrationLog}
-          verbosity={prefs.narratorVerbosity}
-          onVerbosityChange={(v) => {
-            prefs.set('narratorVerbosity', v);
-          }}
-          onClose={() => {
-            prefs.set('showStepLog', false);
-          }}
-          onClear={() => {
-            narrator.clearLog();
-          }}
-        />
-      ) : null}
-
-      <TimelineBar
-        snapshot={playerSnap}
-        label={activePlayer !== null && activePlayer === snap.solvePlayer ? 'Solve' : 'Generation'}
-        onSeek={(n) => {
-          session.seek(n);
-        }}
-        onRestart={() => {
-          session.restart();
-        }}
+              onRestart={() => {
+                session.restart();
+              }}
+            />
+          </>
+        }
+        side={
+          <>
+            <Section id="play-metrics" title="Metrics" defaultOpen={bp !== 'mobile'}>
+              <MetricsPanel session={session} snap={snap} layout="tiles" />
+            </Section>
+            {prefs.showStepLog ? (
+              <StepLogPanel
+                entries={narrationLog}
+                verbosity={prefs.narratorVerbosity}
+                onVerbosityChange={(v) => {
+                  prefs.set('narratorVerbosity', v);
+                }}
+                onClose={() => {
+                  prefs.set('showStepLog', false);
+                }}
+                onClear={() => {
+                  narrator.clearLog();
+                }}
+              />
+            ) : null}
+          </>
+        }
       />
-      <MetricsPanel session={session} snap={snap} />
 
       <OptionsSheet
         open={optionsOpen}
