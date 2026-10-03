@@ -2,10 +2,23 @@
   "name": "@maze/config",
   "version": "0.1.0",
   "private": true,
-  "description": "Shared TypeScript, Prettier and tooling presets for the Maze Lab monorepo",
+  "description": "Shared TypeScript, ESLint, Prettier and tooling presets for the Maze Lab monorepo",
   "files": [
     "tsconfig.base.json",
     "tsconfig.node.json",
-    "tsconfig.react.json"
-  ]
+    "tsconfig.react.json",
+    "eslint/"
+  ],
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.11.0",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-import-x": "^4.17.1",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.13.0",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.0"
+  }
 }

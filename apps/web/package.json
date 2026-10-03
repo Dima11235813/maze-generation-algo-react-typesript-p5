@@ -12,7 +12,10 @@
     "test": "vitest run",
     "icons": "node scripts/generate-icons.mjs",
     "size": "node scripts/check-bundle-size.mjs",
-    "postbuild": "node scripts/check-bundle-size.mjs"
+    "postbuild": "node scripts/check-bundle-size.mjs",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@maze/core": "workspace:*",
@@ -34,6 +37,7 @@
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.7",
+    "@types/node": "^26.6.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@types/three": "^0.186.0",
