@@ -56,22 +56,18 @@ Open that URL on a phone on the same Wi-Fi. The layout collapses to a one-row to
 mode shows an on-screen D-pad. `pnpm --filter @maze/web build && pnpm --filter @maze/web preview`
 serves the production build (installable as a PWA) on port 4173.
 
-## What works today (parity phase)
+## What works today
 
-The current milestone is feature parity with the legacy app on the new stack
-([checklist](./proj-mgmt/09-modernization-migration.md#4-feature-parity-checklist)):
+- **Play**: generate with any of 12 algorithms, watch it in 2D or 3D (extruded walls, the
+  stack-depth cube projection and mirror), orbit/tilt/zoom the view, run it in first person
+  (keyboard or touch D-pad, peek), solve it with any of 12 solvers, save and load mazes locally.
+- **Timeline**: play, pause, step, step back, restart and scrub through generation and solving.
+- **Watch**: a solver step by step with pseudo-code highlighting, a step log, statistics and a legend.
+- **Explore**: the algorithm catalogue and Compare mode (2-4 generators on one seed in lockstep).
+- Responsive on phone, tablet and desktop; installable PWA; screen-reader maze grid and narration.
 
-- Recursive-backtracker generation animated through the Step Player (play, pause, step, speed).
-- 2D top-down view and 3D view with extruded walls, the stack-depth "cube projection" that rises
-  and falls as the backtracker explores and returns, optional mirror, and depth culling.
-- Camera presets, follow-pointer parallax, wheel zoom, inverse colours, colour and size options
-  persisted locally (legacy `localStorage` settings are imported once).
-- First-person "Run Maze" mode with keyboard movement and peek.
-- Real solvers (BFS, DFS) animated over the finished maze; metrics panel; save/load to a local
-  library as `MazeDocument` v1.
-
-Next phases (solver catalogue, race mode, backend, accounts, learn mode, desktop/mobile) are in
-[`proj-mgmt/14-roadmap.md`](./proj-mgmt/14-roadmap.md).
+What comes next is in [`proj-mgmt/17-work-queue.md`](./proj-mgmt/17-work-queue.md); agents follow
+[`AGENTS.md`](./AGENTS.md). The longer roadmap is [`proj-mgmt/14-roadmap.md`](./proj-mgmt/14-roadmap.md).
 
 ## Adding an algorithm
 
