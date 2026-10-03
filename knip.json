@@ -1,46 +1,12 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignore": ["apps/legacy/**", "**/*.d.ts"],
-  "ignoreWorkspaces": ["apps/legacy"],
-  "ignoreBinaries": ["lefthook", "turbo"],
   "workspaces": {
-    ".": {
-      "entry": ["eslint.config.js", "commitlint.config.js", "packages/config/eslint/index.js"],
-      "project": ["*.js", "packages/config/eslint/**/*.js"]
-    },
-    "apps/web": {
-      "entry": [
-        "src/main.tsx",
-        "src/test/setup.ts",
-        "vite.config.ts",
-        "vitest.config.ts",
-        "playwright.config.ts",
-        "e2e/**/*.ts"
-      ],
-      "project": ["src/**/*.{ts,tsx}", "e2e/**/*.ts"]
-    },
-    "packages/core": {
-      "entry": ["src/index.ts", "vitest.config.ts", "test/**/*.ts"],
-      "project": ["src/**/*.ts", "test/**/*.ts"]
-    },
-    "packages/player": {
-      "entry": ["src/index.ts", "src/react.ts", "vitest.config.ts", "test/**/*.ts"],
-      "project": ["src/**/*.ts", "test/**/*.ts"]
-    },
-    "packages/renderer": {
-      "entry": [
-        "src/index.ts",
-        "src/canvas2d/index.ts",
-        "src/three/index.ts",
-        "vitest.config.ts",
-        "test/**/*.ts"
-      ],
-      "project": ["src/**/*.ts", "test/**/*.ts"]
-    },
-    "packages/ui": {
-      "entry": ["src/index.ts", "src/styles.css"],
-      "project": ["src/**/*.{ts,tsx}"]
-    },
+    ".": {},
+    "apps/web": {},
+    "packages/core": {},
+    "packages/player": {},
+    "packages/renderer": {},
+    "packages/ui": {},
     "packages/config": {
       "entry": ["eslint/index.js"],
       "project": ["eslint/**/*.js"]
