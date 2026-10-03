@@ -10,8 +10,8 @@ describe('landing page', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: /maze lab/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /start playing/i })).toHaveAttribute('href', '/play');
-    // Play, Watch and Explore are live; Race, Build and Learn are still previews.
-    expect(screen.getAllByText(/coming soon/i)).toHaveLength(3);
+    // Play, Watch, Race and Explore are live; Build and Learn are still previews.
+    expect(screen.getAllByText(/coming soon/i)).toHaveLength(2);
     expect(screen.getByRole('link', { name: /skip to main content/i })).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: /primary/i })).toBeInTheDocument();
   });

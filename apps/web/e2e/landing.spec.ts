@@ -11,9 +11,9 @@ test.describe('landing page', () => {
       await expect(page.getByRole('heading', { name: new RegExp(`^${title}`) })).toBeVisible();
     }
     await expect(page.getByRole('link', { name: 'Open Play' })).toBeVisible();
-    // Play, Watch and Explore are live; Race, Build and Learn are previews.
-    await expect(page.getByRole('link', { name: /^Open/ })).toHaveCount(3);
-    await expect(page.getByRole('link', { name: /^Preview/ })).toHaveCount(3);
+    // Play, Watch, Race and Explore are live; Build and Learn are previews.
+    await expect(page.getByRole('link', { name: /^Open/ })).toHaveCount(4);
+    await expect(page.getByRole('link', { name: /^Preview/ })).toHaveCount(2);
 
     await page.getByRole('link', { name: 'Start playing' }).click();
     await expect(page).toHaveURL(/\/play$/);

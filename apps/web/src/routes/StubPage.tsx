@@ -14,10 +14,10 @@ export function StubPage({ title, description, phase }: StubPageProps) {
       <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
       <p className="text-muted">{description}</p>
       <p className="text-sm text-muted">
-        Planned for <strong className="text-fg">{phase}</strong> of the roadmap in the project
-        plan (<code className="font-mono text-xs">proj-mgmt/14-roadmap.md</code>). The engine
-        behind it already exists in <code className="font-mono text-xs">@maze/core</code>; this
-        page is the user experience still to be built.
+        Planned for <strong className="text-fg">{phase}</strong> of the roadmap in the project plan
+        (<code className="font-mono text-xs">proj-mgmt/14-roadmap.md</code>). The engine behind it
+        already exists in <code className="font-mono text-xs">@maze/core</code>; this page is the
+        user experience still to be built.
       </p>
       <div>
         <Button asChild variant="secondary" size="sm">
@@ -33,16 +33,6 @@ export function WatchPage() {
     <StubPage
       title="Watch"
       description="Pick a solver and watch it run with play, pause, step and speed controls, frontier and visited overlays, pseudo-code highlighting and a data-structure view."
-      phase="Phase 3"
-    />
-  );
-}
-
-export function RacePage() {
-  return (
-    <StubPage
-      title="Race"
-      description="Two solvers on the same seeded maze, advancing in lockstep. Compare steps, nodes expanded and path optimality, then share the replay."
       phase="Phase 3"
     />
   );

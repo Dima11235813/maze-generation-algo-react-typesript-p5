@@ -76,6 +76,16 @@ test.describe('accessibility (axe)', () => {
     await expectNoSeriousViolations(page, '/play + options');
   });
 
+  test('race page after a finished race has no serious or critical violations', async ({
+    page,
+  }) => {
+    await page.goto('/race?seed=axe-race&agents=bfs,astar,dfs&size=12');
+    const controls = page.getByRole('toolbar', { name: 'Race controls' });
+    await controls.getByRole('button', { name: 'Run to end' }).click();
+    await expect(page.getByRole('table', { name: 'Final ranking' })).toBeVisible();
+    await expectNoSeriousViolations(page, '/race');
+  });
+
   test('stub pages have no serious or critical violations', async ({ page }) => {
     await page.goto('/learn');
     await expect(page.getByRole('heading', { level: 1, name: 'Learn' })).toBeVisible();
