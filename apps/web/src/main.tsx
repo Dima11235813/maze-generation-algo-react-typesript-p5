@@ -3,6 +3,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createAppRouter } from './app/router';
 import './index.css';
+import { registerPwa } from './pwa/register';
 
 const router = createAppRouter();
 
@@ -14,3 +15,5 @@ createRoot(container).render(
     <RouterProvider router={router} />
   </StrictMode>,
 );
+
+registerPwa();

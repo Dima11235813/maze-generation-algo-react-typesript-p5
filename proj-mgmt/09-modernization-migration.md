@@ -181,13 +181,13 @@ it works but needs polish; "Later" means deliberately deferred to a named story.
 | P-18 Solve | Done (redesign) | BFS and DFS from the registry, animated overlay + path, metrics |
 | P-19 Save | Done (redesign) | local library of `MazeDocument`s with thumbnails, load/delete |
 | P-20 exit texture -> start/goal markers | Done | disc + cone/diamond markers, toggle |
-| P-21 light rig | Partial | implemented; intensities need a visual tuning pass |
+| P-21 light rig | Done | `LIGHT_PRESET` in `packages/renderer/src/three/lights.ts`: decay-0 scene lights (ambient 0.35, hemisphere 0.55, key 1.35, below 0.45, blue rim 0.7) plus inverse-square pointer pool and first-person headlamp scaled by cell size |
 | P-22 / P-27 metrics panel | Done | live strip incl. dead ends, solution, diameter, `mm:ss` |
 | P-23 app shell | Done | header nav, routes, options/library sheets, live region |
 | P-24 / P-25 template leftovers, throwing route | Dropped | as planned |
 | P-26 landing page | Done | six pillar cards, Play active |
 
-Known follow-ups from this pass: tune light intensities (P-21), a11y `dom` renderer adapter
+Known follow-ups from this pass: a11y `dom` renderer adapter
 (S3.4), Playwright E2E + axe (S4.8), PWA manifest/offline shell (S4.1), bundle split of the
 main chunk (currently ~525 kB minified before gzip).
 

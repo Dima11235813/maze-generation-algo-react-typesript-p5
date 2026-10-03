@@ -9,5 +9,8 @@ export default defineConfig({
       include: ['src/**/*.ts'],
       thresholds: { lines: 90, functions: 90, branches: 80, statements: 90 },
     },
+    benchmark: {
+      include: ['bench/**/*.bench.ts'],
+    },
   },
 });

@@ -1,5 +1,6 @@
 import { TooltipProvider } from '@maze/ui';
 import { Outlet } from '@tanstack/react-router';
+import { PwaUpdateToast } from '../pwa/PwaUpdateToast';
 import { AnnouncerProvider } from './Announcer';
 import { AppHeader } from './AppHeader';
 import { useApplyDocumentPrefs } from './documentPrefs';
@@ -16,6 +17,7 @@ export function RootLayout() {
         <main id="main" tabIndex={-1} className="flex min-h-0 flex-1 flex-col outline-none">
           <Outlet />
         </main>
+        <PwaUpdateToast />
       </TooltipProvider>
     </AnnouncerProvider>
   );
