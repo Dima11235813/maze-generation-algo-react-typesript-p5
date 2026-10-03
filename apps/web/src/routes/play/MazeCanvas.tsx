@@ -35,6 +35,11 @@ export interface MazeCanvasProps {
   onCellClick?: (cell: number | null) => void;
   onRenderer?: (renderer: Renderer | null) => void;
   className?: string;
+  /**
+   * Let vertical swipes over the maze scroll the page (phone/tablet layouts). Horizontal drags
+   * still orbit the 3D view and two-finger pinches still zoom.
+   */
+  pageScroll?: boolean;
 }
 
 const ZOOM_MIN = 0.25;
@@ -67,6 +72,7 @@ export function MazeCanvas({
   onCellClick,
   onRenderer,
   className,
+  pageScroll = false,
 }: MazeCanvasProps) {
   const factories = useRendererFactories();
   const hostRef = useRef<HTMLDivElement>(null);
@@ -114,10 +120,17 @@ export function MazeCanvas({
     };
   }, [mode, factories]);
 
+  // Renderers set `touch-action: none` on their own canvas; relax it to vertical panning when the
+  // surrounding layout scrolls, otherwise a full-width maze would trap the page on touch screens.
+  useEffect(() => {
+    const canvas = hostRef.current?.querySelector('canvas');
+    if (canvas) canvas.style.touchAction = pageScroll ? 'pan-y' : 'none';
+  }, [renderer, pageScroll]);
+
   useEffect(() => {
     onRenderer?.(renderer);
     session.setRenderRequest(() => renderer?.requestRender());
-    return () => session.setRenderRequest(() => undefined);
+    return () => { session.setRenderRequest(() => undefined); };
   }, [renderer, session, onRenderer]);
 
   useEffect(() => {
@@ -167,7 +180,7 @@ export function MazeCanvas({
     });
     ro.observe(host);
     report(host.clientWidth, host.clientHeight);
-    return () => ro.disconnect();
+    return () => { ro.disconnect(); };
   }, [renderer, onHostSize]);
 
   // ---- pointer handling: parallax pointer, pinch zoom ------------------------------------
@@ -201,7 +214,10 @@ export function MazeCanvas({
       if (active && pointers.current.size >= 2 && !latest.current.firstPerson) {
         const d = distanceBetween();
         if (active.startDistance > 0 && d > 0) {
-          const zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, active.startZoom * (d / active.startDistance)));
+          const zoom = Math.min(
+            ZOOM_MAX,
+            Math.max(ZOOM_MIN, active.startZoom * (d / active.startDistance)),
+          );
           if (Math.abs(zoom - latest.current.camera.zoom) > 1e-3) {
             latest.current.onCameraChange?.({ ...latest.current.camera, zoom });
           }
@@ -237,7 +253,12 @@ export function MazeCanvas({
       role="img"
       aria-label={label}
       tabIndex={0}
-      className={cn('relative min-h-0 flex-1 touch-none overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset', className)}
+      className={cn(
+        'relative min-h-0 flex-1 overflow-hidden',
+        pageScroll ? 'touch-pan-y' : 'touch-none',
+        'outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
+        className,
+      )}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={endPointer}
@@ -245,7 +266,10 @@ export function MazeCanvas({
       onPointerLeave={onPointerLeave}
     >
       {error ? (
-        <div role="alert" className="absolute inset-x-0 top-0 m-3 rounded-md border border-danger bg-panel p-3 text-sm">
+        <div
+          role="alert"
+          className="absolute inset-x-0 top-0 m-3 rounded-md border border-danger bg-panel p-3 text-sm"
+        >
           The {mode.toUpperCase()} renderer could not be loaded: {error}
         </div>
       ) : null}

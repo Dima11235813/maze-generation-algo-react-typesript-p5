@@ -100,14 +100,17 @@ export function CompareMetricsTable({ lanes }: CompareMetricsTableProps) {
     ),
   );
   return (
-    <section aria-labelledby="compare-metrics-heading" className="flex flex-col gap-2 px-3 py-2">
+    <section
+      aria-labelledby="compare-metrics-heading"
+      className="mx-2 mb-2 flex flex-col gap-2 rounded-lg border border-border bg-panel px-3 py-2"
+    >
       <h2
         id="compare-metrics-heading"
         className="text-xs font-semibold tracking-wide text-muted uppercase"
       >
         Metrics
       </h2>
-      <div className="overflow-x-auto">
+      <div className="relative overflow-x-auto">
         <table className="w-full text-left text-sm" data-testid="compare-metrics">
           <caption className="sr-only">
             Maze metrics per generator. The best value in each column is highlighted and marked

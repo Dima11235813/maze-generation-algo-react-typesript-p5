@@ -5,17 +5,27 @@ export interface PseudocodePanelProps {
   listing: PseudocodeListing;
   /** 0-based line currently executing, or null. */
   currentLine: number | null;
+  hideHeading?: boolean;
 }
 
 /** Pseudo-code with the executing line highlighted (and exposed via aria-current). */
-export function PseudocodePanel({ listing, currentLine }: PseudocodePanelProps) {
+export function PseudocodePanel({
+  listing,
+  currentLine,
+  hideHeading = false,
+}: PseudocodePanelProps) {
   return (
     <section aria-labelledby="pseudocode-heading" className="flex flex-col gap-2">
-      <h3 id="pseudocode-heading" className="text-xs font-semibold tracking-wide text-muted uppercase">
+      <h3
+        id="pseudocode-heading"
+        className={
+          hideHeading ? 'sr-only' : 'text-xs font-semibold tracking-wide text-muted uppercase'
+        }
+      >
         Pseudo-code: {listing.title}
       </h3>
       <ol
-        className="rounded-md border border-border bg-panel-2 p-2 font-mono text-xs leading-5"
+        className="overflow-x-auto rounded-md border border-border bg-panel-2 p-2 font-mono text-xs leading-5"
         aria-label={`${listing.title} pseudo-code`}
       >
         {listing.lines.map((line, i) => {

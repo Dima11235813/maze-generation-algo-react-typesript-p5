@@ -10,6 +10,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
+  cn,
 } from '@maze/ui';
 import { Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { ArrowLeft, Dices, FastForward, Pause, Play, RefreshCw, SkipForward } from 'lucide-react';
@@ -277,7 +278,7 @@ export function ComparePage() {
 
   return (
     <div
-      className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:overflow-hidden"
+      className="relative flex min-h-0 flex-1 flex-col overflow-y-auto"
       data-sessions-version={version}
     >
       <div
@@ -452,12 +453,14 @@ export function ComparePage() {
         </fieldset>
       </details>
 
-      <div className="flex flex-none flex-col gap-2 p-2 lg:min-h-0 lg:flex-1 lg:overflow-auto">
+      <div className="flex flex-none flex-col gap-2 p-2">
         <div
-          className="grid gap-2"
-          style={{
-            gridTemplateColumns: `repeat(${narrow ? 1 : Math.min(lanes.algos.length, 2)}, minmax(0, 1fr))`,
-          }}
+          className={cn(
+            'grid grid-cols-1 gap-2',
+            lanes.algos.length >= 2 && 'md:grid-cols-2',
+            lanes.algos.length === 3 && 'xl:grid-cols-3',
+            lanes.algos.length === 4 && '2xl:grid-cols-4',
+          )}
         >
           {laneEntries.map((l, i) => (
             <CompareLane
