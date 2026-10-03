@@ -31,7 +31,12 @@ export interface AlgorithmCardProps {
 /** One registry entry: everything the Explore catalogue knows comes from `AlgorithmMeta`. */
 export function AlgorithmCard({ meta }: AlgorithmCardProps) {
   return (
-    <Card data-testid="algorithm-card" data-family={meta.family} data-algorithm-id={meta.id} className="h-full">
+    <Card
+      data-testid="algorithm-card"
+      data-family={meta.family}
+      data-algorithm-id={meta.id}
+      className="h-full"
+    >
       <CardHeader>
         <CardTitle className="flex items-start justify-between gap-2 text-base">
           <span>{meta.name}</span>
@@ -57,20 +62,29 @@ export function AlgorithmCard({ meta }: AlgorithmCardProps) {
         {meta.tags.length > 0 ? (
           <ul className="flex flex-wrap gap-1" aria-label={`${meta.name} tags`}>
             {meta.tags.map((t) => (
-              <li key={t} className="rounded-full border border-border px-1.5 py-px text-[10px] text-muted">
+              <li
+                key={t}
+                className="rounded-full border border-border px-1.5 py-px text-[10px] text-muted"
+              >
                 {t}
               </li>
             ))}
           </ul>
         ) : null}
         <div>
-          <h4 className="mb-1 text-[10px] font-semibold tracking-wide text-muted uppercase">Parameters</h4>
+          <h4 className="mb-1 text-[10px] font-semibold tracking-wide text-muted uppercase">
+            Parameters
+          </h4>
           {meta.params.length === 0 ? (
             <p className="text-muted">None</p>
           ) : (
             <ul className="flex flex-wrap gap-1" aria-label={`${meta.name} parameters`}>
               {meta.params.map((p) => (
-                <li key={p.key} className="rounded-md bg-panel-2 px-1.5 py-0.5 font-mono text-[10px]" title={p.description}>
+                <li
+                  key={p.key}
+                  className="rounded-md bg-panel-2 px-1.5 py-0.5 font-mono text-[10px]"
+                  title={p.description}
+                >
                   {describeParam(p)}
                 </li>
               ))}

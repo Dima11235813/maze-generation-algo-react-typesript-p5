@@ -26,9 +26,11 @@ import type {
   RendererEvents,
   RendererFactoryOptions,
 } from '../types';
+import { TreeScene, smoothstep } from '../tree';
 import { LightRig } from './lights';
 import { MazeMeshes } from './meshes';
 import { CameraRig } from './rig';
+import { TreeMeshes } from './treeMeshes';
 
 const DEFAULT_CAMERA: CameraState = { preset: 'tilt', followPointer: false, zoom: 1 };
 const CLICK_SLOP_PX = 6;
@@ -56,6 +58,9 @@ class ThreeRenderer implements Renderer {
   private readonly rig = new CameraRig();
   private lights: LightRig | null = null;
   private meshes: MazeMeshes | null = null;
+  /** Tree view (layout '3d'): scene state and meshes; null in the maze view. */
+  private treeScene: TreeScene | null = null;
+  private treeMeshes: TreeMeshes | null = null;
 
   private maze: MazeState | null = null;
   private gen: GenerationTracker | null = null;
@@ -163,9 +168,10 @@ class ThreeRenderer implements Renderer {
   }
 
   setOptions(options: RenderOptions): void {
+    const wasTree = this.isTree3d();
     const rebuild = options.cellSize !== this.options.cellSize;
     this.options = options;
-    if (rebuild) this.buildMeshes();
+    if (rebuild || wasTree !== this.isTree3d()) this.buildMeshes();
     else this.meshes?.markDirty();
     this.updateCameraTarget();
     this.requestRender();
@@ -240,7 +246,8 @@ class ThreeRenderer implements Renderer {
     const dt = this.lastFrameTime > 0 ? Math.min(100, time - this.lastFrameTime) : 16;
     this.lastFrameTime = time;
 
-    const animating = this.rig.update(dt, this.options.reducedMotion);
+    let animating = this.rig.update(dt, this.options.reducedMotion);
+    animating = this.stepTree(dt) || animating;
     this.syncMeshes();
     gl.render(this.scene, this.rig.camera);
 
@@ -248,7 +255,52 @@ class ThreeRenderer implements Renderer {
     else this.lastFrameTime = 0;
   };
 
+  private isTree3d(): boolean {
+    return this.options.tree?.layout === '3d';
+  }
+
+  /** Advances the Tree view's eases; returns true while it is still moving. */
+  private stepTree(dt: number): boolean {
+    const view = this.options.tree;
+    const scene = this.treeScene;
+    if (!scene || !view || !this.maze) return false;
+    const rebuilt = scene.update(this.maze, this.gen, view);
+    const moving = scene.step(dt, view.morph, this.options.reducedMotion);
+    // The maze stays visible only while the tree is still mostly flat.
+    this.meshes?.setVisible(smoothstep(scene.morph) < 0.25);
+    if (moving || rebuilt) this.fitTree();
+    return moving;
+  }
+
+  /**
+   * Camera fit for the Tree view, blended with the morph: the flat maze's footprint at 0, the
+   * standing tree (centred on the floor plane) at 1. The rig eases between the distances.
+   */
+  private fitTree(): void {
+    const maze = this.maze;
+    if (!maze) return;
+    const cs = this.options.cellSize;
+    const { width, height } = mazeExtent(maze.grid, cs);
+    const treeH = TreeMeshes.treeHeight(maze, cs);
+    const t = smoothstep(this.treeScene?.morph ?? 0);
+    const mazeSide = Math.max(width, height);
+    const treeSide = Math.max(treeH * 0.3, 2 * (this.treeScene?.reach ?? 0.45) * treeH);
+    const side = mazeSide + (treeSide - mazeSide) * t;
+    const top = cs * this.options.wallHeight + (treeH / 2 - cs * this.options.wallHeight) * t;
+    this.rig.setExtent(side, side, cs, top, (-treeH / 2) * t);
+    this.updateCameraTarget();
+  }
+
   private syncMeshes(): void {
+    if (this.treeScene && this.treeMeshes) {
+      this.treeMeshes.sync({
+        theme: this.theme,
+        options: this.options,
+        gen: this.gen,
+        solve: this.solve,
+        scene: this.treeScene,
+      });
+    }
     this.meshes?.sync({
       theme: this.theme,
       options: this.options,
@@ -268,11 +320,21 @@ class ThreeRenderer implements Renderer {
   private buildMeshes(): void {
     this.meshes?.dispose();
     this.meshes = null;
+    this.treeMeshes?.dispose();
+    this.treeMeshes = null;
+    if (!this.isTree3d()) this.treeScene = null;
     if (!this.maze || !this.gl) return;
     this.meshes = new MazeMeshes(this.scene, this.maze);
     const cs = this.options.cellSize;
     const { width, height } = mazeExtent(this.maze.grid, cs);
-    this.rig.setExtent(width, height, cs, cs * this.options.wallHeight);
+    if (this.isTree3d()) {
+      this.treeScene ??= new TreeScene();
+      this.treeMeshes = new TreeMeshes(this.scene, this.maze);
+      this.fitTree();
+    } else {
+      this.meshes.setVisible(true);
+      this.rig.setExtent(width, height, cs, cs * this.options.wallHeight);
+    }
     this.lights?.fit(width, height, cs);
   }
 
@@ -402,7 +464,7 @@ class ThreeRenderer implements Renderer {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     if (Math.hypot(e.clientX - this.downX, e.clientY - this.downY) > CLICK_SLOP_PX) return;
     const maze = this.maze;
-    if (!maze) {
+    if (!maze || this.isTree3d()) {
       this.events.onCellClick?.(null, e);
       return;
     }
@@ -435,6 +497,9 @@ class ThreeRenderer implements Renderer {
     this.observer = null;
     this.meshes?.dispose();
     this.meshes = null;
+    this.treeMeshes?.dispose();
+    this.treeMeshes = null;
+    this.treeScene = null;
     this.lights?.dispose();
     this.lights = null;
     const gl = this.gl;

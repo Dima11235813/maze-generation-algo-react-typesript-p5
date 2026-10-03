@@ -20,6 +20,7 @@ export const PLAY_SHORTCUTS: readonly ShortcutGroup[] = [
     title: 'View',
     items: [
       { keys: ['T'], label: 'Toggle 2D / 3D' },
+      { keys: ['Y'], label: 'Tree view on / off (the maze as its spanning tree)' },
       { keys: ['V'], label: 'Cycle camera preset (3D)' },
       { keys: ['F'], label: 'Toggle follow pointer (3D)' },
       { keys: ['[', ']'], label: 'Rotate the view (3D); or drag the maze' },

@@ -1,4 +1,10 @@
-import { generators, type MazeMetrics } from '@maze/core';
+import {
+  generators,
+  treeMetrics,
+  type MazeMetrics,
+  type MazeState,
+  type TreeMetrics,
+} from '@maze/core';
 import { cn } from '@maze/ui';
 import type { MazeSession } from '../../maze/session';
 
@@ -8,7 +14,7 @@ interface Column {
   /** Which value wins the column. */
   best: 'min' | 'max';
   rule: string;
-  value(m: MazeMetrics, steps: number): number | null;
+  value(m: MazeMetrics, steps: number, tree: TreeMetrics | null): number | null;
   format(v: number | null): string;
 }
 
@@ -56,6 +62,30 @@ export const COLUMNS: readonly Column[] = [
     format: int,
   },
   {
+    key: 'treeHeight',
+    label: 'Tree height',
+    best: 'max',
+    rule: 'tallest',
+    value: (_m, _s, t) => t?.height ?? null,
+    format: int,
+  },
+  {
+    key: 'sideBranches',
+    label: 'Side branches',
+    best: 'max',
+    rule: 'most',
+    value: (_m, _s, t) => t?.trunkBranches ?? null,
+    format: int,
+  },
+  {
+    key: 'branching',
+    label: 'Branching',
+    best: 'max',
+    rule: 'bushiest',
+    value: (_m, _s, t) => t?.branchingFactor ?? null,
+    format: (v) => (v === null ? '-' : v.toFixed(2)),
+  },
+  {
     key: 'steps',
     label: 'Gen. steps',
     best: 'min',
@@ -64,6 +94,18 @@ export const COLUMNS: readonly Column[] = [
     format: int,
   },
 ];
+
+/** Tree shape per finished maze, computed once per maze object. */
+const treeCache = new WeakMap<MazeState, TreeMetrics>();
+function treeOf(state: MazeState | null): TreeMetrics | null {
+  if (!state) return null;
+  let t = treeCache.get(state);
+  if (!t) {
+    t = treeMetrics(state);
+    treeCache.set(state, t);
+  }
+  return t;
+}
 
 /** Indices of lanes holding the best value for a column; empty when all lanes tie or <2 lanes. */
 export function bestLanes(values: readonly (number | null)[], best: 'min' | 'max'): Set<number> {
@@ -90,12 +132,13 @@ export function CompareMetricsTable({ lanes }: CompareMetricsTableProps) {
       algoId: l.algoId,
       name: generators.get(l.algoId)?.meta.name ?? l.algoId,
       metrics: snap.metrics,
+      tree: snap.phase === 'ready' ? treeOf(snap.state) : null,
       steps,
     };
   });
   const bestByColumn = COLUMNS.map((c) =>
     bestLanes(
-      rows.map((r) => (r.metrics ? c.value(r.metrics, r.steps) : null)),
+      rows.map((r) => (r.metrics ? c.value(r.metrics, r.steps, r.tree) : null)),
       c.best,
     ),
   );
@@ -145,7 +188,7 @@ export function CompareMetricsTable({ lanes }: CompareMetricsTableProps) {
                   ) : null}
                 </th>
                 {COLUMNS.map((c, ci) => {
-                  const v = r.metrics ? c.value(r.metrics, r.steps) : null;
+                  const v = r.metrics ? c.value(r.metrics, r.steps, r.tree) : null;
                   const isBest = bestByColumn[ci]?.has(i) ?? false;
                   return (
                     <td

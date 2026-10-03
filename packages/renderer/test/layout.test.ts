@@ -80,10 +80,30 @@ describe('segmentEndpoints', () => {
 
   it('maps the four walls of cell (row 1, col 2) with cs = 10', () => {
     const cell = 1 * 4 + 2;
-    expect(segmentEndpoints(grid, cell, Dir.N, 10, out)).toEqual({ x0: 20, y0: 10, x1: 30, y1: 10 });
-    expect(segmentEndpoints(grid, cell, Dir.E, 10, out)).toEqual({ x0: 30, y0: 10, x1: 30, y1: 20 });
-    expect(segmentEndpoints(grid, cell, Dir.S, 10, out)).toEqual({ x0: 20, y0: 20, x1: 30, y1: 20 });
-    expect(segmentEndpoints(grid, cell, Dir.W, 10, out)).toEqual({ x0: 20, y0: 10, x1: 20, y1: 20 });
+    expect(segmentEndpoints(grid, cell, Dir.N, 10, out)).toEqual({
+      x0: 20,
+      y0: 10,
+      x1: 30,
+      y1: 10,
+    });
+    expect(segmentEndpoints(grid, cell, Dir.E, 10, out)).toEqual({
+      x0: 30,
+      y0: 10,
+      x1: 30,
+      y1: 20,
+    });
+    expect(segmentEndpoints(grid, cell, Dir.S, 10, out)).toEqual({
+      x0: 20,
+      y0: 20,
+      x1: 30,
+      y1: 20,
+    });
+    expect(segmentEndpoints(grid, cell, Dir.W, 10, out)).toEqual({
+      x0: 20,
+      y0: 10,
+      x1: 20,
+      y1: 20,
+    });
   });
 });
 

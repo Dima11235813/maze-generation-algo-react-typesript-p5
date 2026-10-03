@@ -26,16 +26,27 @@ describe('/explore catalogue', () => {
     renderAt('/explore');
     await screen.findByRole('heading', { name: /^explore$/i });
     const cards = screen.getAllByTestId('algorithm-card');
-    expect(cards).toHaveLength(generators.all.length + solvers.all.length + postprocessors.all.length);
-    expect(cards.filter((c) => c.dataset['family'] === 'generator')).toHaveLength(generators.all.length);
-    expect(cards.filter((c) => c.dataset['family'] === 'solver')).toHaveLength(solvers.all.length);
+    expect(cards).toHaveLength(
+      generators.all.length + solvers.all.length + postprocessors.all.length,
+    );
+    expect(cards.filter((c) => c.dataset.family === 'generator')).toHaveLength(
+      generators.all.length,
+    );
+    expect(cards.filter((c) => c.dataset.family === 'solver')).toHaveLength(solvers.all.length);
     for (const g of generators.all) expect(screen.getByText(g.meta.name)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /open compare mode/i })).toHaveAttribute('href', expect.stringContaining('/explore/compare'));
+    expect(screen.getByRole('link', { name: /open compare mode/i })).toHaveAttribute(
+      'href',
+      expect.stringContaining('/explore/compare'),
+    );
   });
 
   it('describes parameters of every kind', () => {
-    expect(describeParam({ key: 'n', label: 'Size', kind: 'int', min: 1, max: 9, default: 3 })).toBe('Size: 1..9 (default 3)');
-    expect(describeParam({ key: 'b', label: 'Braid', kind: 'bool', default: true })).toBe('Braid: on | off (default on)');
+    expect(
+      describeParam({ key: 'n', label: 'Size', kind: 'int', min: 1, max: 9, default: 3 }),
+    ).toBe('Size: 1..9 (default 3)');
+    expect(describeParam({ key: 'b', label: 'Braid', kind: 'bool', default: true })).toBe(
+      'Braid: on | off (default on)',
+    );
     expect(
       describeParam({
         key: 'm',
@@ -48,9 +59,16 @@ describe('/explore catalogue', () => {
         default: 'random',
       }),
     ).toBe('Mode: Newest | Random (default Random)');
-    expect(describeParam({ key: 's', label: 'Start', kind: 'int', min: 0, max: Number.MAX_SAFE_INTEGER, default: 0 })).toBe(
-      'Start: 0..any (default 0)',
-    );
+    expect(
+      describeParam({
+        key: 's',
+        label: 'Start',
+        kind: 'int',
+        min: 0,
+        max: Number.MAX_SAFE_INTEGER,
+        default: 0,
+      }),
+    ).toBe('Start: 0..any (default 0)');
   });
 });
 

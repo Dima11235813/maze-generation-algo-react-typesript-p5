@@ -56,9 +56,19 @@ export function legacyCellColor(theme: RenderTheme, visitCount: number, depthAtV
 }
 
 /** Legacy `Cell.highlight`: translucent blue whose intensity fades with visit count. */
-export function legacyCurrentColor(theme: RenderTheme, visitCount: number): { color: RGB; alpha: number } {
+export function legacyCurrentColor(
+  theme: RenderTheme,
+  visitCount: number,
+): { color: RGB; alpha: number } {
   const b = 255 / (visitCount + 1) / 2;
-  return { color: resolve(theme, { r: theme.current.r, g: theme.current.g, b: clamp255(b + theme.current.b) }), alpha: 0.4 };
+  return {
+    color: resolve(theme, {
+      r: theme.current.r,
+      g: theme.current.g,
+      b: clamp255(b + theme.current.b),
+    }),
+    alpha: 0.4,
+  };
 }
 
 /** Linear interpolation between colours, t in [0, 1]. */

@@ -53,7 +53,8 @@ function mountRenderer(events: DomRendererEvents = {}): { r: DomRenderer; host: 
   return { r, host };
 }
 
-const cells = (host: HTMLElement) => Array.from(host.querySelectorAll<HTMLElement>('[role="gridcell"]'));
+const cells = (host: HTMLElement) =>
+  Array.from(host.querySelectorAll<HTMLElement>('[role="gridcell"]'));
 const name = (host: HTMLElement, cell: number) =>
   host.querySelector(`[role="gridcell"][data-cell="${cell}"]`)?.getAttribute('aria-label') ?? '';
 
@@ -79,7 +80,7 @@ describe('dom renderer: structure', () => {
     // Exactly one roving tab stop, on the start cell by default.
     const stops = cells(host).filter((c) => c.tabIndex === 0);
     expect(stops).toHaveLength(1);
-    expect(stops[0]?.dataset['cell']).toBe('0');
+    expect(stops[0]?.dataset.cell).toBe('0');
     expect(r.toDataURL()).toBe('');
     r.destroy();
     expect(host.children).toHaveLength(0);
@@ -87,7 +88,9 @@ describe('dom renderer: structure', () => {
 
   it('describes an empty renderer and recovers when a maze arrives', () => {
     const { r, host } = mountRenderer();
-    expect(host.querySelector('[role="grid"]')?.getAttribute('aria-label')).toBe('Maze grid, empty');
+    expect(host.querySelector('[role="grid"]')?.getAttribute('aria-label')).toBe(
+      'Maze grid, empty',
+    );
     r.setMaze(threeByThree());
     r.flush();
     expect(cells(host)).toHaveLength(9);
@@ -141,7 +144,7 @@ describe('dom renderer: structure', () => {
     expect(name(host, 5)).toContain('Player here, facing south, peeking.');
     expect(host.querySelector('[aria-current="location"]')?.getAttribute('data-cell')).toBe('5');
     // Entering first-person moves the roving tab stop to the player.
-    expect(cells(host).find((c) => c.tabIndex === 0)?.dataset['cell']).toBe('5');
+    expect(cells(host).find((c) => c.tabIndex === 0)?.dataset.cell).toBe('5');
   });
 });
 
@@ -149,12 +152,16 @@ describe('dom renderer: keyboard', () => {
   function key(host: HTMLElement, key: string, init: KeyboardEventInit = {}) {
     const grid = host.querySelector('[role="grid"]')!;
     const target = document.activeElement ?? grid;
-    target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init }));
+    target.dispatchEvent(
+      new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init }),
+    );
   }
 
   it('roves focus with arrows, Home/End and Ctrl+Home, and reports moves', () => {
     const moves: Array<[number, string]> = [];
-    const { r, host } = mountRenderer({ onCellFocus: (cell, reason) => moves.push([cell, reason]) });
+    const { r, host } = mountRenderer({
+      onCellFocus: (cell, reason) => moves.push([cell, reason]),
+    });
     r.setMaze(threeByThree());
     r.flush();
     r.focusCell(0);
@@ -181,7 +188,9 @@ describe('dom renderer: keyboard', () => {
     expect(r.getFocusedCell()).toBe(0);
     key(host, 'I');
     expect(moves.at(-1)).toEqual([0, 'describe']);
-    expect(moves.filter(([, why]) => why === 'move').map(([c]) => c)).toEqual([0, 1, 4, 3, 0, 2, 0, 8, 0]);
+    expect(moves.filter(([, why]) => why === 'move').map(([c]) => c)).toEqual([
+      0, 1, 4, 3, 0, 2, 0, 8, 0,
+    ]);
     // Exactly one tab stop at all times.
     expect(cells(host).filter((c) => c.tabIndex === 0)).toHaveLength(1);
   });
@@ -190,7 +199,9 @@ describe('dom renderer: keyboard', () => {
     const { r, host } = mountRenderer();
     r.setMaze(threeByThree());
     r.flush();
-    const goal = Array.from(host.querySelectorAll('button')).find((b) => b.textContent === 'Go to goal')!;
+    const goal = Array.from(host.querySelectorAll('button')).find(
+      (b) => b.textContent === 'Go to goal',
+    )!;
     goal.click();
     expect(r.getFocusedCell()).toBe(8);
     expect(document.activeElement?.getAttribute('data-cell')).toBe('8');

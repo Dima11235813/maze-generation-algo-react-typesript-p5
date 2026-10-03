@@ -116,6 +116,11 @@ export class MazeMeshes {
     scene.add(this.group);
   }
 
+  /** Shows or hides the whole maze (the Tree view fades it out). */
+  setVisible(visible: boolean): void {
+    this.group.visible = visible;
+  }
+
   /** Force a rebuild on the next `sync` (theme or options changed). */
   markDirty(): void {
     this.dirty = true;
@@ -237,7 +242,8 @@ export class MazeMeshes {
   private updateCubes(ctx: MeshSyncContext): void {
     const gen = ctx.gen;
     const { options } = ctx;
-    const show = options.showProjection && options.mode === '3d' && gen !== null && !ctx.firstPerson;
+    const show =
+      options.showProjection && options.mode === '3d' && gen !== null && !ctx.firstPerson;
     this.cubes.visible = show;
     if (!show || !gen) {
       this.cubes.count = 0;
@@ -260,7 +266,12 @@ export class MazeMeshes {
       const x = this.worldX(this.pt.x, cs);
       const z = this.worldZ(this.pt.y, cs);
       const y = h * unit + size / 2;
-      this.color.setRGB(rgb[cell * 3] ?? 0, rgb[cell * 3 + 1] ?? 0, rgb[cell * 3 + 2] ?? 0, THREE.SRGBColorSpace);
+      this.color.setRGB(
+        rgb[cell * 3] ?? 0,
+        rgb[cell * 3 + 1] ?? 0,
+        rgb[cell * 3 + 2] ?? 0,
+        THREE.SRGBColorSpace,
+      );
 
       this.pos.set(x, y, z);
       this.m.compose(this.pos, IDENTITY, this.scl);
@@ -316,7 +327,11 @@ export class MazeMeshes {
     if (this.goal.visible) {
       cellCenter(grid, goal, cs, this.pt);
       const coneH = 0.9 * cs;
-      this.goal.position.set(this.worldX(this.pt.x, cs), wallTop + coneH / 2, this.worldZ(this.pt.y, cs));
+      this.goal.position.set(
+        this.worldX(this.pt.x, cs),
+        wallTop + coneH / 2,
+        this.worldZ(this.pt.y, cs),
+      );
       this.goal.scale.set(0.5 * cs, coneH, 0.5 * cs);
       const g = resolve(ctx.theme, ctx.theme.goal);
       this.setColor(this.goalMat.color, g);

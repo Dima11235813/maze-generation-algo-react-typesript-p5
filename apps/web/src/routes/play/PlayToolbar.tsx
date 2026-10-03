@@ -15,14 +15,11 @@ import {
   SimpleSelect,
   Slider,
   Switch,
-  ToggleGroup,
-  ToggleGroupItem,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@maze/ui';
 import {
-  Box,
   Copy,
   Dices,
   Ellipsis,
@@ -37,13 +34,14 @@ import {
   Settings2,
   Shuffle,
   SkipForward,
-  Square,
   StepBack,
   X,
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { formatSpeed, indexToSpeed, speedToIndex } from '../../lib/speed';
 import { useIsNarrow } from '../../lib/useMediaQuery';
+import type { ViewChoice } from '../../maze/treeView';
+import { ViewModeToggle } from '../tree/ViewModeToggle';
 
 const CAMERA_LABELS: Record<CameraPreset, string> = {
   top: 'Top-down',
@@ -72,8 +70,11 @@ export interface PlayToolbarProps {
   onRunToEnd(): void;
   speed: number;
   onSpeedChange(speed: number): void;
+  /** Renderer in use (camera controls apply to 3D, including the 3D tree). */
   mode: ViewMode;
-  onModeChange(mode: ViewMode): void;
+  /** 2D, 3D or Tree. */
+  view: ViewChoice;
+  onViewChange(view: ViewChoice): void;
   cameraPreset: CameraPreset;
   onCameraPresetChange(preset: CameraPreset): void;
   followPointer: boolean;
@@ -164,7 +165,9 @@ function SeedControls({ p, grow = false }: { p: PlayToolbarProps; grow?: boolean
         spellCheck={false}
         autoCapitalize="off"
         autoCorrect="off"
-        onChange={(e) => { p.onSeedChange(e.target.value); }}
+        onChange={(e) => {
+          p.onSeedChange(e.target.value);
+        }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') p.onRegenerate();
         }}
@@ -268,7 +271,9 @@ function SpeedControl({ p, full = false }: { p: PlayToolbarProps; full?: boolean
         max={SPEED_PRESETS.length - 1}
         step={1}
         valueText={formatSpeed(p.speed)}
-        onValueChange={(i) => { p.onSpeedChange(indexToSpeed(i)); }}
+        onValueChange={(i) => {
+          p.onSpeedChange(indexToSpeed(i));
+        }}
       />
       {full ? null : (
         <span className="w-24 text-xs tabular-nums text-muted" aria-hidden="true">
@@ -280,23 +285,7 @@ function SpeedControl({ p, full = false }: { p: PlayToolbarProps; full?: boolean
 }
 
 function ViewToggle({ p }: { p: PlayToolbarProps }) {
-  return (
-    <ToggleGroup
-      type="single"
-      value={p.mode}
-      aria-label="View mode"
-      onValueChange={(v) => {
-        if (v === '2d' || v === '3d') p.onModeChange(v);
-      }}
-    >
-      <ToggleGroupItem value="2d" aria-label="2D view">
-        <Square className="h-3.5 w-3.5" aria-hidden="true" /> 2D
-      </ToggleGroupItem>
-      <ToggleGroupItem value="3d" aria-label="3D view">
-        <Box className="h-3.5 w-3.5" aria-hidden="true" /> 3D
-      </ToggleGroupItem>
-    </ToggleGroup>
-  );
+  return <ViewModeToggle value={p.view} onChange={p.onViewChange} />;
 }
 
 function CameraControls({ p, full = false }: { p: PlayToolbarProps; full?: boolean }) {
@@ -512,7 +501,9 @@ function CompactToolbar({ p }: { p: PlayToolbarProps }) {
               variant="outline"
               aria-label="More controls"
               aria-expanded={moreOpen}
-              onClick={() => { setMoreOpen(true); }}
+              onClick={() => {
+                setMoreOpen(true);
+              }}
             >
               <Ellipsis className="h-4 w-4" aria-hidden="true" />
             </IconButton>

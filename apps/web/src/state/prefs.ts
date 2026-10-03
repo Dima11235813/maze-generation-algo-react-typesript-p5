@@ -5,7 +5,7 @@
  * once (never deleted) so returning users keep their colours and sizes.
  */
 import type { NarratorVerbosity } from '@maze/player';
-import type { CameraPreset, ViewMode } from '@maze/renderer';
+import type { CameraPreset, TreeLayoutKind, ViewMode } from '@maze/renderer';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
@@ -42,6 +42,12 @@ export interface Prefs {
   screenReaderGrid: boolean;
   /** Show the textual step log panel. */
   showStepLog: boolean;
+  // Tree view (proj-mgmt/19-tree-view.md)
+  /** Draw the maze as its spanning tree (the third view beside 2D and 3D). */
+  treeView: boolean;
+  treeLayout: TreeLayoutKind;
+  /** 0 = the maze, 1 = the tree. */
+  treeMorph: number;
 }
 
 export interface PrefsActions {
@@ -87,7 +93,12 @@ export const DEFAULT_PREFS: Prefs = {
   narratorVerbosity: 'medium',
   screenReaderGrid: true,
   showStepLog: false,
+  treeView: false,
+  treeLayout: 'tidy',
+  treeMorph: 1,
 };
+
+const TREE_LAYOUTS: readonly TreeLayoutKind[] = ['tidy', 'radial', '3d'];
 
 const VERBOSITIES: readonly NarratorVerbosity[] = ['off', 'low', 'medium', 'high'];
 
@@ -105,7 +116,10 @@ export const LEGACY_KEYS = {
 } as const;
 
 function toHex(r: number, g: number, b: number): string {
-  const h = (v: number) => Math.min(255, Math.max(0, Math.round(v))).toString(16).padStart(2, '0');
+  const h = (v: number) =>
+    Math.min(255, Math.max(0, Math.round(v)))
+      .toString(16)
+      .padStart(2, '0');
   return `#${h(r)}${h(g)}${h(b)}`;
 }
 
@@ -145,11 +159,23 @@ export function importLegacyPrefs(storage: Pick<Storage, 'getItem'>): Partial<Pr
   if (cell) out.cellColor = cell;
   const wall = parseLegacyColor(storage.getItem(LEGACY_KEYS.cellWallColor));
   if (wall) out.wallColor = invertHex(wall);
-  const cellSize = clampInt(storage.getItem(LEGACY_KEYS.cellSize), LIMITS.cellSize.min, LIMITS.cellSize.max);
+  const cellSize = clampInt(
+    storage.getItem(LEGACY_KEYS.cellSize),
+    LIMITS.cellSize.min,
+    LIMITS.cellSize.max,
+  );
   if (cellSize !== null) out.cellSize = cellSize;
-  const wallWidth = clampInt(storage.getItem(LEGACY_KEYS.cellWallSize), LIMITS.wallWidth.min, LIMITS.wallWidth.max);
+  const wallWidth = clampInt(
+    storage.getItem(LEGACY_KEYS.cellWallSize),
+    LIMITS.wallWidth.min,
+    LIMITS.wallWidth.max,
+  );
   if (wallWidth !== null) out.wallWidth = wallWidth;
-  const frameRate = clampInt(storage.getItem(LEGACY_KEYS.frameRate), LIMITS.speed.min, LIMITS.speed.max);
+  const frameRate = clampInt(
+    storage.getItem(LEGACY_KEYS.frameRate),
+    LIMITS.speed.min,
+    LIMITS.speed.max,
+  );
   if (frameRate !== null) out.speed = frameRate; // legacy ran one step per frame
   return out;
 }
@@ -173,22 +199,40 @@ export function seedPrefsFromLegacy(storage: Storage): boolean {
 
 function sanitize(input: Partial<Prefs> | undefined): Prefs {
   const p: Prefs = { ...DEFAULT_PREFS, ...(input ?? {}) };
-  p.cellSize = Math.min(LIMITS.cellSize.max, Math.max(LIMITS.cellSize.min, Math.round(p.cellSize) || DEFAULT_PREFS.cellSize));
-  p.wallWidth = Math.min(LIMITS.wallWidth.max, Math.max(LIMITS.wallWidth.min, Math.round(p.wallWidth) || DEFAULT_PREFS.wallWidth));
-  p.speed = Math.min(LIMITS.speed.max, Math.max(LIMITS.speed.min, Math.round(p.speed) || DEFAULT_PREFS.speed));
+  p.cellSize = Math.min(
+    LIMITS.cellSize.max,
+    Math.max(LIMITS.cellSize.min, Math.round(p.cellSize) || DEFAULT_PREFS.cellSize),
+  );
+  p.wallWidth = Math.min(
+    LIMITS.wallWidth.max,
+    Math.max(LIMITS.wallWidth.min, Math.round(p.wallWidth) || DEFAULT_PREFS.wallWidth),
+  );
+  p.speed = Math.min(
+    LIMITS.speed.max,
+    Math.max(LIMITS.speed.min, Math.round(p.speed) || DEFAULT_PREFS.speed),
+  );
   if (p.mode !== '2d' && p.mode !== '3d') p.mode = DEFAULT_PREFS.mode;
   if (p.maxProjectionDepth !== 'auto') {
     const n = Number(p.maxProjectionDepth);
     p.maxProjectionDepth = Number.isFinite(n)
-      ? Math.min(LIMITS.maxProjectionDepth.max, Math.max(LIMITS.maxProjectionDepth.min, Math.round(n)))
+      ? Math.min(
+          LIMITS.maxProjectionDepth.max,
+          Math.max(LIMITS.maxProjectionDepth.min, Math.round(n)),
+        )
       : 'auto';
   }
   for (const key of ['cellColor', 'wallColor', 'backgroundColor'] as const) {
     if (!/^#[0-9a-f]{6}$/i.test(p[key])) p[key] = DEFAULT_PREFS[key];
   }
-  if (!VERBOSITIES.includes(p.narratorVerbosity)) p.narratorVerbosity = DEFAULT_PREFS.narratorVerbosity;
+  if (!VERBOSITIES.includes(p.narratorVerbosity))
+    p.narratorVerbosity = DEFAULT_PREFS.narratorVerbosity;
   if (typeof p.screenReaderGrid !== 'boolean') p.screenReaderGrid = DEFAULT_PREFS.screenReaderGrid;
   if (typeof p.showStepLog !== 'boolean') p.showStepLog = DEFAULT_PREFS.showStepLog;
+  if (typeof p.treeView !== 'boolean') p.treeView = DEFAULT_PREFS.treeView;
+  if (!TREE_LAYOUTS.includes(p.treeLayout)) p.treeLayout = DEFAULT_PREFS.treeLayout;
+  p.treeMorph = Number.isFinite(p.treeMorph)
+    ? Math.min(1, Math.max(0, p.treeMorph))
+    : DEFAULT_PREFS.treeMorph;
   return p;
 }
 
@@ -221,4 +265,6 @@ export function createPrefsStore(storage?: Storage) {
   );
 }
 
-export const usePrefs = createPrefsStore(typeof localStorage !== 'undefined' ? localStorage : undefined);
+export const usePrefs = createPrefsStore(
+  typeof localStorage !== 'undefined' ? localStorage : undefined,
+);

@@ -45,6 +45,8 @@ export class CameraRig {
   private extentH = 1;
   /** Height of the tallest geometry (wall tops) that must stay in view. */
   private extentTop = 0;
+  /** Lowest geometry (the Tree view hangs below the floor plane); 0 for the maze. */
+  private extentBottom = 0;
 
   private readonly forward = new THREE.Vector3();
   private readonly lookAt = new THREE.Vector3();
@@ -60,10 +62,17 @@ export class CameraRig {
   }
 
   /** Maze extent in world units (plus wall height); also sets sensible near/far planes. */
-  setExtent(width: number, height: number, cellSize: number, wallTop = cellSize * 0.5): void {
+  setExtent(
+    width: number,
+    height: number,
+    cellSize: number,
+    wallTop = cellSize * 0.5,
+    bottom = 0,
+  ): void {
     this.extentW = Math.max(1e-3, width);
     this.extentH = Math.max(1e-3, height);
     this.extentTop = Math.max(0, wallTop);
+    this.extentBottom = Math.min(0, bottom);
     this.camera.near = Math.max(0.01, cellSize * 0.02);
     this.camera.far = Math.max(1000, Math.hypot(width, height) * 20);
     this.camera.updateProjectionMatrix();
@@ -77,7 +86,7 @@ export class CameraRig {
    * fitted to a bounding sphere.
    */
   fitDistance(preset: CameraPreset): number {
-    const key = `${preset}|${this.camera.aspect.toFixed(4)}|${this.camera.fov}|${this.extentW}|${this.extentH}|${this.extentTop}`;
+    const key = `${preset}|${this.camera.aspect.toFixed(4)}|${this.camera.fov}|${this.extentW}|${this.extentH}|${this.extentTop}|${this.extentBottom}`;
     const cached = this.fitCache.get(key);
     if (cached !== undefined) return cached;
 
@@ -102,7 +111,7 @@ export class CameraRig {
       cam.up.set(0, 1, 0);
       cam.lookAt(0, 0, 0);
       cam.updateMatrixWorld(true);
-      for (const y of [0, top]) {
+      for (const y of [this.extentBottom, top]) {
         for (const sx of [-1, 1]) {
           for (const sz of [-1, 1]) {
             this.corner.set(sx * hw, y, sz * hh).project(cam);

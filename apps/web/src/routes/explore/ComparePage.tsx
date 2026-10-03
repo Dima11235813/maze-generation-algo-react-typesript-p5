@@ -7,13 +7,25 @@ import {
   Label,
   Separator,
   Slider,
+  ToggleGroup,
+  ToggleGroupItem,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
   cn,
 } from '@maze/ui';
 import { Link, useNavigate, useSearch } from '@tanstack/react-router';
-import { ArrowLeft, Dices, FastForward, Pause, Play, RefreshCw, SkipForward } from 'lucide-react';
+import {
+  ArrowLeft,
+  Dices,
+  FastForward,
+  GitFork,
+  Pause,
+  Play,
+  RefreshCw,
+  SkipForward,
+  Square,
+} from 'lucide-react';
 import {
   useCallback,
   useEffect,
@@ -115,6 +127,8 @@ export function ComparePage() {
   const effectiveSeed = search.seed ?? seed;
   const [hostSize, setHostSize] = useState<HostSize | null>(null);
   const [zoom, setZoom] = useState(1);
+  /** Lanes drawn as growing trees instead of mazes (proj-mgmt/19-tree-view.md). */
+  const [asTree, setAsTree] = useState(false);
 
   const setSearch = useCallback(
     (next: { seed?: string; algos?: readonly string[] }) => {
@@ -221,9 +235,18 @@ export function ComparePage() {
     () => ({
       ...buildRenderOptions(prefs, rows, reducedMotion, gridCellSize),
       mode: '2d' as const,
+      tree: asTree ? { layout: 'tidy' as const, morph: 1 } : null,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [prefs.wallWidth, prefs.showGrid, prefs.showStartGoal, rows, reducedMotion, gridCellSize],
+    [
+      prefs.wallWidth,
+      prefs.showGrid,
+      prefs.showStartGoal,
+      rows,
+      reducedMotion,
+      gridCellSize,
+      asTree,
+    ],
   );
   const camera = useMemo(
     () => buildCamera({ cameraPreset: 'top', followPointer: false }, zoom),
@@ -261,6 +284,10 @@ export function ComparePage() {
         case 'n':
         case 'N':
           setSearch({ seed: randomSeed() });
+          break;
+        case 'y':
+        case 'Y':
+          setAsTree((t) => !t);
           break;
         default:
           break;
@@ -358,6 +385,28 @@ export function ComparePage() {
             {formatSpeed(prefs.speed)}
           </span>
         </div>
+        <Separator orientation="vertical" className="h-6" />
+        <ToggleGroup
+          type="single"
+          value={asTree ? 'tree' : 'maze'}
+          aria-label="Draw lanes as"
+          onValueChange={(v) => {
+            if (v === 'maze' || v === 'tree') setAsTree(v === 'tree');
+          }}
+        >
+          <Hint label="Draw each lane as a maze">
+            <ToggleGroupItem value="maze" aria-label="Mazes">
+              <Square className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="hidden sm:inline">Maze</span>
+            </ToggleGroupItem>
+          </Hint>
+          <Hint label="Draw each lane as the tree it grows into" keys="Y">
+            <ToggleGroupItem value="tree" aria-label="Trees">
+              <GitFork className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="hidden sm:inline">Tree</span>
+            </ToggleGroupItem>
+          </Hint>
+        </ToggleGroup>
         <Separator orientation="vertical" className="h-6" />
         <div role="group" aria-label="Seed" className="flex items-center gap-1.5">
           <Label htmlFor="compare-seed" className="sr-only">

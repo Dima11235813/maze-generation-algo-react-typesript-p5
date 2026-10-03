@@ -48,7 +48,9 @@ export function SolverPicker({
                     name={name}
                     value={s.meta.id}
                     checked={selected}
-                    onChange={() => { onChange(s.meta.id); }}
+                    onChange={() => {
+                      onChange(s.meta.id);
+                    }}
                     className="h-3.5 w-3.5 accent-[var(--accent)]"
                   />
                   <span className="font-medium">{s.meta.name}</span>
