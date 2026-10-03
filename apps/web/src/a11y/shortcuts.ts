@@ -10,6 +10,9 @@ export const PLAY_SHORTCUTS: readonly ShortcutGroup[] = [
     items: [
       { keys: ['Space'], label: 'Play or pause' },
       { keys: ['.'], label: 'Advance one step' },
+      { keys: [','], label: 'Step back (rewind one step)' },
+      { keys: ['Home'], label: 'Rewind to the first step' },
+      { keys: ['End'], label: 'Run to the end' },
       { keys: ['N'], label: 'New maze with a fresh seed' },
     ],
   },

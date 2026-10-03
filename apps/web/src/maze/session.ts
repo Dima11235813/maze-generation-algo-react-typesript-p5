@@ -6,6 +6,7 @@
  * asks them to redraw through `setRenderRequest`.
  */
 import {
+  ALL_WALLS,
   CORE_VERSION,
   GenerationTracker,
   SolveTracker,
@@ -179,6 +180,28 @@ export class MazeSession {
         this.finishGeneration(result);
       }
     });
+    // Rewind: forget everything folded so far; the replayed prefix arrives as normal batches.
+    // Rewinding a finished maze reopens it, which invalidates any solve and first-person run.
+    player.onReset(() => {
+      tracker.reset();
+      liveWalls.fill(ALL_WALLS);
+      if (this.snap.genPlayer !== player) return;
+      if (this.snap.phase === 'ready') {
+        this.snap.solvePlayer?.dispose();
+        this.solveTrackerRef = null;
+        this.update({
+          phase: 'generating',
+          state: liveState,
+          metrics: null,
+          solvePlayer: null,
+          solverId: null,
+          solveResult: null,
+          firstPerson: null,
+          reachedGoal: false,
+        });
+      }
+      this.requestRender();
+    });
 
     this.update({
       phase: 'generating',
@@ -220,7 +243,8 @@ export class MazeSession {
   private finishGeneration(result: MazeState): void {
     const metrics = computeMetrics(result);
     this.update({ phase: 'ready', state: result, metrics });
-    const solution = metrics.solutionLength === null ? 'no solution' : `solution ${metrics.solutionLength} moves`;
+    const solution =
+      metrics.solutionLength === null ? 'no solution' : `solution ${metrics.solutionLength} moves`;
     this.setStatus(
       `Maze generation complete: ${result.grid.width} by ${result.grid.height}, ${metrics.deadEnds} dead ends, ${solution}.`,
     );
@@ -251,6 +275,24 @@ export class MazeSession {
 
   step(n = 1): void {
     this.activePlayer?.step(n);
+  }
+
+  /** Rewinds the active player `n` steps (exact replay; see StepPlayer.seek). */
+  stepBack(n = 1): void {
+    this.activePlayer?.stepBack(n);
+  }
+
+  /** Jumps the active player to an absolute step and pauses there (scrubber). */
+  seek(step: number): void {
+    const p = this.activePlayer;
+    if (!p) return;
+    p.pause();
+    p.seek(step);
+  }
+
+  /** Back to the first step of the active player, paused. */
+  restart(): void {
+    this.activePlayer?.restart();
   }
 
   runToEnd(): void {
@@ -289,6 +331,12 @@ export class MazeSession {
     });
     player.subscribe((batch) => {
       for (const step of batch) tracker.apply(step);
+      this.requestRender();
+    });
+    player.onReset(() => {
+      tracker.reset();
+      if (this.snap.solvePlayer === player && this.snap.solveResult)
+        this.update({ solveResult: null });
       this.requestRender();
     });
     player.onChange(() => {

@@ -38,6 +38,7 @@ import {
   Shuffle,
   SkipForward,
   Square,
+  StepBack,
   X,
 } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
@@ -65,6 +66,9 @@ export interface PlayToolbarProps {
   onGeneratorChange(id: string): void;
   onPlayToggle(): void;
   onStep(): void;
+  onStepBack(): void;
+  /** True when the active player has moved past step 0. */
+  canStepBack: boolean;
   onRunToEnd(): void;
   speed: number;
   onSpeedChange(speed: number): void;
@@ -88,7 +92,15 @@ export interface PlayToolbarProps {
   onOpenOptions(): void;
 }
 
-function Group({ label, children, className }: { label: string; children: ReactNode; className?: string }) {
+function Group({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: ReactNode;
+  className?: string;
+}) {
   return (
     <div role="group" aria-label={label} className={className ?? 'flex items-center gap-1.5'}>
       {children}
@@ -110,7 +122,13 @@ function Hint({ label, keys, children }: { label: string; keys?: string; childre
 
 // ---- building blocks shared by the wide toolbar and the compact toolbar + sheet -------------
 
-function GenerateButton({ p, iconOnlyOnPhone = false }: { p: PlayToolbarProps; iconOnlyOnPhone?: boolean }) {
+function GenerateButton({
+  p,
+  iconOnlyOnPhone = false,
+}: {
+  p: PlayToolbarProps;
+  iconOnlyOnPhone?: boolean;
+}) {
   return (
     <Hint label="New maze with a fresh seed" keys="N">
       <Button size="sm" onClick={p.onGenerate} aria-label="Generate">
@@ -125,7 +143,13 @@ function SeedControls({ p, grow = false }: { p: PlayToolbarProps; grow?: boolean
   return (
     <div className={grow ? 'flex flex-1 items-center gap-1' : 'flex items-center gap-1'}>
       <Hint label="Run the same seed again">
-        <IconButton size="icon-sm" variant="outline" aria-label="Regenerate same seed" onClick={p.onRegenerate} disabled={p.phase === 'empty'}>
+        <IconButton
+          size="icon-sm"
+          variant="outline"
+          aria-label="Regenerate same seed"
+          onClick={p.onRegenerate}
+          disabled={p.phase === 'empty'}
+        >
           <RefreshCw className="h-4 w-4" aria-hidden="true" />
         </IconButton>
       </Hint>
@@ -140,7 +164,7 @@ function SeedControls({ p, grow = false }: { p: PlayToolbarProps; grow?: boolean
         spellCheck={false}
         autoCapitalize="off"
         autoCorrect="off"
-        onChange={(e) => p.onSeedChange(e.target.value)}
+        onChange={(e) => { p.onSeedChange(e.target.value); }}
         onKeyDown={(e) => {
           if (e.key === 'Enter') p.onRegenerate();
         }}
@@ -178,18 +202,52 @@ function PlaybackButtons({ p }: { p: PlayToolbarProps }) {
   const playable = p.playerStatus !== null && p.playerStatus !== 'done';
   return (
     <>
+      <Hint label="Step back" keys=",">
+        <IconButton
+          size="icon-sm"
+          variant="outline"
+          aria-label="Step back"
+          onClick={p.onStepBack}
+          disabled={!p.canStepBack}
+        >
+          <StepBack className="h-4 w-4" aria-hidden="true" />
+        </IconButton>
+      </Hint>
       <Hint label={playing ? 'Pause' : 'Play'} keys="Space">
-        <IconButton size="icon-sm" variant="outline" aria-label={playing ? 'Pause' : 'Play'} aria-pressed={playing} onClick={p.onPlayToggle} disabled={!playable}>
-          {playing ? <Pause className="h-4 w-4" aria-hidden="true" /> : <Play className="h-4 w-4" aria-hidden="true" />}
+        <IconButton
+          size="icon-sm"
+          variant="outline"
+          aria-label={playing ? 'Pause' : 'Play'}
+          aria-pressed={playing}
+          onClick={p.onPlayToggle}
+          disabled={!playable}
+        >
+          {playing ? (
+            <Pause className="h-4 w-4" aria-hidden="true" />
+          ) : (
+            <Play className="h-4 w-4" aria-hidden="true" />
+          )}
         </IconButton>
       </Hint>
       <Hint label="Step once" keys=".">
-        <IconButton size="icon-sm" variant="outline" aria-label="Step once" onClick={p.onStep} disabled={!playable}>
+        <IconButton
+          size="icon-sm"
+          variant="outline"
+          aria-label="Step once"
+          onClick={p.onStep}
+          disabled={!playable}
+        >
           <SkipForward className="h-4 w-4" aria-hidden="true" />
         </IconButton>
       </Hint>
       <Hint label="Run to end">
-        <IconButton size="icon-sm" variant="outline" aria-label="Run to end" onClick={p.onRunToEnd} disabled={!playable}>
+        <IconButton
+          size="icon-sm"
+          variant="outline"
+          aria-label="Run to end"
+          onClick={p.onRunToEnd}
+          disabled={!playable}
+        >
           <FastForward className="h-4 w-4" aria-hidden="true" />
         </IconButton>
       </Hint>
@@ -210,7 +268,7 @@ function SpeedControl({ p, full = false }: { p: PlayToolbarProps; full?: boolean
         max={SPEED_PRESETS.length - 1}
         step={1}
         valueText={formatSpeed(p.speed)}
-        onValueChange={(i) => p.onSpeedChange(indexToSpeed(i))}
+        onValueChange={(i) => { p.onSpeedChange(indexToSpeed(i)); }}
       />
       {full ? null : (
         <span className="w-24 text-xs tabular-nums text-muted" aria-hidden="true">
@@ -255,7 +313,12 @@ function CameraControls({ p, full = false }: { p: PlayToolbarProps; full?: boole
         triggerClassName={full ? 'h-10 w-full' : 'h-8 w-44 text-xs'}
       />
       <div className="flex items-center gap-1.5">
-        <Switch id="follow-pointer" checked={p.followPointer} onCheckedChange={p.onFollowPointerChange} disabled={disabled} />
+        <Switch
+          id="follow-pointer"
+          checked={p.followPointer}
+          onCheckedChange={p.onFollowPointerChange}
+          disabled={disabled}
+        />
         <Label htmlFor="follow-pointer" className={full ? 'text-sm' : 'text-xs'}>
           Follow pointer <Kbd>F</Kbd>
         </Label>
@@ -281,7 +344,12 @@ function SolveControls({ p, full = false }: { p: PlayToolbarProps; full?: boolea
           <X className="h-4 w-4" aria-hidden="true" /> Clear solve
         </Button>
       ) : (
-        <Button size={full ? 'md' : 'sm'} variant="secondary" onClick={p.onSolve} disabled={!p.canSolve}>
+        <Button
+          size={full ? 'md' : 'sm'}
+          variant="secondary"
+          onClick={p.onSolve}
+          disabled={!p.canSolve}
+        >
           <Route className="h-4 w-4" aria-hidden="true" /> Solve
         </Button>
       )}
@@ -291,7 +359,10 @@ function SolveControls({ p, full = false }: { p: PlayToolbarProps; full?: boolea
 
 function RunMazeButton({ p, full = false }: { p: PlayToolbarProps; full?: boolean }) {
   return (
-    <Hint label={p.firstPerson ? 'Exit first-person mode' : 'Run the maze in first person (3D)'} keys="R">
+    <Hint
+      label={p.firstPerson ? 'Exit first-person mode' : 'Run the maze in first person (3D)'}
+      keys="R"
+    >
       <Button
         size={full ? 'md' : 'sm'}
         variant={p.firstPerson ? 'default' : 'secondary'}
@@ -299,7 +370,8 @@ function RunMazeButton({ p, full = false }: { p: PlayToolbarProps; full?: boolea
         onClick={p.onFirstPersonToggle}
         disabled={!p.canSolve && !p.firstPerson}
       >
-        <Footprints className="h-4 w-4" aria-hidden="true" /> {p.firstPerson ? 'Exit maze' : 'Run maze'}
+        <Footprints className="h-4 w-4" aria-hidden="true" />{' '}
+        {p.firstPerson ? 'Exit maze' : 'Run maze'}
       </Button>
     </Hint>
   );
@@ -309,7 +381,12 @@ function LibraryButtons({ p, full = false }: { p: PlayToolbarProps; full?: boole
   return (
     <>
       <Hint label="Save to library">
-        <Button size={full ? 'md' : 'sm'} variant="outline" onClick={p.onSave} disabled={!p.canSave}>
+        <Button
+          size={full ? 'md' : 'sm'}
+          variant="outline"
+          onClick={p.onSave}
+          disabled={!p.canSave}
+        >
           <Save className="h-4 w-4" aria-hidden="true" /> Save
         </Button>
       </Hint>
@@ -319,7 +396,12 @@ function LibraryButtons({ p, full = false }: { p: PlayToolbarProps; full?: boole
         </Button>
       ) : (
         <Hint label="Open library">
-          <IconButton size="icon-sm" variant="outline" aria-label="Library" onClick={p.onOpenLibrary}>
+          <IconButton
+            size="icon-sm"
+            variant="outline"
+            aria-label="Library"
+            onClick={p.onOpenLibrary}
+          >
             <Library className="h-4 w-4" aria-hidden="true" />
           </IconButton>
         </Hint>
@@ -342,7 +424,11 @@ function OptionsButton({ p }: { p: PlayToolbarProps }) {
 
 function WideToolbar({ p }: { p: PlayToolbarProps }) {
   return (
-    <div role="toolbar" aria-label="Maze controls" className="flex flex-wrap items-center gap-2 border-b border-border bg-panel px-3 py-2">
+    <div
+      role="toolbar"
+      aria-label="Maze controls"
+      className="flex flex-wrap items-center gap-2 border-b border-border bg-panel px-3 py-2"
+    >
       <Group label="Generate">
         <GenerateButton p={p} />
         <SeedControls p={p} />
@@ -421,17 +507,29 @@ function CompactToolbar({ p }: { p: PlayToolbarProps }) {
         <div className="ml-auto flex shrink-0 items-center gap-1.5">
           <OptionsButton p={p} />
           <Hint label="More controls">
-            <IconButton size="icon-sm" variant="outline" aria-label="More controls" aria-expanded={moreOpen} onClick={() => setMoreOpen(true)}>
+            <IconButton
+              size="icon-sm"
+              variant="outline"
+              aria-label="More controls"
+              aria-expanded={moreOpen}
+              onClick={() => { setMoreOpen(true); }}
+            >
               <Ellipsis className="h-4 w-4" aria-hidden="true" />
             </IconButton>
           </Hint>
         </div>
       </div>
       <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
-        <SheetContent side="bottom" aria-describedby="more-controls-desc" className="pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <SheetContent
+          side="bottom"
+          aria-describedby="more-controls-desc"
+          className="pb-[max(1rem,env(safe-area-inset-bottom))]"
+        >
           <SheetHeader>
             <SheetTitle>Maze controls</SheetTitle>
-            <SheetDescription id="more-controls-desc">Seed, algorithm, speed, camera, solver and library.</SheetDescription>
+            <SheetDescription id="more-controls-desc">
+              Seed, algorithm, speed, camera, solver and library.
+            </SheetDescription>
           </SheetHeader>
           <div className="flex flex-col gap-5">
             <Group label="Generate" className="flex flex-col gap-2">

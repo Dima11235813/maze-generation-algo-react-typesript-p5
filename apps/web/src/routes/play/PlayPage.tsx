@@ -25,6 +25,7 @@ import { OptionsSheet } from './OptionsSheet';
 import { PlayToolbar } from './PlayToolbar';
 import { SaveDialog } from './SaveDialog';
 import { StepLogPanel } from './StepLogPanel';
+import { TimelineBar } from './TimelineBar';
 import { useKeyboardShortcuts } from './useKeyboardShortcuts';
 import { ViewControls, handleViewKey } from './ViewControls';
 
@@ -313,6 +314,17 @@ export function PlayPage() {
         case '.':
           session.step();
           break;
+        case ',':
+          session.stepBack();
+          break;
+        case 'Home':
+          e.preventDefault();
+          session.restart();
+          break;
+        case 'End':
+          e.preventDefault();
+          session.runToEnd();
+          break;
         case 'n':
         case 'N':
           generate();
@@ -391,6 +403,10 @@ export function PlayPage() {
         onPlayToggle={() => {
           session.toggle();
         }}
+        onStepBack={() => {
+          session.stepBack();
+        }}
+        canStepBack={(playerSnap?.stepCount ?? 0) > 0}
         onStep={() => {
           session.step();
         }}
@@ -541,6 +557,16 @@ export function PlayPage() {
         />
       ) : null}
 
+      <TimelineBar
+        snapshot={playerSnap}
+        label={activePlayer !== null && activePlayer === snap.solvePlayer ? 'Solve' : 'Generation'}
+        onSeek={(n) => {
+          session.seek(n);
+        }}
+        onRestart={() => {
+          session.restart();
+        }}
+      />
       <MetricsPanel session={session} snap={snap} />
 
       <OptionsSheet

@@ -140,4 +140,103 @@ describe('StepPlayer', () => {
     p.step();
     expect(p.getSnapshot()).not.toBe(a);
   });
+
+  describe('timeline: seek, step back, restart', () => {
+    function recorder() {
+      const seen: number[] = [];
+      let resets = 0;
+      const p = new StepPlayer({ source: () => counter(10), schedule: () => () => undefined });
+      p.subscribe((b) => {
+        seen.push(...b);
+      });
+      p.onReset(() => {
+        resets++;
+        seen.length = 0;
+      });
+      return { p, seen, resets: () => resets };
+    }
+
+    it('rewinds by replaying the deterministic source, then resumes from there', () => {
+      const { p, seen, resets } = recorder();
+      p.step(6);
+      expect(seen).toEqual([0, 1, 2, 3, 4, 5]);
+      p.stepBack();
+      expect(resets()).toBe(1);
+      expect(seen).toEqual([0, 1, 2, 3, 4]);
+      expect(p.getSnapshot().stepCount).toBe(5);
+      expect(p.getSnapshot().highWater).toBe(6);
+      expect(p.step()).toEqual([5]);
+      p.stepBack(10);
+      expect(p.getSnapshot().stepCount).toBe(0);
+      expect(seen).toEqual([]);
+    });
+
+    it('seeks forward without a reset and knows the total once finished', () => {
+      const { p, seen, resets } = recorder();
+      p.seek(4);
+      expect(resets()).toBe(0);
+      expect(seen).toEqual([0, 1, 2, 3]);
+      expect(p.getSnapshot().total).toBeNull();
+      p.seek(1_000);
+      expect(p.getStatus()).toBe('done');
+      expect(p.getResult()).toBe('done:10');
+      expect(p.getSnapshot().total).toBe(10);
+      // Rewinding a finished run reopens it.
+      p.seek(3);
+      expect(p.getStatus()).toBe('paused');
+      expect(p.getResult()).toBeUndefined();
+      expect(seen).toEqual([0, 1, 2]);
+      expect(p.getSnapshot().total).toBe(10);
+    });
+
+    it('restart pauses at step 0', () => {
+      const clock = { cb: null as ((t: number) => void) | null };
+      const p = new StepPlayer({
+        source: () => counter(10),
+        schedule: (cb) => {
+          clock.cb = cb;
+          return () => {
+            clock.cb = null;
+          };
+        },
+      });
+      p.step(3);
+      p.play();
+      p.restart();
+      expect(p.getStatus()).toBe('paused');
+      expect(p.getSnapshot().stepCount).toBe(0);
+      expect(clock.cb).toBeNull();
+    });
+
+    it('keeps playing after a seek while playing', () => {
+      let pending: ((t: number) => void) | null = null;
+      const p = new StepPlayer({
+        source: () => counter(100),
+        schedule: (cb) => {
+          pending = cb;
+          return () => {
+            pending = null;
+          };
+        },
+      });
+      p.step(10);
+      p.play();
+      p.seek(2);
+      expect(p.getStatus()).toBe('playing');
+      expect(pending).not.toBeNull();
+    });
+
+    it('reset clears the timeline bounds and notifies', () => {
+      const { p, resets } = recorder();
+      p.seek(1_000);
+      p.reset();
+      expect(resets()).toBe(1);
+      expect(p.getSnapshot()).toMatchObject({
+        highWater: 0,
+        total: null,
+        stepCount: 0,
+        status: 'idle',
+      });
+    });
+  });
 });
