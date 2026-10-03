@@ -106,7 +106,13 @@ export const dijkstra: MazeSolver<DijkstraParams> = {
           parent[nb] = cell;
           heap.push({ cell: nb, g: ng, seq: seq++ });
           c.frontier(heap.size);
-          yield c.count({ t: 'relax', cell: nb, from: cell, oldG: old, newG: ng } satisfies SolveStep);
+          yield c.count({
+            t: 'relax',
+            cell: nb,
+            from: cell,
+            oldG: old,
+            newG: ng,
+          } satisfies SolveStep);
         }
       }
     }

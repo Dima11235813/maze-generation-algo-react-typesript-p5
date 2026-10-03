@@ -5,7 +5,14 @@ import { createRng, type Rng } from '../rng';
 import type { SolveStep } from '../steps';
 import type { MazeState } from '../walls';
 import { CORE_VERSION } from '../version';
-import { StepCounter, agentMove, loopErase, maxMovesParam, resolveMaxMoves, startWalk } from './shared';
+import {
+  StepCounter,
+  agentMove,
+  loopErase,
+  maxMovesParam,
+  resolveMaxMoves,
+  startWalk,
+} from './shared';
 import type { MazeSolver, SolveResult } from './types';
 
 export interface RandomMouseParams extends Record<string, unknown> {

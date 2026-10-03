@@ -83,7 +83,12 @@ export const bidirectionalBfs: MazeSolver = {
           side.queue.push(nb);
           c.discovered++;
           c.frontier(side.queue.length + other.queue.length);
-          yield c.count({ t: 'discover', cell: nb, from: cell, g: side.dist[nb] ?? 0 } satisfies SolveStep);
+          yield c.count({
+            t: 'discover',
+            cell: nb,
+            from: cell,
+            g: side.dist[nb] ?? 0,
+          } satisfies SolveStep);
           const otherDist = other.dist[nb] ?? -1;
           if (otherDist >= 0) {
             const sum = (side.dist[nb] ?? 0) + otherDist;

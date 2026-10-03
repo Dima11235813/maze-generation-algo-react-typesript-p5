@@ -102,7 +102,13 @@ function row(
   const maze500 = makeMaze(500);
   const bfsSteps = collect(bfs.run(maze500)).steps.length;
   rows.push(
-    row('bfs 500x500', bfsSteps, 'steps', measureMs(() => runToEnd(bfs.run(maze500)), 3), 1_000_000),
+    row(
+      'bfs 500x500',
+      bfsSteps,
+      'steps',
+      measureMs(() => runToEnd(bfs.run(maze500)), 3),
+      1_000_000,
+    ),
   );
 
   const steps100: GenStep[] = gen100.steps;

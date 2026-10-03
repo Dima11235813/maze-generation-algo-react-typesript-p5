@@ -11,6 +11,8 @@ export class GenerationTracker {
   readonly visitCount: Uint16Array;
   /** DFS depth when the cell was first visited; -1 until seen (legacy `stackSubractorFromColor`). */
   readonly depthAtVisit: Int32Array;
+  /** Order in which cells were first seen (0, 1, 2, ...); -1 until seen. Roots the growing tree. */
+  readonly seenOrder: Int32Array;
   current: CellId = NO_CELL;
   /** Current stack depth (number of carves minus backtracks). */
   depth = 0;
@@ -26,6 +28,7 @@ export class GenerationTracker {
     const n = cellCount(grid);
     this.visitCount = new Uint16Array(n);
     this.depthAtVisit = new Int32Array(n).fill(-1);
+    this.seenOrder = new Int32Array(n).fill(-1);
   }
 
   apply(step: GenStep): void {
@@ -37,10 +40,7 @@ export class GenerationTracker {
         this.visits++;
         const count = this.visitCount[c] ?? 0;
         if (count < 0xffff) this.visitCount[c] = count + 1;
-        if (this.depthAtVisit[c] === -1) {
-          this.depthAtVisit[c] = this.depth;
-          this.seenCount++;
-        }
+        this.markSeen(c);
         break;
       }
       case 'carve':
@@ -83,6 +83,7 @@ export class GenerationTracker {
   private markSeen(c: CellId): void {
     if (this.depthAtVisit[c] === -1) {
       this.depthAtVisit[c] = this.depth;
+      this.seenOrder[c] = this.seenCount;
       this.seenCount++;
     }
   }
@@ -109,6 +110,7 @@ export class GenerationTracker {
   reset(): void {
     this.visitCount.fill(0);
     this.depthAtVisit.fill(-1);
+    this.seenOrder.fill(-1);
     this.current = NO_CELL;
     this.depth = 0;
     this.maxDepth = 0;

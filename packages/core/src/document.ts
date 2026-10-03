@@ -128,7 +128,10 @@ export interface EncodeOptions {
 }
 
 /** Serialises a state; `id` is left empty (fill with {@link encodeDocument} or {@link hashDocument}). */
-export function encodeDocumentSync(state: MazeState, opts: EncodeOptions = {}): UnidentifiedDocument {
+export function encodeDocumentSync(
+  state: MazeState,
+  opts: EncodeOptions = {},
+): UnidentifiedDocument {
   const doc: UnidentifiedDocument = {
     v: 1,
     width: state.grid.width,
@@ -138,7 +141,12 @@ export function encodeDocumentSync(state: MazeState, opts: EncodeOptions = {}): 
     start: state.start,
     goal: state.goal,
     ...(opts.provenance
-      ? { provenance: { ...opts.provenance, coreVersion: opts.provenance.coreVersion ?? CORE_VERSION } }
+      ? {
+          provenance: {
+            ...opts.provenance,
+            coreVersion: opts.provenance.coreVersion ?? CORE_VERSION,
+          },
+        }
       : {}),
     ...(opts.edited !== undefined ? { edited: opts.edited } : {}),
     ...(opts.meta ? { meta: opts.meta } : {}),
@@ -158,13 +166,13 @@ export function isMazeDocument(x: unknown): x is MazeDocument {
   if (typeof x !== 'object' || x === null) return false;
   const d = x as Record<string, unknown>;
   return (
-    d['v'] === 1 &&
-    typeof d['width'] === 'number' &&
-    typeof d['height'] === 'number' &&
-    d['topology'] === 'orthogonal' &&
-    typeof d['walls'] === 'string' &&
-    typeof d['start'] === 'number' &&
-    typeof d['goal'] === 'number'
+    d.v === 1 &&
+    typeof d.width === 'number' &&
+    typeof d.height === 'number' &&
+    d.topology === 'orthogonal' &&
+    typeof d.walls === 'string' &&
+    typeof d.start === 'number' &&
+    typeof d.goal === 'number'
   );
 }
 

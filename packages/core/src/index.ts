@@ -15,4 +15,5 @@ export * from './document';
 export * from './describe';
 export * from './navigation';
 export * from './editing';
+export * from './treeify';
 export { CORE_VERSION } from './version';

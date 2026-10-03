@@ -11,7 +11,14 @@ import { solvers } from '../solvers';
 import type { MazeSolver, SolveResult } from '../solvers/types';
 import type { SolveStep } from '../steps';
 import { hasWall, type MazeState } from '../walls';
-import type { Agent, RaceAgentResult, RaceConfig, RaceResult, RaceScoring, RaceTick } from './types';
+import type {
+  Agent,
+  RaceAgentResult,
+  RaceConfig,
+  RaceResult,
+  RaceScoring,
+  RaceTick,
+} from './types';
 
 export const MIN_AGENTS = 2;
 export const MAX_AGENTS = 4;
@@ -51,7 +58,7 @@ export function validateRaceConfig(config: RaceConfig): void {
     ids.add(a.id);
     if (!(a.budget.maxSteps > 0)) throw new RangeError(`Agent '${a.id}' has a non-positive budget`);
   }
-  if (config.lockstep !== true) throw new RangeError('Only lockstep races are supported');
+  if (!config.lockstep) throw new RangeError('Only lockstep races are supported');
 }
 
 export interface RunRaceOptions {
@@ -141,7 +148,11 @@ export function* runRace(
         next = r.gen.next();
       } catch (err) {
         r.finished = true;
-        r.result = partialResult(r, tick, `error: ${err instanceof Error ? err.message : String(err)}`);
+        r.result = partialResult(
+          r,
+          tick,
+          `error: ${err instanceof Error ? err.message : String(err)}`,
+        );
         entries.push(null);
         continue;
       }
@@ -214,13 +225,15 @@ export function raceRanking(
   const disqualified = ids.filter((id) => perAgent[id]!.disqualified);
 
   const byId = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
-  const cmp = (...keys: Array<(id: string) => number>) => (a: string, b: string): number => {
-    for (const k of keys) {
-      const d = k(a) - k(b);
-      if (d !== 0) return d;
-    }
-    return byId(a, b);
-  };
+  const cmp =
+    (...keys: Array<(id: string) => number>) =>
+    (a: string, b: string): number => {
+      for (const k of keys) {
+        const d = k(a) - k(b);
+        if (d !== 0) return d;
+      }
+      return byId(a, b);
+    };
   const tickOf = (id: string): number => perAgent[id]!.finishedAtTick ?? Number.POSITIVE_INFINITY;
   const expandedOf = (id: string): number => perAgent[id]!.expanded;
   const lengthOf = (id: string): number => perAgent[id]!.pathLength ?? Number.POSITIVE_INFINITY;
