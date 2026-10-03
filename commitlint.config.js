@@ -9,7 +9,19 @@ export default {
     'type-enum': [
       2,
       'always',
-      ['build', 'chore', 'ci', 'docs', 'feat', 'fix', 'perf', 'refactor', 'revert', 'style', 'test'],
+      [
+        'build',
+        'chore',
+        'ci',
+        'docs',
+        'feat',
+        'fix',
+        'perf',
+        'refactor',
+        'revert',
+        'style',
+        'test',
+      ],
     ],
   },
   // Merge commits produced by `git merge --no-ff` use a plain "merge: ..." header.
