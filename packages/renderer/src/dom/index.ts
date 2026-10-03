@@ -99,7 +99,7 @@ class DomGridRenderer implements DomRenderer {
   private lastWindow: RowWindow = { start: 0, end: 0 };
 
   constructor(opts: RendererFactoryOptions) {
-    this.events = (opts.events ?? {});
+    this.events = opts.events ?? {};
   }
 
   get element(): HTMLElement | null {

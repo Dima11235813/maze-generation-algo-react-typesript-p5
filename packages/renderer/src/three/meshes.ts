@@ -116,6 +116,11 @@ export class MazeMeshes {
     scene.add(this.group);
   }
 
+  /** Shows or hides the whole maze (the Tree view fades it out). */
+  setVisible(visible: boolean): void {
+    this.group.visible = visible;
+  }
+
   /** Force a rebuild on the next `sync` (theme or options changed). */
   markDirty(): void {
     this.dirty = true;

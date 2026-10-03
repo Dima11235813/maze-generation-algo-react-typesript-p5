@@ -14,10 +14,9 @@ import {
   type MazeState,
   type SolveTracker,
 } from '@maze/core';
-import { legacyCellColor, legacyCurrentColor, resolve, rgbToCss } from '../color';
-import { solveMarkColor } from '../overlay';
-import { smoothstep, type TreeScene } from '../tree';
-import type { RGB, RenderTheme, TreeViewOptions } from '../types';
+import { legacyCurrentColor, resolve, rgbToCss } from '../color';
+import { smoothstep, treeNodeColor, type TreeScene } from '../tree';
+import type { RenderTheme, TreeViewOptions } from '../types';
 
 export interface TreeDraw2dInput {
   readonly ctx: CanvasRenderingContext2D;
@@ -43,22 +42,6 @@ export interface TreeDraw2dInput {
 }
 
 const MARGIN_CSS_PX = 18;
-
-function nodeColor(
-  theme: RenderTheme,
-  cell: CellId,
-  gen: GenerationTracker | null,
-  solve: SolveTracker | null,
-): RGB {
-  if (solve) {
-    const mark = solveMarkColor(theme, solve.marks[cell] ?? 0);
-    if (mark) return mark;
-  }
-  if (gen && !gen.done) {
-    return legacyCellColor(theme, gen.visitCount[cell] ?? 0, gen.depthAtVisit[cell] ?? -1);
-  }
-  return theme.cell;
-}
 
 /** Draws the tree; returns nothing. Positions of drawn cells land in `outX`/`outY`. */
 export function drawTree2d(input: TreeDraw2dInput): void {
@@ -125,7 +108,7 @@ export function drawTree2d(input: TreeDraw2dInput): void {
     const c = tree.order[i] as CellId;
     const p = tree.parent[c] as number;
     if (p < 0) continue;
-    const color = nodeColor(theme, c, gen, solve);
+    const color = treeNodeColor(theme, c, gen, solve);
     const colorKey = (color.r << 16) | (color.g << 8) | color.b;
     let css = cssCache.get(colorKey);
     if (css === undefined) {
@@ -159,7 +142,7 @@ export function drawTree2d(input: TreeDraw2dInput): void {
   const dot = Math.max(1 * dpr, base * 0.6);
   for (const root of tree.roots) {
     if ((tree.subtreeSize[root] as number) > 1) continue;
-    ctx.fillStyle = rgbToCss(resolve(theme, nodeColor(theme, root, gen, solve)));
+    ctx.fillStyle = rgbToCss(resolve(theme, treeNodeColor(theme, root, gen, solve)));
     ctx.beginPath();
     ctx.arc(outX[root] as number, outY[root] as number, dot, 0, Math.PI * 2);
     ctx.fill();

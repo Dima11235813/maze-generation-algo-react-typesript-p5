@@ -10,6 +10,8 @@
  */
 import {
   ALL_WALLS,
+  type CellId,
+  type SolveTracker,
   cellCount,
   layout3d,
   radialLayout,
@@ -20,7 +22,9 @@ import {
   type MazeTree,
   type TreeLayout,
 } from '@maze/core';
-import type { TreeLayoutKind, TreeViewOptions } from './types';
+import { legacyCellColor } from './color';
+import { solveMarkColor } from './overlay';
+import type { RGB, RenderTheme, TreeLayoutKind, TreeViewOptions } from './types';
 
 /** Time constant of the position ease, ms (about 95 % of the way in three of these). */
 const POSITION_TAU_MS = 140;
@@ -33,6 +37,26 @@ export const smoothstep = (t: number): number => {
 };
 
 const ease = (from: number, to: number, k: number): number => from + (to - from) * k;
+
+/**
+ * Colour of a tree node (and of the branch leading to it): the solver's mark while solving,
+ * the generation colours while the maze grows, the cell colour otherwise.
+ */
+export function treeNodeColor(
+  theme: RenderTheme,
+  cell: CellId,
+  gen: GenerationTracker | null,
+  solve: SolveTracker | null,
+): RGB {
+  if (solve) {
+    const mark = solveMarkColor(theme, solve.marks[cell] ?? 0);
+    if (mark) return mark;
+  }
+  if (gen && !gen.done) {
+    return legacyCellColor(theme, gen.visitCount[cell] ?? 0, gen.depthAtVisit[cell] ?? -1);
+  }
+  return theme.cell;
+}
 
 export class TreeScene {
   tree: MazeTree | null = null;

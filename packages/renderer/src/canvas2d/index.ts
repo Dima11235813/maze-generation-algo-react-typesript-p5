@@ -129,7 +129,9 @@ class Canvas2dRenderer implements Renderer {
     canvas.addEventListener('pointerup', this.onPointerUp);
 
     if (typeof ResizeObserver !== 'undefined') {
-      this.observer = new ResizeObserver(() => { this.resize(); });
+      this.observer = new ResizeObserver(() => {
+        this.resize();
+      });
       this.observer.observe(host);
     }
     this.resize();
