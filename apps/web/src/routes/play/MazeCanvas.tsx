@@ -11,15 +11,19 @@ import type {
 import { cn } from '@maze/ui';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRendererFactories } from '../../maze/rendererFactories';
-import type { MazeSession } from '../../maze/session';
 
 export interface HostSize {
   width: number;
   height: number;
 }
 
+/** Whatever owns the maze data and wants to ask the canvas for a redraw (a session, a race lane). */
+export interface RenderRequestSink {
+  setRenderRequest(fn: () => void): void;
+}
+
 export interface MazeCanvasProps {
-  session: MazeSession;
+  session: RenderRequestSink;
   mode: ViewMode;
   theme: RenderTheme;
   options: RenderOptions;
@@ -130,7 +134,9 @@ export function MazeCanvas({
   useEffect(() => {
     onRenderer?.(renderer);
     session.setRenderRequest(() => renderer?.requestRender());
-    return () => { session.setRenderRequest(() => undefined); };
+    return () => {
+      session.setRenderRequest(() => undefined);
+    };
   }, [renderer, session, onRenderer]);
 
   useEffect(() => {
@@ -180,7 +186,9 @@ export function MazeCanvas({
     });
     ro.observe(host);
     report(host.clientWidth, host.clientHeight);
-    return () => { ro.disconnect(); };
+    return () => {
+      ro.disconnect();
+    };
   }, [renderer, onHostSize]);
 
   // ---- pointer handling: parallax pointer, pinch zoom ------------------------------------
