@@ -1,10 +1,25 @@
 # 14 - Roadmap
 
-> Status: Proposed | Last updated: 2026-09-27
+> Status: In execution | Last updated: 2026-10-03
 > Estimates are ideal engineering weeks for one full-time developer assisted by coding agents.
 > They are estimates, not commitments. Each phase ends in something deployable.
 
 ---
+
+## 0. Status (2026-10-03)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| 0 Hygiene & safety | Partial | `.env` untracked, gitleaks via CI/hooks; key rotation and push are owner actions (H-1, H-2) |
+| 1 Foundation | Done | monorepo, `@maze/core`, CI workflow, ADRs 001-003/018 accepted |
+| 2 Web parity | Done | all parity rows (09 section 4.1); PWA, e2e + axe, responsive layouts |
+| 3 Solvers, Step Player, Race | Mostly done | 12 generators, 12 solvers, Watch, Compare, timeline/rewind; **Race UI = WI-01** |
+| 4 Backend, accounts, Build | Build UI = WI-03; backend blocked on H-5..H-8 | core editing ops already exist |
+| 5 Learn | Not started | WI-06 |
+| 6 Desktop & mobile | Blocked (H-9, H-10) | PWA works today |
+| 7 Hardening | Ongoing | lint/knip/a11y debt = WI-05 |
+
+Work is sequenced in [17-work-queue.md](./17-work-queue.md).
 
 ## 1. Phase overview
 

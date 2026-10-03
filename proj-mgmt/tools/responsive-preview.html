@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Maze Lab responsive preview</title>
+    <!--
+      Shows one route at phone, tablet, desktop and wide sizes side by side.
+      Serve this folder (e.g. `python -m http.server 8765` from proj-mgmt/tools) and open
+      http://127.0.0.1:8765/responsive-preview.html?page=watch&port=5180
+      `page` is the route without the leading slash (URL-encode query strings).
+    -->
+    <style>
+      body { margin: 0; background: #333; color: #ddd; font: 12px sans-serif; padding: 8px; display: flex; gap: 12px; align-items: flex-start; }
+      figure { margin: 0; }
+      .box { overflow: hidden; border: 2px solid #888; }
+      iframe { border: 0; transform-origin: 0 0; background: #000; }
+    </style>
+    <script>
+      const params = new URLSearchParams(location.search);
+      const page = params.get('page') || 'play';
+      const port = params.get('port') || '5180';
+      const frames = [
+        ['phone 390x780', 390, 780, 0.5],
+        ['tablet 820x1100', 820, 1100, 0.36],
+        ['desktop 1280x800', 1280, 800, 0.36],
+        ['wide 1680x950', 1680, 950, 0.3],
+      ];
+      addEventListener('DOMContentLoaded', () => {
+        for (const [label, w, h, k] of frames) {
+          const fig = document.createElement('figure');
+          fig.innerHTML =
+            `<figcaption>${label}</figcaption>` +
+            `<div class="box" style="width:${w * k}px;height:${h * k}px">` +
+            `<iframe src="http://127.0.0.1:${port}/${page}" style="width:${w}px;height:${h}px;transform:scale(${k})"></iframe></div>`;
+          document.body.appendChild(fig);
+        }
+      });
+    </script>
+  </head>
+  <body></body>
+</html>

@@ -33,3 +33,4 @@ test-results/
 
 # agent worktrees (git worktree add targets)
 .claude/worktrees/
+.claude/settings.local.json
