@@ -42,6 +42,7 @@ architectural choice was made, and **in what order** the work happens.
 | 16 | [Human Actions](./16-human-actions.md) | Owner-only to-dos (key rotation, pushes, GitHub/GCP/store setup) that unblock each phase |
 | 17 | [Work Queue](./17-work-queue.md) | Ordered next work items; the one marked NEXT is what "proceed" means |
 | 18 | [Lessons Learned](./18-lessons-learned.md) | What went wrong or right, and the rule we follow now |
+| 19 | [Tree View](./19-tree-view.md) | Proposed: show a maze as the spanning tree it is, growing in 2D and 3D (WI-09) |
 | ADR | [adr/](./adr/) | Architecture Decision Records (one file per decision) |
 
 Read order for a newcomer: **01 -> 00 -> 03 -> 02 -> 14**, then dive into the specialised docs.

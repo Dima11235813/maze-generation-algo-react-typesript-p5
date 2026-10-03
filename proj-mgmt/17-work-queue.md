@@ -101,6 +101,23 @@ The owner especially enjoys the first-person walkthrough. Make it a complete exp
   every solver has a listing whose `stepToLine` covers every step type (exhaustive test).
 - Branch: `feat/algorithm-params`. Blocked by: nothing.
 
+### WI-09 Tree view: "treeify" the maze in 2D and 3D - TODO
+
+Owner idea 2026-10-03. A perfect maze is a spanning tree; "pulled and stretched out in the proper
+way" it looks like a tree (Wikipedia, Maze generation algorithm). Design:
+[19-tree-view.md](./19-tree-view.md).
+
+- Scope: core `spanningTree` + `TreeTracker` + tidy/radial/3D layouts; a "Tree" view mode
+  (beside 2D/3D) with a grid<->tree morph slider; the tree growing live during generation (with
+  rewind); a 3D botanical tree; solver overlays on the tree (Watch); tree metrics in
+  Explore/Compare; dashed loop edges for braided mazes; an ARIA tree outline.
+- Delivery: five slices (design doc section 6), each merged and phone-checked on its own.
+  Start with slice 1 (core, no UI); plan the rest into items when it becomes NEXT.
+- Acceptance (slice 1): property tests: n-1 tree edges for perfect mazes, leaves = dead ends,
+  goal depth = solution length, layouts overlap-free and deterministic.
+- Branch: `feat/tree-core` (then `feat/tree-view-2d`, ...). Blocked by: nothing; slice 2 wants
+  BUG-01's maze tools widget for the morph slider.
+
 ### WI-05 Quality debt sweep - TODO
 
 - Scope: promote lint rules from warn to error one by one (339 warnings; biggest:
