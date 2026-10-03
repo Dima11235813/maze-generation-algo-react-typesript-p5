@@ -22,8 +22,8 @@ import {
   type MazeTree,
   type TreeLayout,
 } from '@maze/core';
-import { legacyCellColor } from './color';
-import { solveMarkColor } from './overlay';
+import { legacyCellColor, mix, resolve } from './color';
+import { SOLVE_TINT_ALPHA, solveMarkColor } from './overlay';
 import type { RGB, RenderTheme, TreeLayoutKind, TreeViewOptions } from './types';
 
 /** Time constant of the position ease, ms (about 95 % of the way in three of these). */
@@ -39,8 +39,9 @@ export const smoothstep = (t: number): number => {
 const ease = (from: number, to: number, k: number): number => from + (to - from) * k;
 
 /**
- * Colour of a tree node (and of the branch leading to it): the solver's mark while solving,
- * the generation colours while the maze grows, the cell colour otherwise.
+ * Colour of a tree node (and of the branch leading to it): the generation colours while the
+ * maze grows, the cell colour otherwise, tinted by the solver's mark. Already resolved (the
+ * theme's invert applied), so callers must not resolve it again.
  */
 export function treeNodeColor(
   theme: RenderTheme,
@@ -48,14 +49,16 @@ export function treeNodeColor(
   gen: GenerationTracker | null,
   solve: SolveTracker | null,
 ): RGB {
+  const base =
+    gen && !gen.done
+      ? legacyCellColor(theme, gen.visitCount[cell] ?? 0, gen.depthAtVisit[cell] ?? -1)
+      : resolve(theme, theme.cell);
   if (solve) {
+    // Tint, like the maze view: the solver's colours alone are pale against the background.
     const mark = solveMarkColor(theme, solve.marks[cell] ?? 0);
-    if (mark) return mark;
+    if (mark) return mix(base, resolve(theme, mark), SOLVE_TINT_ALPHA);
   }
-  if (gen && !gen.done) {
-    return legacyCellColor(theme, gen.visitCount[cell] ?? 0, gen.depthAtVisit[cell] ?? -1);
-  }
-  return theme.cell;
+  return base;
 }
 
 export class TreeScene {

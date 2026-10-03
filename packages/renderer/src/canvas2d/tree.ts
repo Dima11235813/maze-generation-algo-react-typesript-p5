@@ -134,7 +134,7 @@ export function drawTree2d(input: TreeDraw2dInput): void {
     const colorKey = (color.r << 16) | (color.g << 8) | color.b;
     let css = cssCache.get(colorKey);
     if (css === undefined) {
-      css = rgbToCss(resolve(theme, color));
+      css = rgbToCss(color);
       cssCache.set(colorKey, css);
     }
     const w = base * (0.6 + 1.8 * Math.sqrt((tree.subtreeSize[c] as number) / total));
@@ -161,7 +161,7 @@ export function drawTree2d(input: TreeDraw2dInput): void {
   const dot = Math.max(1 * dpr, base * 0.6);
   for (const root of tree.roots) {
     if ((tree.subtreeSize[root] as number) > 1) continue;
-    ctx.fillStyle = rgbToCss(resolve(theme, treeNodeColor(theme, root, gen, solve)));
+    ctx.fillStyle = rgbToCss(treeNodeColor(theme, root, gen, solve));
     ctx.beginPath();
     ctx.arc(outX[root] as number, outY[root] as number, dot, 0, Math.PI * 2);
     ctx.fill();

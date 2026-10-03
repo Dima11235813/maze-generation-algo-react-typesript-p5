@@ -219,7 +219,8 @@ export class TreeMeshes {
       const c = tree.order[i] as CellId;
       const r = base * (0.5 + 2.2 * Math.sqrt((tree.subtreeSize[c] as number) / total));
       this.radius[c] = r;
-      this.setColor(this.color, theme, treeNodeColor(theme, c, gen, solve));
+      const rgb = treeNodeColor(theme, c, gen, solve);
+      this.color.setRGB(rgb.r / 255, rgb.g / 255, rgb.b / 255, THREE.SRGBColorSpace);
       const p = tree.parent[c] as number;
       if (p >= 0) {
         this.segment(this.branches, k, p, c, r);
