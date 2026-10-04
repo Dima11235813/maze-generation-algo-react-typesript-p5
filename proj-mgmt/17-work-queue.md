@@ -70,6 +70,30 @@ maze is always hidden, worst on phones where the panel is large relative to the 
   phone/tablet/desktop check; the 3D walkthrough HUD is unaffected.
 - Branch: `fix/maze-tools-widget`. Blocked by: nothing.
 
+### WI-10 Ride along: watch a solver in first person - TODO
+
+Owner idea 2026-10-04: watch the solver from the perspective of running the maze. The first-person
+camera (Run Maze) follows the solver instead of the player.
+
+- Scope: a "Ride along" toggle on Watch (and on Play while a solve runs) that puts the 3D view in
+  first person on the solver's current cell.
+  - Walking solvers (wall follower, Tremaux, Pledge, random mouse, flood-fill descent) already
+    yield `move` steps with a heading: the camera follows them exactly, turns included.
+  - Search solvers (BFS, DFS, A*, Dijkstra, greedy, bidirectional BFS, dead-end filling) jump
+    between expanded cells: when the next cell is not adjacent the camera rises to peek height
+    and glides there (looking towards it), so it never passes through walls at eye level; the
+    frontier and visited marks glow on the floor as in the 3D view.
+  - When the solver finishes, the camera walks the found path from start to goal at eye level.
+  - Works with play, pause, step, step back and the scrubber (the pose is derived from the solve
+    tracker, so rewinding is exact); speed slider applies; reduced motion jumps instead of easing.
+  - HUD (in a row below the canvas, not over it, per BUG-01): solver name, step, "walking" /
+    "searching" / "replaying the path", exit button; R toggles; the pose is announced on request.
+- Acceptance: unit tests for the pose derivation (walking solvers follow `move` headings; search
+  solvers mark non-adjacent jumps as glides; rewind gives the same pose); RTL test that the
+  toggle switches to the 3D renderer with a first-person state following the solver; e2e journey
+  (Watch, ride along with the wall follower, step, step back); phone check.
+- Branch: `feat/ride-along`. Blocked by: nothing.
+
 ### WI-02 Run Maze as a game: timer, moves, undo, hint, recorded solves - TODO
 
 The owner especially enjoys the first-person walkthrough. Make it a complete experience.
