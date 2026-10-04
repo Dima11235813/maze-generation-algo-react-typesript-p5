@@ -1,7 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
-/** Fixed port so the Vite dev server used by the tests never collides with `pnpm dev` (5173). */
-export const E2E_PORT = 4174;
+/**
+ * Fixed port from the Maze Lab block (41920-41939, D:\GDrive\proj-mgmt\inventory\local-ports.md) so
+ * the tests never collide with the long-running dev server on 41920.
+ */
+export const E2E_PORT = 41922;
 const baseURL = `http://127.0.0.1:${E2E_PORT}`;
 const isCI = Boolean(process.env['CI']);
 

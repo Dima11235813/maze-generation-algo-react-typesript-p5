@@ -71,7 +71,7 @@ Everything above is frozen with the legacy app (D-19) and replaced by the standa
   and `StubPage`, `createFakeRenderer`, `wrapAngle`), 4 unused exported types, and the
   deliberate `Panel`/`Card` duplicate exports in `@maze/ui`.
 - **Playwright E2E** (`apps/web/e2e`, `pnpm e2e`): production build served by `vite preview`
-  on port 4174; fixture seeds `maze-lab:prefs` with reduced motion and maximum speed; software
+  on port 41922; fixture seeds `maze-lab:prefs` with reduced motion and maximum speed; software
   WebGL flags; axe (`@axe-core/playwright`) gates serious/critical violations on `/`, `/play`,
   `/play` + options sheet, `/learn`. Specs: landing, generation, view modes, solve,
   first-person, options persistence, save/library. **Known a11y debt** excluded from the axe
