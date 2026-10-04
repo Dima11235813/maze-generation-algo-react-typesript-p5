@@ -34,7 +34,7 @@
 
 | # | Action | Why |
 |---|--------|-----|
-| H-13 | Allow phones on the LAN to reach the dev server: in an admin PowerShell `New-NetFirewallRule -DisplayName "Maze Lab dev (5180)" -Direction Inbound -Protocol TCP -LocalPort 5180 -Action Allow -Profile Private` | The fnm Node binary has no inbound rule on the Private profile |
+| H-13 | Allow phones on the LAN to reach the dev server: in an admin PowerShell `New-NetFirewallRule -DisplayName "Maze Lab dev (41920)" -Direction Inbound -Protocol TCP -LocalPort 41920 -Action Allow -Profile Private` (port moved from 5180 on 2026-10-03; an old 5180 rule, if you added one, can go) | The fnm Node binary has no inbound rule on the Private profile |
 | H-14 | Reclaim disk: the merged agent worktrees under `.claude/worktrees/` each hold a full `node_modules`. When happy, run `git worktree remove --force <path>` for each (`git worktree list`) and delete the `worktree-agent-*` branches | Agents never delete files on Drive; this is the owner's call |
 
 ## Nice to have

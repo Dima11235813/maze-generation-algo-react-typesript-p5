@@ -108,3 +108,11 @@ ARIA pattern). *Rule:* log the state the handler sees before changing component 
 **L-23 e2e under load.** A full Playwright run while the LAN dev server and screenshot scripts
 were busy took 1.6 min and timed out two journeys; the rerun was 20/20 in 37 s. *Rule:* rerun
 once before treating an e2e timeout as a regression, and report both runs.
+
+**L-24 One long-running dev server on a registered port.** Several sessions each started their own
+Vite server (5173, 5174, 5180) and the owner's LAN URL changed with them; 5173 also collided with
+mirror-chess. *Rule:* Maze Lab owns block 41920-41939 in `D:\GDrive\proj-mgmt\inventory\local-ports.md`;
+the `MazeLab-LocalServers` task keeps the LAN dev server on 41920 alive (heartbeat every 15 min,
+starts what is down, never kills); agents use it instead of starting another, and
+`scripts/register_local_servers.ps1 -Unregister` is the abort. (Supersedes the 5180 advice in
+L-15 and L-19.)

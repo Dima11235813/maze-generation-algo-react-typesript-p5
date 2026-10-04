@@ -5,9 +5,9 @@
   "description": "Maze Lab web app (Vite + React 19); also the UI for the Tauri desktop/mobile shells",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 5173 --strictPort",
+    "dev": "vite --port 41920 --strictPort",
     "build": "vite build",
-    "preview": "vite preview --port 4173 --strictPort",
+    "preview": "vite preview --port 41921 --strictPort",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "icons": "node scripts/generate-icons.mjs",

@@ -52,9 +52,22 @@ pnpm turbo run typecheck                       # TS 7 strict, all packages
 pnpm --filter @maze/<core|player|renderer|web> test
 pnpm lint                                      # 0 errors required; warnings are tracked debt
 pnpm --filter @maze/web build                  # includes the bundle-size gate
-pnpm --filter @maze/web e2e                    # Playwright + axe, builds and serves on :4174
-# Dev server reachable from phones on the LAN (port 5173 is taken by another project here):
-cd apps/web && pnpm exec vite --port 5180 --strictPort --host 0.0.0.0   # http://192.168.86.96:5180
+pnpm --filter @maze/web e2e                    # Playwright + axe, builds and serves on :41922
+```
+
+Ports: block **41920-41939** (registered in `D:\GDrive\proj-mgmt\inventory\local-ports.md`):
+41920 LAN dev server, 41921 `vite preview`, 41922 e2e, 41923 responsive-preview harness.
+
+The dev server **stays running** on **http://192.168.86.96:41920**
+(owner's call, 2026-10-03): the `MazeLab-LocalServers` scheduled task starts it at logon and
+re-checks every 15 minutes (`scripts/run_local_servers.ps1`; starts what is down, never kills).
+Do not start another dev server; use that one. Logs: `.local/logs/local-servers/`.
+
+```bash
+# Abort (removes the task and stops everything on 41920-41939):
+powershell -ExecutionPolicy Bypass -File scripts/register_local_servers.ps1 -Unregister
+# Re-enable:
+powershell -ExecutionPolicy Bypass -File scripts/register_local_servers.ps1
 ```
 
 ## 4. Definition of Done for a work item

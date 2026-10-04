@@ -5,8 +5,8 @@
     <title>Maze Lab responsive preview</title>
     <!--
       Shows one route at phone, tablet, desktop and wide sizes side by side.
-      Serve this folder (e.g. `python -m http.server 8765` from proj-mgmt/tools) and open
-      http://127.0.0.1:8765/responsive-preview.html?page=watch&port=5180
+      Serve this folder (e.g. `python -m http.server 41923 --bind 127.0.0.1` from proj-mgmt/tools)
+      and open http://127.0.0.1:41923/responsive-preview.html?page=watch (dev server on 41920)
       `page` is the route without the leading slash (URL-encode query strings).
     -->
     <style>
@@ -18,7 +18,7 @@
     <script>
       const params = new URLSearchParams(location.search);
       const page = params.get('page') || 'play';
-      const port = params.get('port') || '5180';
+      const port = params.get('port') || '41920';
       const frames = [
         ['phone 390x780', 390, 780, 0.5],
         ['tablet 820x1100', 820, 1100, 0.36],
