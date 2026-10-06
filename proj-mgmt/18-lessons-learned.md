@@ -116,3 +116,19 @@ the `MazeLab-LocalServers` task keeps the LAN dev server on 41920 alive (heartbe
 starts what is down, never kills); agents use it instead of starting another, and
 `scripts/register_local_servers.ps1 -Unregister` is the abort. (Supersedes the 5180 advice in
 L-15 and L-19.)
+
+**L-25 Windows paths through Python string literals.** Inventory edits written from a heredoc'd
+Python script turned `\register` into a carriage return and `\finese` into a form feed (`\r`,
+`\f` escapes), silently corrupting the off-switch commands. *Rule:* write Windows paths with the
+Edit tool, or in Python use raw strings / `chr(92)`, then grep the result for control
+characters before moving on.
+
+**L-26 A second action surface breaks loose queries.** The maze tools widget repeats toolbar
+actions ("Run to end", "Play"), so `screen.getByRole('button', { name: /run to end/i })` found
+two. *Rule:* scope RTL/Playwright queries to their container (`within(toolbar)`), and keep group
+names distinct from other widgets' names ("Playback", not "Solver playback", next to the solver
+picker).
+
+**L-27 Running prettier on a whole folder reformats files you did not touch.** Some files had
+drifted from the formatter. *Rule:* run `prettier --write` on the files you changed only; revert
+formatting-only changes elsewhere (they belong to WI-05).
