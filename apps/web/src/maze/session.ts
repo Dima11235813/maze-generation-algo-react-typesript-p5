@@ -35,6 +35,8 @@ import {
   type Pose,
   type SolveResult,
   type SolveStep,
+  RideAlongTracker,
+  type RidePose,
 } from '@maze/core';
 import { StepPlayer, type StepPlayerOptions } from '@maze/player';
 import type { FirstPersonState } from '@maze/renderer';
@@ -108,6 +110,8 @@ export class MazeSession {
   private readonly listeners = new Set<() => void>();
   private genTracker: GenerationTracker | null = null;
   private solveTrackerRef: SolveTracker | null = null;
+  /** First-person pose following the solver (Ride along), rebuilt from steps like the tracker. */
+  private rideRef: RideAlongTracker | null = null;
   private requestRender: () => void = () => undefined;
   private speed: number;
   private readonly playerOpts: Pick<StepPlayerOptions<unknown, unknown>, 'schedule' | 'now'>;
@@ -138,6 +142,11 @@ export class MazeSession {
     return this.solveTrackerRef;
   }
 
+  /** Where a first-person camera riding along with the solver stands (null without a solve). */
+  get ridePose(): RidePose | null {
+    return this.rideRef?.pose ?? null;
+  }
+
   setRenderRequest(fn: () => void): void {
     this.requestRender = fn;
   }
@@ -155,6 +164,7 @@ export class MazeSession {
     const tracker = new GenerationTracker(grid);
     this.genTracker = tracker;
     this.solveTrackerRef = null;
+    this.rideRef = null;
 
     // Live view of the walls being carved (the generator's own array is internal until it
     // returns). Mirroring `carve` steps keeps the renderer honest during playback.
@@ -189,6 +199,7 @@ export class MazeSession {
       if (this.snap.phase === 'ready') {
         this.snap.solvePlayer?.dispose();
         this.solveTrackerRef = null;
+        this.rideRef = null;
         this.update({
           phase: 'generating',
           state: liveState,
@@ -323,6 +334,8 @@ export class MazeSession {
     const solver = solvers.require(solverId);
     const tracker = new SolveTracker(state.grid);
     this.solveTrackerRef = tracker;
+    const ride = new RideAlongTracker(state);
+    this.rideRef = ride;
 
     const player = new StepPlayer<SolveStep, SolveResult>({
       source: () => solver.run(state, {}),
@@ -330,11 +343,15 @@ export class MazeSession {
       ...this.playerOpts,
     });
     player.subscribe((batch) => {
-      for (const step of batch) tracker.apply(step);
+      for (const step of batch) {
+        tracker.apply(step);
+        ride.apply(step);
+      }
       this.requestRender();
     });
     player.onReset(() => {
       tracker.reset();
+      ride.reset();
       if (this.snap.solvePlayer === player && this.snap.solveResult)
         this.update({ solveResult: null });
       this.requestRender();
@@ -363,6 +380,7 @@ export class MazeSession {
   clearSolve(): void {
     this.snap.solvePlayer?.dispose();
     this.solveTrackerRef = null;
+    this.rideRef = null;
     this.update({ solvePlayer: null, solverId: null, solveResult: null });
     this.requestRender();
   }
@@ -374,6 +392,7 @@ export class MazeSession {
     this.disposePlayers();
     this.genTracker = null;
     this.solveTrackerRef = null;
+    this.rideRef = null;
     const sourceName = name ?? doc.meta?.name ?? null;
     this.update({
       phase: 'ready',
@@ -480,6 +499,7 @@ export class MazeSession {
     this.disposePlayers();
     this.genTracker = null;
     this.solveTrackerRef = null;
+    this.rideRef = null;
     this.snap = INITIAL;
     this.emit();
   }

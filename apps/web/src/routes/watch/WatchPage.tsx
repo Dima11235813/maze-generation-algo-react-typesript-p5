@@ -1,6 +1,6 @@
 import { describeSolveStep, randomSeed, solvers } from '@maze/core';
 import { useStepPlayer } from '@maze/player/react';
-import type { CameraState, Renderer  } from '@maze/renderer';
+import type { CameraState, Renderer } from '@maze/renderer';
 import type { CellId } from '@maze/core';
 import { rendererModeFor, treeOptionsFor, type ViewChoice } from '../../maze/treeView';
 import { TreeControls } from '../tree/TreeControls';
@@ -25,7 +25,9 @@ import {
   snapshotAction,
   useStageFullscreen,
 } from '../tools/actions';
-import { Box as BoxIcon, RotateCcw, Shuffle, Square } from 'lucide-react';
+import { Box as BoxIcon, Eye, RotateCcw, Shuffle, Square } from 'lucide-react';
+import { useRideAlong } from '../../maze/rideAlong';
+import { RideAlongBar } from '../tools/RideAlongBar';
 import { usePrefs } from '../../state/prefs';
 import { MazeCanvas, type HostSize } from '../play/MazeCanvas';
 import { useKeyboardShortcuts } from '../play/useKeyboardShortcuts';
@@ -79,7 +81,11 @@ export function WatchPage() {
   const [viewChoice, setViewChoice] = useState<ViewChoice>('2d');
   const [pullKey, setPullKey] = useState(0);
   const [treeHighlight, setTreeHighlight] = useState<readonly CellId[] | null>(null);
-  const mode = rendererModeFor(viewChoice, prefs.treeLayout);
+  /** Ride along (WI-10): a first-person camera that follows the solver. */
+  const [rideAlong, setRideAlong] = useState(false);
+  /** Riding along needs the 3D renderer and the maze (not the tree). */
+  const effectiveView: ViewChoice = rideAlong ? '3d' : viewChoice;
+  const mode = rendererModeFor(effectiveView, prefs.treeLayout);
   const viewControls = useCameraView(prefs.cameraPreset);
   const { view } = viewControls;
   const [solverId, setSolverId] = useState(() =>
@@ -116,7 +122,13 @@ export function WatchPage() {
     () => ({
       ...buildRenderOptions(prefs, rows, reducedMotion, gridCellSize),
       mode,
-      tree: treeOptionsFor(viewChoice, prefs.treeLayout, prefs.treeMorph, pullKey, treeHighlight),
+      tree: treeOptionsFor(
+        effectiveView,
+        prefs.treeLayout,
+        prefs.treeMorph,
+        pullKey,
+        treeHighlight,
+      ),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -132,7 +144,7 @@ export function WatchPage() {
       reducedMotion,
       gridCellSize,
       mode,
-      viewChoice,
+      effectiveView,
       prefs.treeLayout,
       prefs.treeMorph,
       pullKey,
@@ -261,6 +273,17 @@ export function WatchPage() {
   }, [session, resetLog]);
 
   const armed = snap.phase === 'ready' && snap.solvePlayer !== null;
+  const ride = useRideAlong({
+    session,
+    enabled: rideAlong && armed,
+    status: playerSnap?.status ?? null,
+    stepCount: playerSnap?.stepCount ?? 0,
+    grid: snap.state?.grid ?? null,
+    path: snap.solveResult?.path ?? null,
+    solverName: solvers.get(snap.solverId ?? solverId)?.meta.name ?? solverId,
+    reducedMotion,
+    announce,
+  });
 
   // ---- maze tools -------------------------------------------------------------------------
   const rendererRef = useRef<Renderer | null>(null);
@@ -299,6 +322,23 @@ export function WatchPage() {
       }),
     },
     {
+      id: 'ride',
+      label: 'Ride along',
+      actions: [
+        {
+          id: 'ride-along',
+          label: rideAlong ? 'Stop riding along' : 'Ride along with the solver (first person)',
+          keys: 'R',
+          icon: Eye,
+          onPress: () => {
+            setRideAlong((r) => !r);
+          },
+          pressed: rideAlong,
+          disabled: !armed,
+        },
+      ],
+    },
+    {
       id: 'maze',
       label: 'Maze',
       actions: [
@@ -323,12 +363,14 @@ export function WatchPage() {
           label: mode === '3d' && viewChoice !== 'tree' ? 'Switch to 2D' : 'Switch to 3D',
           icon: mode === '3d' && viewChoice !== 'tree' ? Square : BoxIcon,
           onPress: () => {
+            setRideAlong(false);
             setViewChoice(mode === '3d' && viewChoice !== 'tree' ? '2d' : '3d');
           },
         },
       ],
     },
-    { id: 'camera', label: 'Camera', actions: cameraActions(mode, viewControls) },
+    // Camera moves do nothing in first person; hide them while riding along.
+    { id: 'camera', label: 'Camera', actions: rideAlong ? [] : cameraActions(mode, viewControls) },
     {
       id: 'share',
       label: 'Picture and full screen',
@@ -361,8 +403,15 @@ export function WatchPage() {
         case 'N':
           generateWith(randomSeed());
           break;
+        case 'r':
+        case 'R':
+          if (armed) setRideAlong((r) => !r);
+          break;
+        case 'Escape':
+          setRideAlong(false);
+          break;
         default:
-          if (handleViewKey(e.key, mode, viewControls)) e.preventDefault();
+          if (!rideAlong && handleViewKey(e.key, mode, viewControls)) e.preventDefault();
           break;
       }
     },
@@ -376,7 +425,7 @@ export function WatchPage() {
       ? 'Maze canvas, waiting to generate'
       : `Maze canvas: ${snap.width} by ${snap.height} cells${
           solverName ? `, ${solverName} ${playerSnap?.status ?? 'ready'}` : ''
-        }`;
+        }${ride.firstPerson ? ', riding along in first person' : ''}`;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -423,7 +472,7 @@ export function WatchPage() {
                 theme={theme}
                 options={options}
                 camera={camera}
-                firstPerson={null}
+                firstPerson={ride.firstPerson}
                 maze={snap.state}
                 generation={null}
                 solve={session.solveTracker}
@@ -436,7 +485,15 @@ export function WatchPage() {
               {touchLayout ? null : <MazeTools variant="floating" groups={toolGroups} />}
             </div>
             {touchLayout ? <MazeTools variant="row" groups={toolGroups} /> : null}
-            {viewChoice === 'tree' ? (
+            {ride.firstPerson ? (
+              <RideAlongBar
+                statusText={ride.statusText}
+                onStop={() => {
+                  setRideAlong(false);
+                }}
+              />
+            ) : null}
+            {effectiveView === 'tree' ? (
               <TreeControls
                 layout={prefs.treeLayout}
                 onLayoutChange={(l) => {
