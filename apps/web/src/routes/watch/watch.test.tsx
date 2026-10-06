@@ -39,7 +39,13 @@ describe('/watch', () => {
     await waitFor(() =>
       expect(screen.getByRole('img', { name: /maze canvas: 20 by 15 cells/i })).toBeInTheDocument(),
     );
-    await waitFor(() => expect(screen.getByRole('button', { name: /^play$/i })).toBeEnabled());
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole('toolbar', { name: /watch controls/i })).getByRole('button', {
+          name: /^play$/i,
+        }),
+      ).toBeEnabled(),
+    );
     expect(screen.getByRole('log', { name: /solver steps/i })).toBeInTheDocument();
     expect(
       screen.getByRole('list', { name: /breadth-first search pseudo-code/i }),
@@ -50,7 +56,10 @@ describe('/watch', () => {
     const user = userEvent.setup();
     renderWatch();
     await screen.findByRole('toolbar', { name: /watch controls/i });
-    const run = await screen.findByRole('button', { name: /run to end/i });
+    const run = within(await screen.findByRole('toolbar', { name: /watch controls/i })).getByRole(
+      'button',
+      { name: /run to end/i },
+    );
     await waitFor(() => expect(run).toBeEnabled());
     await user.click(run);
 
@@ -75,7 +84,13 @@ describe('/watch', () => {
     renderWatch();
     await screen.findByRole('toolbar', { name: /watch controls/i });
     const picker = screen.getByRole('group', { name: /solver/i });
-    await waitFor(() => expect(screen.getByRole('button', { name: /^play$/i })).toBeEnabled());
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole('toolbar', { name: /watch controls/i })).getByRole('button', {
+          name: /^play$/i,
+        }),
+      ).toBeEnabled(),
+    );
 
     await user.click(within(picker).getByRole('radio', { name: /depth-first/i }));
     expect(usePrefs.getState().solverId).toBe('dfs');
@@ -83,7 +98,10 @@ describe('/watch', () => {
       await screen.findByRole('list', { name: /depth-first search pseudo-code/i }),
     ).toBeInTheDocument();
 
-    const step = screen.getByRole('button', { name: /step once/i });
+    const step = within(screen.getByRole('toolbar', { name: /watch controls/i })).getByRole(
+      'button',
+      { name: /step once/i },
+    );
     await waitFor(() => expect(step).toBeEnabled());
     await user.click(step);
     await user.click(step);

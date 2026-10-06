@@ -1,6 +1,6 @@
 import { describeSolveStep, randomSeed, solvers } from '@maze/core';
 import { useStepPlayer } from '@maze/player/react';
-import type { CameraState } from '@maze/renderer';
+import type { CameraState, Renderer  } from '@maze/renderer';
 import type { CellId } from '@maze/core';
 import { rendererModeFor, treeOptionsFor, type ViewChoice } from '../../maze/treeView';
 import { TreeControls } from '../tree/TreeControls';
@@ -15,7 +15,17 @@ import { MazeSession } from '../../maze/session';
 import { buildCamera, buildRenderOptions, buildTheme } from '../../maze/theme';
 import { useCameraView } from '../../maze/view';
 import { TimelineBar } from '../play/TimelineBar';
-import { ViewControls, handleViewKey } from '../play/ViewControls';
+import { handleViewKey } from '../play/ViewControls';
+import { MazeTools, type ToolGroup } from '../tools/MazeTools';
+import {
+  cameraActions,
+  downloadSnapshot,
+  fullscreenAction,
+  playbackActions,
+  snapshotAction,
+  useStageFullscreen,
+} from '../tools/actions';
+import { Box as BoxIcon, RotateCcw, Shuffle, Square } from 'lucide-react';
 import { usePrefs } from '../../state/prefs';
 import { MazeCanvas, type HostSize } from '../play/MazeCanvas';
 import { useKeyboardShortcuts } from '../play/useKeyboardShortcuts';
@@ -252,6 +262,80 @@ export function WatchPage() {
 
   const armed = snap.phase === 'ready' && snap.solvePlayer !== null;
 
+  // ---- maze tools -------------------------------------------------------------------------
+  const rendererRef = useRef<Renderer | null>(null);
+  const onRenderer = useCallback((r: Renderer | null) => {
+    rendererRef.current = r;
+  }, []);
+  const fullscreen = useStageFullscreen();
+  const takeSnapshot = useCallback(() => {
+    const url = rendererRef.current?.toDataURL() ?? '';
+    announce(
+      downloadSnapshot(url, `maze-${snap.seed || 'lab'}-${snap.solverId ?? 'solve'}.png`)
+        ? 'Picture saved.'
+        : 'Could not save a picture.',
+    );
+  }, [snap.seed, snap.solverId, announce]);
+  const toolGroups: ToolGroup[] = [
+    {
+      id: 'playback',
+      label: 'Playback',
+      actions: playbackActions({
+        status: playerSnap?.status ?? null,
+        armed,
+        canStepBack: armed && (playerSnap?.stepCount ?? 0) > 0,
+        onToggle: () => {
+          session.toggle();
+        },
+        onStepBack: () => {
+          session.stepBack();
+        },
+        onStep: () => {
+          session.step();
+        },
+        onRunToEnd: () => {
+          session.runToEnd();
+        },
+      }),
+    },
+    {
+      id: 'maze',
+      label: 'Maze',
+      actions: [
+        {
+          id: 'reset-solver',
+          label: 'Reset the solver on this maze',
+          icon: RotateCcw,
+          onPress: resetSolver,
+          disabled: !armed,
+        },
+        {
+          id: 'new-maze',
+          label: 'New maze',
+          keys: 'N',
+          icon: Shuffle,
+          onPress: () => {
+            generateWith(randomSeed());
+          },
+        },
+        {
+          id: 'switch-view',
+          label: mode === '3d' && viewChoice !== 'tree' ? 'Switch to 2D' : 'Switch to 3D',
+          icon: mode === '3d' && viewChoice !== 'tree' ? Square : BoxIcon,
+          onPress: () => {
+            setViewChoice(mode === '3d' && viewChoice !== 'tree' ? '2d' : '3d');
+          },
+        },
+      ],
+    },
+    { id: 'camera', label: 'Camera', actions: cameraActions(mode, viewControls) },
+    {
+      id: 'share',
+      label: 'Picture and full screen',
+      actions: [snapshotAction(takeSnapshot, !snap.state), ...fullscreenAction(fullscreen)],
+    },
+  ];
+
   useKeyboardShortcuts({
     onKeyDown: (e) => {
       switch (e.key) {
@@ -346,14 +430,12 @@ export function WatchPage() {
                 label={canvasLabel}
                 onHostSize={onHostSize}
                 onCameraChange={onCameraChange}
+                onRenderer={onRenderer}
                 pageScroll={touchLayout}
               />
-              <ViewControls
-                mode={mode}
-                controls={viewControls}
-                className="absolute right-2 bottom-2"
-              />
+              {touchLayout ? null : <MazeTools variant="floating" groups={toolGroups} />}
             </div>
+            {touchLayout ? <MazeTools variant="row" groups={toolGroups} /> : null}
             {viewChoice === 'tree' ? (
               <TreeControls
                 layout={prefs.treeLayout}
