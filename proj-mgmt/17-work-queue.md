@@ -5,7 +5,7 @@
 > marked **NEXT**, follow `AGENTS.md` section 2, and update this file when it is done.
 > Status values: `NEXT`, `TODO`, `BLOCKED (H-x)`, `DONE yyyy-mm-dd (commit)`.
 
-## Where we are (2026-10-03, `develop` == `main` == 3183337 + docs, not pushed)
+## Where we are (2026-10-05, `develop` == `main` == f92e323 + docs, not pushed)
 
 Shipped: monorepo foundation and legacy parity; 12 generators + braid; 12 solvers; race scheduler
 in core (no UI yet); Watch (pseudo-code, step log, stats); Explore catalogue + Compare; a11y grid
@@ -13,8 +13,8 @@ and narrator; PWA + chunking; 3D view controls (orbit/tilt/zoom/reset); timeline
 step back, restart, scrub) for generation and solving; responsive workspace (phone column,
 tablet grid, desktop/wide columns); Race page (2-4 solvers, lockstep transport, standings,
 ranking, deep link); Tree view (maze as its spanning tree: upright, radial, 3D; growth, morph,
-outline, Compare). Gate: core 289, player 21, renderer 39, web 73 tests; lint 0 errors (323
-warnings); e2e 20/20.
+outline, Compare); maze tools widget (BUG-01); Ride along (watch a solver in first person).
+Gate: core 294, player 21, renderer 39, web 83 tests; lint 0 errors (325 warnings); e2e 23/23.
 
 ## Queue
 
@@ -75,7 +75,7 @@ maze is always hidden, worst on phones where the panel is large relative to the 
   angle), PNG snapshot and full screen; tooltips with shortcuts on every action. Placement maths in
   `maze/toolsPosition.ts` (property-tested). The Tree view's morph slider stays in its own row.
 
-### WI-10 Ride along: watch a solver in first person - **NEXT**
+### WI-10 Ride along: watch a solver in first person - DONE 2026-10-05 (f92e323)
 
 Owner idea 2026-10-04: watch the solver from the perspective of running the maze. The first-person
 camera (Run Maze) follows the solver instead of the player.
@@ -99,8 +99,14 @@ camera (Run Maze) follows the solver instead of the player.
   toggle switches to the 3D renderer with a first-person state following the solver; e2e journey
   (Watch, ride along with the wall follower, step, step back); phone check.
 - Branch: `feat/ride-along`. Blocked by: nothing.
+- Delivered: core `RideAlongTracker` / `pathPoses` (property tests: walking solvers follow open
+  passages and their headings, search solvers glide exactly on non-adjacent jumps, rewind exact);
+  `MazeSession.ridePose`; `useRideAlong` (live pose, then the walk along the solution; reduced
+  motion jumps to the goal); toggle in the maze tools on Watch (R, Esc stops) and on Play once a
+  solve runs; status line below the canvas and phase announcements; camera buttons hidden while
+  riding. Tests: 5 core, 3 RTL, 1 e2e.
 
-### WI-02 Run Maze as a game: timer, moves, undo, hint, recorded solves - TODO
+### WI-02 Run Maze as a game: timer, moves, undo, hint, recorded solves - **NEXT**
 
 The owner especially enjoys the first-person walkthrough. Make it a complete experience.
 
@@ -195,4 +201,5 @@ Tauri 2 builds; starts with the 2-day WKWebView WebGL spike (ADR-012).
 | Responsive workspace (phone/tablet/desktop/wide) | 2026-10-03 | 551e277 |
 | WI-01 Race page | 2026-10-03 | 17c7471 |
 | WI-09 Tree view (all five slices) | 2026-10-03 | 26c4c69, 3183337 |
+| WI-10 Ride along | 2026-10-05 | f92e323 |
 | BUG-01 Maze tools widget | 2026-10-05 | 43309d6 |
