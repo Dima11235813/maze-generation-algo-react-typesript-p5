@@ -57,7 +57,12 @@ describe('Tree view on /play', () => {
     await screen.findByRole('toolbar', { name: /maze controls/i });
     await waitFor(() => expect(factories.created).toHaveLength(1));
     // Finish generating so the outline has a maze.
-    const run = screen.getByRole('button', { name: /run to end/i });
+    const run = within(screen.getByRole('toolbar', { name: /maze controls/i })).getByRole(
+      'button',
+      {
+        name: /run to end/i,
+      },
+    );
     await waitFor(() => expect(run).toBeEnabled());
     await user.click(run);
 
@@ -143,7 +148,10 @@ describe('Tree view on /watch', () => {
     await user.click(screen.getByRole('radio', { name: /^tree view/i }));
     await waitFor(() => expect(lastOptions(factories).tree?.layout).toBe('tidy'));
     expect(await screen.findByRole('tree', { name: /maze as a tree/i })).toBeInTheDocument();
-    const run = await screen.findByRole('button', { name: /run to end/i });
+    const run = within(await screen.findByRole('toolbar', { name: /watch controls/i })).getByRole(
+      'button',
+      { name: /run to end/i },
+    );
     await waitFor(() => expect(run).toBeEnabled());
     await user.click(run);
     await waitFor(() =>
@@ -169,7 +177,11 @@ describe('Tree view on /explore/compare', () => {
     await waitFor(() =>
       expect(factories.created.every((r) => r.lastOptions.tree?.layout === 'tidy')).toBe(true),
     );
-    await user.click(screen.getByRole('button', { name: /run to end/i }));
+    await user.click(
+      within(screen.getByRole('toolbar', { name: /compare controls/i })).getByRole('button', {
+        name: /run to end/i,
+      }),
+    );
     const table = screen.getByTestId('compare-metrics');
     expect(within(table).getByRole('columnheader', { name: /tree height/i })).toBeInTheDocument();
     await waitFor(() =>

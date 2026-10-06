@@ -39,8 +39,11 @@ export function Workspace({ stage, left, side, stageLabel, className }: Workspac
     >
       <section
         aria-label={stageLabel}
+        data-maze-stage
         className={cn(
           'relative flex h-[68svh] min-h-[18rem] shrink-0 flex-col overflow-hidden rounded-lg border border-border',
+          // Full screen (maze tools): fill the screen and use the app background behind the maze.
+          '[&:fullscreen]:h-screen [&:fullscreen]:w-screen [&:fullscreen]:rounded-none [&:fullscreen]:bg-bg',
           'md:col-span-2 md:h-[58svh]',
           'lg:col-span-1 lg:col-start-1 lg:h-auto lg:min-h-0',
           hasLeft ? 'lg:row-span-2 xl:col-start-2 xl:row-span-1' : 'lg:row-span-1',

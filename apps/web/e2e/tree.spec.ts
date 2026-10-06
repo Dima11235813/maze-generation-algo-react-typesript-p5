@@ -36,7 +36,7 @@ test.describe('tree view', () => {
       await controls.getByRole('radio', { name: '3D tree layout' }).click();
       // The 3D tree uses the three.js renderer: the orbit buttons appear.
       await expect(
-        page.getByRole('group', { name: 'View controls' }).getByRole('button', {
+        page.getByRole('toolbar', { name: 'Maze tools' }).getByRole('button', {
           name: 'Rotate clockwise',
         }),
       ).toBeVisible();

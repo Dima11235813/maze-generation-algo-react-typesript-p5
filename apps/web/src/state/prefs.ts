@@ -48,6 +48,11 @@ export interface Prefs {
   treeLayout: TreeLayoutKind;
   /** 0 = the maze, 1 = the tree. */
   treeMorph: number;
+  // Maze tools widget (desktop: a floating, draggable panel over the maze)
+  /** Position as fractions of the free space in the maze area: {1, 1} = docked bottom-right. */
+  toolsPos: { x: number; y: number };
+  /** Collapsed to its grip so it can be tucked away. */
+  toolsCollapsed: boolean;
 }
 
 export interface PrefsActions {
@@ -96,6 +101,8 @@ export const DEFAULT_PREFS: Prefs = {
   treeView: false,
   treeLayout: 'tidy',
   treeMorph: 1,
+  toolsPos: { x: 1, y: 1 },
+  toolsCollapsed: false,
 };
 
 const TREE_LAYOUTS: readonly TreeLayoutKind[] = ['tidy', 'radial', '3d'];
@@ -233,6 +240,11 @@ function sanitize(input: Partial<Prefs> | undefined): Prefs {
   p.treeMorph = Number.isFinite(p.treeMorph)
     ? Math.min(1, Math.max(0, p.treeMorph))
     : DEFAULT_PREFS.treeMorph;
+  const pos = p.toolsPos as { x?: unknown; y?: unknown } | null | undefined;
+  const frac = (v: unknown): number =>
+    typeof v === 'number' && Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 1;
+  p.toolsPos = { x: frac(pos?.x), y: frac(pos?.y) };
+  if (typeof p.toolsCollapsed !== 'boolean') p.toolsCollapsed = DEFAULT_PREFS.toolsCollapsed;
   return p;
 }
 

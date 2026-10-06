@@ -1,4 +1,4 @@
-import { describeCell, randomSeed } from '@maze/core';
+import { describeCell, randomSeed, solvers } from '@maze/core';
 import { useStepPlayer } from '@maze/player/react';
 import { CAMERA_PRESETS, type CameraState, type Renderer, type ViewMode } from '@maze/renderer';
 import type { DomRenderer } from '@maze/renderer/dom';
@@ -30,7 +30,17 @@ import { Section } from '../../layout/Section';
 import { Workspace } from '../../layout/Workspace';
 import { TimelineBar } from './TimelineBar';
 import { useKeyboardShortcuts } from './useKeyboardShortcuts';
-import { ViewControls, handleViewKey } from './ViewControls';
+import { handleViewKey } from './ViewControls';
+import { MazeTools, type ToolGroup } from '../tools/MazeTools';
+import {
+  cameraActions,
+  downloadSnapshot,
+  fullscreenAction,
+  playbackActions,
+  snapshotAction,
+  useStageFullscreen,
+} from '../tools/actions';
+import { Box as BoxIcon, Footprints, Route, Shuffle, Square, Video, X } from 'lucide-react';
 import { rendererModeFor, treeOptionsFor, type ViewChoice } from '../../maze/treeView';
 import { TreeControls } from '../tree/TreeControls';
 import { TreeOutline } from '../tree/TreeOutline';
@@ -284,6 +294,121 @@ export function PlayPage() {
     [session],
   );
 
+  // ---- maze tools ---------------------------------------------------------------------------
+  const fullscreen = useStageFullscreen();
+  const takeSnapshot = useCallback(() => {
+    const url = rendererRef.current?.toDataURL() ?? '';
+    announce(
+      downloadSnapshot(url, `maze-${snap.seed || 'lab'}.png`)
+        ? 'Picture saved.'
+        : 'Could not save a picture.',
+    );
+  }, [snap.seed, announce]);
+  const solverName = solvers.get(prefs.solverId)?.meta.name ?? prefs.solverId;
+  const toolGroups: ToolGroup[] = [
+    {
+      id: 'playback',
+      label:
+        activePlayer !== null && activePlayer === snap.solvePlayer ? 'Solve playback' : 'Playback',
+      actions: playbackActions({
+        status: playerSnap?.status ?? null,
+        armed: activePlayer !== null,
+        canStepBack: (playerSnap?.stepCount ?? 0) > 0,
+        onToggle: () => {
+          session.toggle();
+        },
+        onStepBack: () => {
+          session.stepBack();
+        },
+        onStep: () => {
+          session.step();
+        },
+        onRunToEnd: () => {
+          session.runToEnd();
+        },
+      }),
+    },
+    {
+      id: 'solve',
+      label: 'Solve',
+      actions: [
+        snap.solvePlayer
+          ? {
+              id: 'clear-solve',
+              label: 'Clear solve',
+              icon: X,
+              onPress: () => {
+                session.clearSolve();
+              },
+            }
+          : {
+              id: 'solve',
+              label: `Solve with ${solverName}`,
+              icon: Route,
+              onPress: () => {
+                session.startSolve(prefs.solverId);
+              },
+              disabled: snap.phase !== 'ready',
+            },
+      ],
+    },
+    {
+      id: 'maze',
+      label: 'Maze',
+      actions: [
+        {
+          id: 'new-maze',
+          label: 'New maze',
+          keys: 'N',
+          icon: Shuffle,
+          onPress: () => {
+            generate();
+          },
+        },
+        {
+          id: 'run-maze',
+          label: 'Run the maze in first person',
+          keys: 'R',
+          icon: Footprints,
+          onPress: toggleFirstPerson,
+          disabled: snap.phase !== 'ready',
+        },
+        {
+          id: 'switch-view',
+          label: rendererMode === '3d' && viewChoice !== 'tree' ? 'Switch to 2D' : 'Switch to 3D',
+          keys: 'T',
+          icon: rendererMode === '3d' && viewChoice !== 'tree' ? Square : BoxIcon,
+          onPress: () => {
+            setMode(rendererMode === '3d' && viewChoice !== 'tree' ? '2d' : '3d');
+          },
+        },
+      ],
+    },
+    {
+      id: 'camera',
+      label: 'Camera',
+      actions: [
+        ...cameraActions(rendererMode, viewControls),
+        ...(rendererMode === '3d' && viewChoice !== 'tree'
+          ? [
+              {
+                id: 'cycle-camera',
+                label: 'Next camera angle',
+                keys: 'V',
+                icon: Video,
+                onPress: cycleCamera,
+              },
+            ]
+          : []),
+      ],
+    },
+    {
+      id: 'share',
+      label: 'Picture and full screen',
+      actions: [snapshotAction(takeSnapshot, !snap.state), ...fullscreenAction(fullscreen)],
+    },
+  ];
+
   // ---- keyboard ---------------------------------------------------------------------------
   useKeyboardShortcuts({
     onKeyDown: (e) => {
@@ -515,12 +640,8 @@ export function PlayPage() {
                 onRenderer={onRenderer}
                 pageScroll={touchLayout}
               />
-              {snap.firstPerson ? null : (
-                <ViewControls
-                  mode={rendererMode}
-                  controls={viewControls}
-                  className="absolute right-2 bottom-2 sm:right-3 sm:bottom-3"
-                />
+              {snap.firstPerson || touchLayout ? null : (
+                <MazeTools variant="floating" groups={toolGroups} />
               )}
               {needsRefit && !snap.firstPerson ? (
                 <div className="absolute top-2 right-2 left-2 flex items-center justify-between gap-2 rounded-md border border-border bg-panel/95 px-3 py-1.5 text-xs shadow sm:top-3 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 sm:justify-start">
@@ -586,6 +707,9 @@ export function PlayPage() {
                 />
               ) : null}
             </div>
+            {touchLayout && !snap.firstPerson ? (
+              <MazeTools variant="row" groups={toolGroups} />
+            ) : null}
             {viewChoice === 'tree' ? (
               <TreeControls
                 layout={prefs.treeLayout}

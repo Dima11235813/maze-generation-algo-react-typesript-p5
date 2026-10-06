@@ -174,7 +174,7 @@ describe('/play', () => {
     await screen.findByRole('toolbar', { name: /maze controls/i });
     await waitFor(() => expect(factories.created).toHaveLength(1));
     const renderer = factories.created[0]!;
-    const controls = screen.getByRole('group', { name: /view controls/i });
+    const controls = screen.getByRole('group', { name: /^camera$/i });
 
     await user.click(within(controls).getByRole('button', { name: /rotate clockwise/i }));
     await waitFor(() => expect(renderer.lastCamera?.yaw).toBeLessThan(0));
