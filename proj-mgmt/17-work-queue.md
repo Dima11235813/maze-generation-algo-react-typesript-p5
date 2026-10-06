@@ -41,7 +41,7 @@ already runs agents in lockstep and ranks them; there is no UI.
   column count by measuring the stage (2 stack on phones, 4 make a 2 x 2 grid); winning lane gets
   a trophy and "(winner)" in its name; axe check and e2e journey added.
 
-### BUG-01 Maze tools widget: the floating view controls cover part of the maze - **NEXT**
+### BUG-01 Maze tools widget: the floating view controls cover part of the maze - DONE 2026-10-05 (43309d6)
 
 Reported by the owner 2026-10-03 (phone screenshot): the "View controls" panel (rotate, tilt,
 zoom, reset) floats over the bottom-right of the maze canvas on Play and Watch, so part of the
@@ -69,8 +69,13 @@ maze is always hidden, worst on phones where the panel is large relative to the 
   Playwright check that on a 390px viewport the widget's box does not intersect the canvas box;
   phone/tablet/desktop check; the 3D walkthrough HUD is unaffected.
 - Branch: `fix/maze-tools-widget`. Blocked by: nothing.
+- Delivered: `routes/tools/MazeTools.tsx` (row on phones/tablets, floating draggable panel on
+  desktop: grip drag, arrow-key nudge, Home/double-click dock, collapse, persisted position) with
+  playback, solve/clear, new maze, first person, 2D/3D, camera (rotate/tilt/zoom/reset/next
+  angle), PNG snapshot and full screen; tooltips with shortcuts on every action. Placement maths in
+  `maze/toolsPosition.ts` (property-tested). The Tree view's morph slider stays in its own row.
 
-### WI-10 Ride along: watch a solver in first person - TODO
+### WI-10 Ride along: watch a solver in first person - **NEXT**
 
 Owner idea 2026-10-04: watch the solver from the perspective of running the maze. The first-person
 camera (Run Maze) follows the solver instead of the player.
@@ -86,8 +91,9 @@ camera (Run Maze) follows the solver instead of the player.
   - When the solver finishes, the camera walks the found path from start to goal at eye level.
   - Works with play, pause, step, step back and the scrubber (the pose is derived from the solve
     tracker, so rewinding is exact); speed slider applies; reduced motion jumps instead of easing.
-  - HUD (in a row below the canvas, not over it, per BUG-01): solver name, step, "walking" /
-    "searching" / "replaying the path", exit button; R toggles; the pose is announced on request.
+  - Controls in the maze tools widget (BUG-01): a Ride along toggle; status (solver name, step,
+    "walking" / "searching" / "replaying the path") in the live region and a short line below the
+    canvas; R toggles on Watch; the pose is announced on request.
 - Acceptance: unit tests for the pose derivation (walking solvers follow `move` headings; search
   solvers mark non-adjacent jumps as glides; rewind gives the same pose); RTL test that the
   toggle switches to the 3D renderer with a first-person state following the solver; e2e journey
@@ -189,3 +195,4 @@ Tauri 2 builds; starts with the 2-day WKWebView WebGL spike (ADR-012).
 | Responsive workspace (phone/tablet/desktop/wide) | 2026-10-03 | 551e277 |
 | WI-01 Race page | 2026-10-03 | 17c7471 |
 | WI-09 Tree view (all five slices) | 2026-10-03 | 26c4c69, 3183337 |
+| BUG-01 Maze tools widget | 2026-10-05 | 43309d6 |
