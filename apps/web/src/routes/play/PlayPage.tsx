@@ -40,7 +40,9 @@ import {
   snapshotAction,
   useStageFullscreen,
 } from '../tools/actions';
-import { Box as BoxIcon, Footprints, Route, Shuffle, Square, Video, X } from 'lucide-react';
+import { Box as BoxIcon, Eye, Footprints, Route, Shuffle, Square, Video, X } from 'lucide-react';
+import { useRideAlong } from '../../maze/rideAlong';
+import { RideAlongBar } from '../tools/RideAlongBar';
 import { rendererModeFor, treeOptionsFor, type ViewChoice } from '../../maze/treeView';
 import { TreeControls } from '../tree/TreeControls';
 import { TreeOutline } from '../tree/TreeOutline';
@@ -80,7 +82,9 @@ export function PlayPage() {
   const [pullKey, setPullKey] = useState(0);
   const [treeHighlight, setTreeHighlight] = useState<readonly CellId[] | null>(null);
   const rendererRef = useRef<Renderer | null>(null);
-  const viewChoice: ViewChoice = prefs.treeView ? 'tree' : prefs.mode;
+  /** Ride along (WI-10): a first-person camera that follows the running solver. */
+  const [rideAlong, setRideAlong] = useState(false);
+  const viewChoice: ViewChoice = rideAlong ? '3d' : prefs.treeView ? 'tree' : prefs.mode;
   const rendererMode = rendererModeFor(viewChoice, prefs.treeLayout);
   const a11yRef = useRef<DomRenderer | null>(null);
 
@@ -248,7 +252,24 @@ export function PlayPage() {
     [prefs, session, setMode, announce],
   );
 
+  // Riding along ends with the solve it follows.
+  useEffect(() => {
+    if (!snap.solvePlayer) setRideAlong(false);
+  }, [snap.solvePlayer]);
+  const ride = useRideAlong({
+    session,
+    enabled: rideAlong && snap.solvePlayer !== null,
+    status: snap.solvePlayer ? (snap.solvePlayer.getSnapshot().status ?? null) : null,
+    stepCount: snap.solvePlayer ? (playerSnap?.stepCount ?? 0) : 0,
+    grid: snap.state?.grid ?? null,
+    path: snap.solveResult?.path ?? null,
+    solverName: solvers.get(snap.solverId ?? prefs.solverId)?.meta.name ?? prefs.solverId,
+    reducedMotion,
+    announce,
+  });
+
   const toggleFirstPerson = useCallback(() => {
+    setRideAlong(false);
     if (session.getSnapshot().firstPerson) {
       session.exitFirstPerson();
       return;
@@ -350,6 +371,22 @@ export function PlayPage() {
               },
               disabled: snap.phase !== 'ready',
             },
+        ...(snap.solvePlayer
+          ? [
+              {
+                id: 'ride-along',
+                label: rideAlong
+                  ? 'Stop riding along'
+                  : 'Ride along with the solver (first person)',
+                icon: Eye,
+                onPress: () => {
+                  if (!rideAlong && session.getSnapshot().firstPerson) session.exitFirstPerson();
+                  setRideAlong((r) => !r);
+                },
+                pressed: rideAlong,
+              },
+            ]
+          : []),
       ],
     },
     {
@@ -387,20 +424,23 @@ export function PlayPage() {
     {
       id: 'camera',
       label: 'Camera',
-      actions: [
-        ...cameraActions(rendererMode, viewControls),
-        ...(rendererMode === '3d' && viewChoice !== 'tree'
-          ? [
-              {
-                id: 'cycle-camera',
-                label: 'Next camera angle',
-                keys: 'V',
-                icon: Video,
-                onPress: cycleCamera,
-              },
-            ]
-          : []),
-      ],
+      // Camera moves do nothing in first person; hide them while riding along.
+      actions: rideAlong
+        ? []
+        : [
+            ...cameraActions(rendererMode, viewControls),
+            ...(rendererMode === '3d' && viewChoice !== 'tree'
+              ? [
+                  {
+                    id: 'cycle-camera',
+                    label: 'Next camera angle',
+                    keys: 'V',
+                    icon: Video,
+                    onPress: cycleCamera,
+                  },
+                ]
+              : []),
+          ],
     },
     {
       id: 'share',
@@ -540,7 +580,7 @@ export function PlayPage() {
   const canvasLabel =
     snap.phase === 'empty'
       ? 'Maze canvas, waiting to generate'
-      : `Maze canvas: ${snap.width} by ${snap.height} cells, ${snap.phase === 'generating' ? 'generation in progress' : 'complete'}${snap.firstPerson ? ', first-person mode' : ''}${viewChoice === 'tree' ? ', shown as a tree' : ''}`;
+      : `Maze canvas: ${snap.width} by ${snap.height} cells, ${snap.phase === 'generating' ? 'generation in progress' : 'complete'}${snap.firstPerson ? ', first-person mode' : ''}${viewChoice === 'tree' ? ', shown as a tree' : ''}${ride.firstPerson ? ', riding along with the solver in first person' : ''}`;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -629,7 +669,7 @@ export function PlayPage() {
                 theme={theme}
                 options={options}
                 camera={camera}
-                firstPerson={snap.firstPerson}
+                firstPerson={ride.firstPerson ?? snap.firstPerson}
                 maze={snap.state}
                 generation={session.generation}
                 solve={session.solveTracker}
@@ -709,6 +749,14 @@ export function PlayPage() {
             </div>
             {touchLayout && !snap.firstPerson ? (
               <MazeTools variant="row" groups={toolGroups} />
+            ) : null}
+            {ride.firstPerson ? (
+              <RideAlongBar
+                statusText={ride.statusText}
+                onStop={() => {
+                  setRideAlong(false);
+                }}
+              />
             ) : null}
             {viewChoice === 'tree' ? (
               <TreeControls
