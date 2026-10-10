@@ -1,4 +1,13 @@
-import { DIRS, canMove, decodeDocument, dirBetween, isPerfectMaze } from '@maze/core';
+import {
+  DIRS,
+  canMove,
+  decodeDocument,
+  decodeRun,
+  dirBetween,
+  encodeRun,
+  hintCells,
+  isPerfectMaze,
+} from '@maze/core';
 import { describe, expect, it } from 'vitest';
 import { MazeSession } from './session';
 
@@ -203,5 +212,127 @@ describe('MazeSession', () => {
       s.runToEnd();
       expect(s.getSnapshot().solveResult!.path).toEqual(path);
     });
+  });
+});
+
+describe('MazeSession: Run Maze as a game', () => {
+  /** A finished session whose clock is under the test's control. */
+  function gameSession(seed = 'game') {
+    let t = 1_000;
+    const s = new MazeSession({ schedule: () => () => undefined, now: () => t });
+    s.generate({ width: 7, height: 6, cellSize: 20, seed, autoplay: false });
+    s.runToEnd();
+    return {
+      s,
+      advance: (ms: number) => {
+        t += ms;
+      },
+    };
+  }
+
+  /** Compass moves along the shortest path from the current cell to the goal. */
+  function compassToGoal(s: MazeSession): Array<'N' | 'E' | 'S' | 'W'> {
+    const { state, run } = s.getSnapshot();
+    const cells = [run!.pose.cell, ...hintCells(state!, run!.pose.cell, 10_000)];
+    const out: Array<'N' | 'E' | 'S' | 'W'> = [];
+    for (let i = 0; i + 1 < cells.length; i++) {
+      out.push((['N', 'E', 'S', 'W'] as const)[dirBetween(state!.grid, cells[i]!, cells[i + 1]!)!]);
+    }
+    return out;
+  }
+
+  it('times the run from the first step to the goal and announces a summary', () => {
+    const { s, advance } = gameSession();
+    expect(s.enterRun('2d')).toBe(true);
+    expect(s.getSnapshot().runView).toBe('2d');
+    expect(s.getSnapshot().runStartedAt).toBeNull();
+    advance(5_000); // thinking before the first step is free
+    const moves = compassToGoal(s);
+    for (const m of moves) {
+      advance(500);
+      s.runMove(m);
+    }
+    const snap = s.getSnapshot();
+    expect(snap.reachedGoal).toBe(true);
+    expect(snap.runSummary).toMatchObject({
+      moves: moves.length,
+      optimalMoves: moves.length,
+      efficiency: 1,
+      hints: 0,
+      undos: 0,
+      timeMs: (moves.length - 1) * 500,
+    });
+    expect(snap.status).toMatch(
+      /^You reached the goal in .* with \d+ moves \(shortest \d+\), 100% efficient\.$/,
+    );
+  });
+
+  it('walls block moves, undo/redo/seek rewind exactly and are counted', () => {
+    const { s } = gameSession('undo');
+    s.enterRun('2d');
+    const start = s.getSnapshot().run!.pose;
+    // A blocked direction leaves the run untouched and says so.
+    const blocked = (['N', 'E', 'S', 'W'] as const).find(
+      (m) => !canMove(s.getSnapshot().state!, start.cell, DIRS[['N', 'E', 'S', 'W'].indexOf(m)]!),
+    );
+    if (blocked) {
+      expect(s.runMove(blocked)).toBe(false);
+      expect(s.getSnapshot().status).toMatch(/wall/i);
+    }
+    const path = compassToGoal(s).slice(0, 3);
+    for (const m of path) s.runMove(m);
+    const after3 = s.getSnapshot().run!;
+    s.runUndo();
+    s.runUndo();
+    expect(s.getSnapshot().run!.cursor).toBe(1);
+    expect(s.getSnapshot().runUndos).toBe(2);
+    s.runRedo();
+    s.runRedo();
+    expect(s.getSnapshot().run!.pose).toEqual(after3.pose);
+    s.runSeek(0);
+    expect(s.getSnapshot().run!.pose).toEqual(start);
+    expect(s.getSnapshot().runUndos).toBe(3);
+  });
+
+  it('a hint marks the next cells of the shortest way and clears once you move', () => {
+    const { s } = gameSession('hint');
+    s.enterRun('3d');
+    s.runHint(4);
+    const snap = s.getSnapshot();
+    expect(snap.runHints).toBe(1);
+    expect(snap.hint).toHaveLength(Math.min(4, snap.metrics!.solutionLength!));
+    expect(s.hintTracker?.path?.[0]).toBe(snap.run!.pose.cell);
+    expect(snap.status).toMatch(/^Hint: head (north|east|south|west)/);
+    const first = compassToGoal(s)[0]!;
+    s.runMove(first);
+    expect(s.hintTracker).toBeNull();
+    expect(s.getSnapshot().hint).toBeNull();
+  });
+
+  it('replays a saved run move by move and ignores the player meanwhile', () => {
+    const { s } = gameSession('replay');
+    s.enterRun('2d');
+    const moves = compassToGoal(s);
+    for (const m of moves) s.runMove(m);
+    const saved = encodeRun(s.getSnapshot().run!);
+    s.exitFirstPerson();
+    expect(s.getSnapshot().run).toBeNull();
+
+    expect(s.startReplay(decodeRun(saved), '2d')).toBe(true);
+    expect(s.getSnapshot().runReplay).toBe(true);
+    expect(s.runMove(moves[0]!)).toBe(false); // input ignored while replaying
+    let ticks = 0;
+    while (s.replayTick()) ticks++;
+    expect(ticks).toBe(moves.length);
+    expect(s.getSnapshot().runReplay).toBe(false);
+    expect(s.getSnapshot().reachedGoal).toBe(true);
+  });
+
+  it('generating a new maze ends the run', () => {
+    const { s } = gameSession('ends');
+    s.enterRun('3d');
+    s.generate({ width: 5, height: 5, cellSize: 20, seed: 'next', autoplay: false });
+    expect(s.getSnapshot().run).toBeNull();
+    expect(s.getSnapshot().firstPerson).toBeNull();
   });
 });
