@@ -111,8 +111,12 @@ export interface PointerState {
 /** Events a renderer reports back to the app (interaction happens on the canvas). */
 export interface RendererEvents {
   onCameraChange?(camera: CameraState): void;
-  /** Cell under the pointer on click/tap, or null when outside the maze. */
-  onCellClick?(cell: CellId | null, event: PointerEvent): void;
+  /**
+   * Cell under the pointer on click/tap, or null when outside the maze. The 2D adapter also
+   * reports where inside the cell the click landed (`fx`, `fy` in 0..1 from its top-left), which
+   * the Build editor uses to pick the nearest wall.
+   */
+  onCellClick?(cell: CellId | null, event: PointerEvent, at?: { fx: number; fy: number }): void;
   onPointerMove?(pointer: PointerState | null): void;
 }
 

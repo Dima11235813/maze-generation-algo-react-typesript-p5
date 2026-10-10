@@ -36,7 +36,8 @@ export interface MazeCanvasProps {
   label: string;
   onHostSize: (size: HostSize) => void;
   onCameraChange?: (camera: CameraState) => void;
-  onCellClick?: (cell: number | null) => void;
+  /** `at` is where inside the cell the click landed (2D only), 0..1 from its top-left. */
+  onCellClick?: (cell: number | null, at?: { fx: number; fy: number }) => void;
   onRenderer?: (renderer: Renderer | null) => void;
   className?: string;
   /**
@@ -108,7 +109,7 @@ export function MazeCanvas({
     let created: Renderer | null = null;
     const events: RendererEvents = {
       onCameraChange: (c) => latest.current.onCameraChange?.(c),
-      onCellClick: (cell) => latest.current.onCellClick?.(cell),
+      onCellClick: (cell, _event, at) => latest.current.onCellClick?.(cell, at),
     };
     const load = mode === '3d' ? factories.create3d() : factories.create2d();
     load

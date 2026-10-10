@@ -49,6 +49,14 @@ export interface LibraryState {
     thumbnail?: string;
     run: Omit<SavedRun, 'id' | 'at'>;
   }): LibraryItem;
+  /**
+   * Replaces an item's maze (Build editor "Save"). Saved runs belonged to the old maze, so they
+   * are dropped. Returns the updated item, or null when the id is unknown.
+   */
+  replace(
+    id: string,
+    input: { name: string; document: MazeDocument; thumbnail?: string },
+  ): LibraryItem | null;
   remove(id: string): void;
   rename(id: string, name: string): void;
   clear(): void;
@@ -101,6 +109,19 @@ export function createLibraryStore(storage?: Storage) {
           };
           set({ items: [item, ...get().items].slice(0, LIBRARY_MAX_ITEMS) });
           return item;
+        },
+        replace: (id, { name, document, thumbnail }) => {
+          const existing = get().items.find((i) => i.id === id);
+          if (!existing) return null;
+          const updated: LibraryItem = {
+            id,
+            name: name.trim() || existing.name,
+            createdAt: existing.createdAt,
+            document,
+            ...(thumbnail ? { thumbnail } : {}),
+          };
+          set({ items: get().items.map((i) => (i.id === id ? updated : i)) });
+          return updated;
         },
         remove: (id) => set({ items: get().items.filter((i) => i.id !== id) }),
         rename: (id, name) =>
