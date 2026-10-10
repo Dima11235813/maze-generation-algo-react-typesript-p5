@@ -69,8 +69,7 @@
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 0.25rem);
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    sans-serif;
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
 }
 
@@ -142,16 +141,26 @@
 
 @media (pointer: coarse) {
   /* Toolbar controls grow to a comfortable 44px hit area on touch devices. */
-  [role='toolbar'] button,
+  [role='toolbar'] button:not([role='switch']),
   [role='toolbar'] [role='combobox'],
   [role='toolbar'] input,
-  [role='dialog'] button,
+  [role='dialog'] button:not([role='switch']),
   [role='dialog'] [role='combobox'] {
     min-height: 2.75rem;
   }
-  [role='toolbar'] button:not(:has(span:not(.sr-only))),
-  [role='toolbar'] [role='switch'] {
+  [role='toolbar'] button:not([role='switch']):not(:has(span:not(.sr-only))) {
     min-width: 2.75rem;
+  }
+  /* Switches keep their pill shape; an invisible overlay gives them the same 44px hit area. */
+  [role='toolbar'] [role='switch'],
+  [role='dialog'] [role='switch'] {
+    position: relative;
+  }
+  [role='toolbar'] [role='switch']::after,
+  [role='dialog'] [role='switch']::after {
+    content: '';
+    position: absolute;
+    inset: -0.75rem -0.25rem;
   }
   [role='slider'] {
     min-width: 1.5rem;
