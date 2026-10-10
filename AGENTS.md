@@ -73,6 +73,35 @@ powershell -ExecutionPolicy Bypass -File scripts/register_local_servers.ps1 -Unr
 powershell -ExecutionPolicy Bypass -File scripts/register_local_servers.ps1
 ```
 
+## 3a. Shared machine - workspace harness
+
+This project runs on a shared machine. The workspace harness at `D:\GDrive\AGENTS.md` (section 0)
+takes precedence over local convenience, and defines:
+
+- **Ports** - claim a block in `D:\GDrive\proj-mgmt\inventory\local-ports.md` before binding.
+  Never use common defaults (3000, 4173, 4200, 5173, 8080...). Bind `127.0.0.1` unless LAN
+  exposure is deliberate and recorded (ours is: 41920, the owner's phone/tablet testing).
+- **Resources** - ceilings and pacing in `D:\GDrive\proj-mgmt\inventory\local-resources.md`.
+  Never drive a resource to 100%; a slower batch beats a burst. `D:` is a 7200 rpm HDD behind
+  three real-time antivirus engines: every file touch is scanned three times.
+
+Before a heavy job (full test suite, `build`, `e2e`, `check:viewports`, `pnpm install`, a
+repo-wide search):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File D:\GDrive\proj-mgmt\inventory\scripts\preflight-resources.ps1
+```
+
+- A **transient** breach (D: active time or response, CPU, free RAM) means **wait**, not
+  "proceed carefully". Re-check in a few minutes.
+- A **standing** breach (antivirus engine count; dev-server/watcher count, which our always-on
+  41920 server adds to) is the owner's to fix: note it in the report and keep going with the
+  pacing rules below.
+- Pacing: run the gate steps **one at a time** (never e2e next to `check:viewports` or a second
+  suite); prefer one file or package over the whole suite while iterating; scratch, logs and
+  temp output go to the session scratchpad on `C:`, not `D:`. A timeout seen while another heavy
+  job ran is load, not a regression (L-32).
+
 ## 4. Definition of Done for a work item
 
 - [ ] Typecheck clean; all package tests pass; new behaviour has tests (core: property tests for

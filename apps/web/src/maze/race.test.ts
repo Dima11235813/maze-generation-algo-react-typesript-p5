@@ -8,6 +8,8 @@ import {
   parseAgents,
   parseScoring,
   parseSize,
+  raceConfig,
+  raceParamsKey,
   runRaceToEnd,
   type RaceSetup,
 } from './race';
@@ -111,5 +113,25 @@ describe('RaceRun', () => {
     run.player.step();
     expect(calls).toEqual([1, 1, 1]);
     run.dispose();
+  });
+});
+
+describe('race parameters', () => {
+  it('passes clamped parameters to the maze and the agents, and keys restarts on them', () => {
+    const withParams: RaceSetup = {
+      ...setup,
+      generatorId: 'growing-tree',
+      params: { 'growing-tree': { selection: 'oldest' }, astar: { weight: 9 } },
+    };
+    const { document } = buildRaceMaze(withParams);
+    expect(document.provenance?.params).toEqual({ selection: 'oldest' });
+    const config = raceConfig(withParams, document);
+    const astar = config.agents.find((a) => a.id === 'astar');
+    expect(astar?.params).toMatchObject({ weight: 5 });
+    expect(raceParamsKey(withParams)).not.toBe(raceParamsKey({ ...withParams, params: {} }));
+    // Parameters of algorithms not in the race do not restart it.
+    expect(raceParamsKey({ ...setup, params: { pledge: { hand: 'left' } } })).toBe(
+      raceParamsKey(setup),
+    );
   });
 });

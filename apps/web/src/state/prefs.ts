@@ -53,6 +53,12 @@ export interface Prefs {
   toolsPos: { x: number; y: number };
   /** Collapsed to its grip so it can be tucked away. */
   toolsCollapsed: boolean;
+  /**
+   * Parameters per algorithm id, as entered. Raw values: they are clamped against the
+   * algorithm's `ParamDescriptor`s (`sanitizeParams`) where they are used, so a changed range
+   * or a removed key in a later core version never breaks a stored value.
+   */
+  algoParams: Record<string, Record<string, unknown>>;
 }
 
 export interface PrefsActions {
@@ -103,6 +109,7 @@ export const DEFAULT_PREFS: Prefs = {
   treeMorph: 1,
   toolsPos: { x: 1, y: 1 },
   toolsCollapsed: false,
+  algoParams: {},
 };
 
 const TREE_LAYOUTS: readonly TreeLayoutKind[] = ['tidy', 'radial', '3d'];
@@ -204,6 +211,29 @@ export function seedPrefsFromLegacy(storage: Storage): boolean {
   }
 }
 
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
+
+/** Keeps `{ [algoId]: { [key]: number | boolean | string } }` and drops anything else. */
+function sanitizeAlgoParams(raw: unknown): Record<string, Record<string, unknown>> {
+  const out: Record<string, Record<string, unknown>> = {};
+  if (!isRecord(raw)) return out;
+  for (const [id, params] of Object.entries(raw)) {
+    if (!isRecord(params)) continue;
+    const kept: Record<string, unknown> = {};
+    for (const [key, v] of Object.entries(params)) {
+      if (
+        typeof v === 'boolean' ||
+        typeof v === 'string' ||
+        (typeof v === 'number' && Number.isFinite(v))
+      )
+        kept[key] = v;
+    }
+    out[id] = kept;
+  }
+  return out;
+}
+
 function sanitize(input: Partial<Prefs> | undefined): Prefs {
   const p: Prefs = { ...DEFAULT_PREFS, ...(input ?? {}) };
   p.cellSize = Math.min(
@@ -245,6 +275,7 @@ function sanitize(input: Partial<Prefs> | undefined): Prefs {
     typeof v === 'number' && Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 1;
   p.toolsPos = { x: frac(pos?.x), y: frac(pos?.y) };
   if (typeof p.toolsCollapsed !== 'boolean') p.toolsCollapsed = DEFAULT_PREFS.toolsCollapsed;
+  p.algoParams = sanitizeAlgoParams(p.algoParams);
   return p;
 }
 

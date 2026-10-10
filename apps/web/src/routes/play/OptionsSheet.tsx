@@ -13,7 +13,14 @@ import {
 } from '@maze/ui';
 import { useEffect, useState } from 'react';
 import { autoProjectionDepth, MIN_CELL_SIZE, maxCellSizeFor } from '../../maze/gridSizing';
-import { DEFAULT_PREFS, LIMITS, usePrefs, type MotionPref, type ThemePref } from '../../state/prefs';
+import {
+  DEFAULT_PREFS,
+  LIMITS,
+  usePrefs,
+  type MotionPref,
+  type ThemePref,
+} from '../../state/prefs';
+import { AlgorithmParams } from '../params/ParamFields';
 import { VERBOSITY_OPTIONS } from './StepLogPanel';
 
 export interface OptionsSheetProps {
@@ -42,12 +49,15 @@ export function OptionsSheet({ open, onOpenChange, hostWidth, rows }: OptionsShe
 
   // Cell size regenerates the maze on commit (legacy behaviour), so drag a local copy.
   const [cellDraft, setCellDraft] = useState(prefs.cellSize);
-  useEffect(() => setCellDraft(prefs.cellSize), [prefs.cellSize]);
+  useEffect(() => {
+    setCellDraft(prefs.cellSize);
+  }, [prefs.cellSize]);
 
   const maxWall = Math.max(1, Math.floor(prefs.cellSize / 2));
   const autoDepth = autoProjectionDepth(rows);
   const depthIsAuto = prefs.maxProjectionDepth === 'auto';
-  const depthValue: number = prefs.maxProjectionDepth === 'auto' ? autoDepth : prefs.maxProjectionDepth;
+  const depthValue: number =
+    prefs.maxProjectionDepth === 'auto' ? autoDepth : prefs.maxProjectionDepth;
   const depthMax = Math.max(10, rows * 2, depthValue);
   const is3d = prefs.mode === '3d';
 
@@ -72,7 +82,9 @@ export function OptionsSheet({ open, onOpenChange, hostWidth, rows }: OptionsShe
             max={maxCell}
             valueText={`${cellDraft} pixels`}
             onValueChange={setCellDraft}
-            onValueCommit={(v) => prefs.set('cellSize', v)}
+            onValueCommit={(v) => {
+              prefs.set('cellSize', v);
+            }}
           />
           <Slider
             label="Wall width"
@@ -80,8 +92,24 @@ export function OptionsSheet({ open, onOpenChange, hostWidth, rows }: OptionsShe
             min={LIMITS.wallWidth.min}
             max={maxWall}
             valueText={`${prefs.wallWidth} pixels`}
-            onValueChange={(v) => prefs.set('wallWidth', v)}
+            onValueChange={(v) => {
+              prefs.set('wallWidth', v);
+            }}
           />
+        </section>
+
+        <Separator />
+
+        <section aria-labelledby="opt-algorithms" className="flex flex-col gap-4">
+          <h3
+            id="opt-algorithms"
+            className="text-xs font-semibold tracking-wide text-muted uppercase"
+          >
+            Algorithms
+          </h3>
+          <p className="text-xs text-muted">Changes apply to the next maze and the next solve.</p>
+          <AlgorithmParams algorithmId={prefs.generatorId} showEmpty />
+          <AlgorithmParams algorithmId={prefs.solverId} showEmpty />
         </section>
 
         <Separator />
@@ -90,31 +118,47 @@ export function OptionsSheet({ open, onOpenChange, hostWidth, rows }: OptionsShe
           <h3 id="opt-colors" className="text-xs font-semibold tracking-wide text-muted uppercase">
             Colours
           </h3>
-          <ColorField label="Cell colour" value={prefs.cellColor} onValueChange={(v) => prefs.set('cellColor', v)} />
-          <ColorField label="Wall colour" value={prefs.wallColor} onValueChange={(v) => prefs.set('wallColor', v)} />
+          <ColorField
+            label="Cell colour"
+            value={prefs.cellColor}
+            onValueChange={(v) => {
+              prefs.set('cellColor', v);
+            }}
+          />
+          <ColorField
+            label="Wall colour"
+            value={prefs.wallColor}
+            onValueChange={(v) => {
+              prefs.set('wallColor', v);
+            }}
+          />
           <ColorField
             label="Background colour"
             value={prefs.backgroundColor}
-            onValueChange={(v) => prefs.set('backgroundColor', v)}
+            onValueChange={(v) => {
+              prefs.set('backgroundColor', v);
+            }}
           />
           <SwitchField
             label="Invert colours"
             description="Draw every colour as its negative."
             checked={prefs.invert}
-            onCheckedChange={(v) => prefs.set('invert', v)}
+            onCheckedChange={(v) => {
+              prefs.set('invert', v);
+            }}
           />
           <div>
             <Button
               size="sm"
               variant="outline"
-              onClick={() =>
+              onClick={() => {
                 prefs.patch({
                   cellColor: DEFAULT_PREFS.cellColor,
                   wallColor: DEFAULT_PREFS.wallColor,
                   backgroundColor: DEFAULT_PREFS.backgroundColor,
                   invert: false,
-                })
-              }
+                });
+              }}
             >
               Reset colours
             </Button>
@@ -131,14 +175,18 @@ export function OptionsSheet({ open, onOpenChange, hostWidth, rows }: OptionsShe
             label="Use 3D"
             description="Extruded walls and the generator cube projection."
             checked={is3d}
-            onCheckedChange={(v) => prefs.set('mode', v ? '3d' : '2d')}
+            onCheckedChange={(v) => {
+              prefs.set('mode', v ? '3d' : '2d');
+            }}
           />
           {is3d ? (
             <SwitchField
               label="Show cube projection"
               description="Cubes rise with the backtracker's history: recently visited cells stay low."
               checked={prefs.showProjection}
-              onCheckedChange={(v) => prefs.set('showProjection', v)}
+              onCheckedChange={(v) => {
+                prefs.set('showProjection', v);
+              }}
             />
           ) : null}
           {is3d && prefs.showProjection ? (
@@ -146,7 +194,9 @@ export function OptionsSheet({ open, onOpenChange, hostWidth, rows }: OptionsShe
               label="Show 3D mirror"
               description="Mirror the projection below the floor."
               checked={prefs.mirror}
-              onCheckedChange={(v) => prefs.set('mirror', v)}
+              onCheckedChange={(v) => {
+                prefs.set('mirror', v);
+              }}
             />
           ) : null}
           {is3d && prefs.showProjection ? (
@@ -155,7 +205,9 @@ export function OptionsSheet({ open, onOpenChange, hostWidth, rows }: OptionsShe
                 label="Automatic projection depth"
                 description={`Auto = ${autoDepth} depth units for ${rows} rows.`}
                 checked={depthIsAuto}
-                onCheckedChange={(v) => prefs.set('maxProjectionDepth', v ? 'auto' : autoDepth)}
+                onCheckedChange={(v) => {
+                  prefs.set('maxProjectionDepth', v ? 'auto' : autoDepth);
+                }}
               />
               <Slider
                 label="Max projection depth"
@@ -164,7 +216,9 @@ export function OptionsSheet({ open, onOpenChange, hostWidth, rows }: OptionsShe
                 max={depthMax}
                 valueText={`${depthValue} depth units`}
                 disabled={depthIsAuto}
-                onValueChange={(v) => prefs.set('maxProjectionDepth', v)}
+                onValueChange={(v) => {
+                  prefs.set('maxProjectionDepth', v);
+                }}
               />
             </div>
           ) : null}
@@ -179,16 +233,33 @@ export function OptionsSheet({ open, onOpenChange, hostWidth, rows }: OptionsShe
           <SwitchField
             label="Show start and goal"
             checked={prefs.showStartGoal}
-            onCheckedChange={(v) => prefs.set('showStartGoal', v)}
+            onCheckedChange={(v) => {
+              prefs.set('showStartGoal', v);
+            }}
           />
-          <SwitchField label="Show grid" checked={prefs.showGrid} onCheckedChange={(v) => prefs.set('showGrid', v)} />
+          <SwitchField
+            label="Show grid"
+            checked={prefs.showGrid}
+            onCheckedChange={(v) => {
+              prefs.set('showGrid', v);
+            }}
+          />
           <SimpleSelect
             label="Motion"
             value={prefs.reducedMotion}
-            onValueChange={(v) => prefs.set('reducedMotion', v)}
+            onValueChange={(v) => {
+              prefs.set('reducedMotion', v);
+            }}
             options={MOTION_OPTIONS}
           />
-          <SimpleSelect label="Theme" value={prefs.theme} onValueChange={(v) => prefs.set('theme', v)} options={THEME_OPTIONS} />
+          <SimpleSelect
+            label="Theme"
+            value={prefs.theme}
+            onValueChange={(v) => {
+              prefs.set('theme', v);
+            }}
+            options={THEME_OPTIONS}
+          />
         </section>
 
         <Separator />
@@ -201,25 +272,37 @@ export function OptionsSheet({ open, onOpenChange, hostWidth, rows }: OptionsShe
             label="Screen-reader grid"
             description="A hidden grid that mirrors the maze for assistive technology. Press G to focus it."
             checked={prefs.screenReaderGrid}
-            onCheckedChange={(v) => prefs.set('screenReaderGrid', v)}
+            onCheckedChange={(v) => {
+              prefs.set('screenReaderGrid', v);
+            }}
           />
           <SimpleSelect
             label="Narration"
             value={prefs.narratorVerbosity}
-            onValueChange={(v) => prefs.set('narratorVerbosity', v)}
+            onValueChange={(v) => {
+              prefs.set('narratorVerbosity', v);
+            }}
             options={VERBOSITY_OPTIONS}
           />
           <SwitchField
             label="Show step log"
             description="A readable log of what the narrator said. Press L to toggle."
             checked={prefs.showStepLog}
-            onCheckedChange={(v) => prefs.set('showStepLog', v)}
+            onCheckedChange={(v) => {
+              prefs.set('showStepLog', v);
+            }}
           />
         </section>
 
         <Separator />
         <div>
-          <Button size="sm" variant="ghost" onClick={() => prefs.reset()}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              prefs.reset();
+            }}
+          >
             Reset all options
           </Button>
         </div>

@@ -1,4 +1,4 @@
-import { solvers, type SolveStep } from '@maze/core';
+import { createGrid, createRng, generators, runToEnd, solvers, type SolveStep } from '@maze/core';
 import { describe, expect, it } from 'vitest';
 import { GENERIC_PSEUDOCODE, PSEUDOCODE, pseudocodeFor } from './pseudocode';
 
@@ -12,11 +12,24 @@ const EVERY_STEP = [
   { t: 'move', from: 3, to: 4 },
   { t: 'path', cells: [0, 1, 2] },
   { t: 'fail' },
-  { t: 'done', stats: { expanded: 1, discovered: 1, frontierPeak: 1, pathLength: 1, optimal: true, steps: 1 } },
+  {
+    t: 'done',
+    stats: { expanded: 1, discovered: 1, frontierPeak: 1, pathLength: 1, optimal: true, steps: 1 },
+  },
 ] as const satisfies readonly SolveStep[];
 
 type Variant = SolveStep['t'];
-const VARIANTS: readonly Variant[] = ['expand', 'discover', 'relax', 'deadend', 'mark', 'move', 'path', 'fail', 'done'];
+const VARIANTS: readonly Variant[] = [
+  'expand',
+  'discover',
+  'relax',
+  'deadend',
+  'mark',
+  'move',
+  'path',
+  'fail',
+  'done',
+];
 
 describe('pseudocode listings', () => {
   it('covers every SolveStep variant in the fixture', () => {
@@ -39,14 +52,32 @@ describe('pseudocode listings', () => {
     },
   );
 
-  it('has a dedicated listing for every solver in the registry, or the generic fallback', () => {
+  it('has a dedicated listing for every solver in the registry', () => {
+    const missing = solvers.ids.filter((id) => !(id in PSEUDOCODE));
+    expect(missing).toEqual([]);
     for (const s of solvers.all) {
       const listing = pseudocodeFor(s.meta.id);
+      expect(listing).not.toBe(GENERIC_PSEUDOCODE);
       expect(listing.lines.length).toBeGreaterThan(3);
     }
     expect(pseudocodeFor('does-not-exist')).toBe(GENERIC_PSEUDOCODE);
     expect(pseudocodeFor(null)).toBe(GENERIC_PSEUDOCODE);
     expect(pseudocodeFor('bfs').title).toMatch(/breadth/i);
     expect(pseudocodeFor('dfs').title).toMatch(/depth/i);
+  });
+
+  it.each(solvers.ids)('%s: every step of a real solve lands on a line', (id) => {
+    const grid = createGrid(9, 7);
+    const maze = runToEnd(generators.require('recursive-backtracker').run(grid, createRng(7)));
+    const listing = pseudocodeFor(id);
+    const seen = new Set<number>();
+    for (const step of solvers.require(id).run(maze, {}, createRng(3))) {
+      const line = listing.stepToLine(step);
+      if (step.t === 'done') continue;
+      expect(line).not.toBeNull();
+      seen.add(line as number);
+    }
+    // A real solve highlights more than one line, so the panel visibly follows the algorithm.
+    expect(seen.size).toBeGreaterThan(1);
   });
 });

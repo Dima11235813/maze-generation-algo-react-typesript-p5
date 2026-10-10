@@ -36,6 +36,8 @@ import { Section } from '../../layout/Section';
 import { Workspace } from '../../layout/Workspace';
 import { OverlayLegend } from './OverlayLegend';
 import { PseudocodePanel } from './PseudocodePanel';
+import { currentParams, useAlgoParams } from '../../maze/useAlgoParams';
+import { AlgorithmParams } from '../params/ParamFields';
 import { SolverPicker } from './SolverPicker';
 import { LOG_LIMIT, StepLog, type LogEntry, type LogVerbosity } from './StepLog';
 import { WatchStats } from './WatchStats';
@@ -172,6 +174,7 @@ export function WatchPage() {
         ...dims,
         ...(seed ? { seed } : {}),
         generatorId: prefs.generatorId,
+        params: currentParams(prefs.generatorId),
         autoplay: false,
       });
       drainGeneration(session);
@@ -198,7 +201,8 @@ export function WatchPage() {
 
   // Arm the chosen solver (paused) whenever the maze is ready and nothing is armed.
   useEffect(() => {
-    if (snap.phase === 'ready' && !snap.solvePlayer) session.startSolve(solverId, false);
+    if (snap.phase === 'ready' && !snap.solvePlayer)
+      session.startSolve(solverId, false, currentParams(solverId));
   }, [snap.phase, snap.solvePlayer, solverId, session]);
 
   useEffect(() => {
@@ -271,6 +275,16 @@ export function WatchPage() {
     session.clearSolve();
     resetLog();
   }, [session, resetLog]);
+
+  // Changing a solver parameter re-arms the solve with the new values (paused at step 0).
+  // Switching solvers already re-arms (changeSolver), so only same-solver edits count.
+  const solverParamsKey = JSON.stringify(useAlgoParams(solverId).values);
+  const lastParams = useRef({ solverId, key: solverParamsKey });
+  useEffect(() => {
+    const last = lastParams.current;
+    lastParams.current = { solverId, key: solverParamsKey };
+    if (last.solverId === solverId && last.key !== solverParamsKey) resetSolver();
+  }, [solverId, solverParamsKey, resetSolver]);
 
   const armed = snap.phase === 'ready' && snap.solvePlayer !== null;
   const ride = useRideAlong({
@@ -528,6 +542,11 @@ export function WatchPage() {
             summary={solvers.get(solverId)?.meta.name}
             defaultOpen={bp === 'wide'}
           >
+            {/* The chosen solver's parameters sit above the (long) list so they stay in view. */}
+            <AlgorithmParams
+              algorithmId={solverId}
+              className="mb-4 flex flex-col gap-3 border-b border-border pb-4"
+            />
             <SolverPicker value={solverId} onChange={changeSolver} hideHeading />
           </Section>
         }

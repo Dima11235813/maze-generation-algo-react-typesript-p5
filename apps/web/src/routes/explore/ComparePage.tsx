@@ -40,12 +40,14 @@ import { useIsNarrow } from '../../lib/useMediaQuery';
 import { useReducedMotion } from '../../app/documentPrefs';
 import { formatSpeed, indexToSpeed, speedToIndex } from '../../lib/speed';
 import { CompareController, MAX_COMPARE_LANES, parseAlgos } from '../../maze/compare';
+import { paramsFor } from '../../maze/algoParams';
 import { computeGridDims } from '../../maze/gridSizing';
 import { MazeSession } from '../../maze/session';
 import { buildCamera, buildRenderOptions, buildTheme } from '../../maze/theme';
 import { usePrefs } from '../../state/prefs';
 import type { HostSize } from '../play/MazeCanvas';
 import { useKeyboardShortcuts } from '../play/useKeyboardShortcuts';
+import { AlgorithmParams } from '../params/ParamFields';
 import { CompareLane } from './CompareLane';
 import { CompareMetricsTable } from './CompareMetricsTable';
 
@@ -150,6 +152,12 @@ export function ComparePage() {
 
   // ---- lanes (sessions + controller) ------------------------------------------------------
   const laneKey = `${effectiveSeed}|${algos.join(',')}`;
+  // Parameter edits regenerate the same lanes (same sessions, same seed).
+  const lanesParams = algos.map((a) => {
+    const g = generators.get(a);
+    return g ? paramsFor(prefs.algoParams, g.meta) : {};
+  });
+  const paramsKey = JSON.stringify(lanesParams);
   const lanesRef = useRef<Lanes | null>(null);
   if (!lanesRef.current || lanesRef.current.key !== laneKey) {
     lanesRef.current?.controller.dispose();
@@ -188,6 +196,7 @@ export function ComparePage() {
         ...dims,
         seed: lanes.seed,
         generatorId: lanes.algos[i] ?? fallbackAlgo,
+        params: lanesParams[i] ?? {},
         autoplay: false,
       });
     });
@@ -196,13 +205,24 @@ export function ComparePage() {
     announce(
       `Comparing ${lanes.algos.length} generator${lanes.algos.length === 1 ? '' : 's'} on seed ${lanes.seed}.`,
     );
-  }, [hostSize, prefs.cellSize, lanes, controller, fallbackAlgo, reducedMotion, announce]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- paramsKey stands for lanesParams
+  }, [
+    hostSize,
+    prefs.cellSize,
+    lanes,
+    controller,
+    fallbackAlgo,
+    reducedMotion,
+    announce,
+    paramsKey,
+  ]);
 
   useEffect(() => {
-    if (!hostSize || generatedKey.current === laneKey) return;
-    generatedKey.current = laneKey;
+    const key = `${laneKey}|${paramsKey}`;
+    if (!hostSize || generatedKey.current === key) return;
+    generatedKey.current = key;
     generateLanes();
-  }, [hostSize, laneKey, generateLanes]);
+  }, [hostSize, laneKey, paramsKey, generateLanes]);
 
   useEffect(() => {
     controller.setSpeed(prefs.speed);
@@ -500,6 +520,11 @@ export function ComparePage() {
             </span>
           ) : null}
         </fieldset>
+        <div className="grid grid-cols-1 gap-4 pt-3 sm:grid-cols-2 xl:grid-cols-4">
+          {algos.map((a) => (
+            <AlgorithmParams key={a} algorithmId={a} />
+          ))}
+        </div>
       </details>
 
       <div className="flex flex-none flex-col gap-2 p-2">

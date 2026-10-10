@@ -19,6 +19,7 @@ import { useReducedMotion } from '../../app/documentPrefs';
 import { log } from '../../lib/log';
 import { useCoarsePointer, useIsNarrow } from '../../lib/useMediaQuery';
 import { computeGridDims } from '../../maze/gridSizing';
+import { currentParams } from '../../maze/useAlgoParams';
 import { MazeSession } from '../../maze/session';
 import { buildCamera, buildRenderOptions, buildTheme } from '../../maze/theme';
 import { useCameraView } from '../../maze/view';
@@ -189,6 +190,7 @@ export function PlayPage() {
         ...dims,
         ...(seed ? { seed } : {}),
         generatorId: prefs.generatorId,
+        params: currentParams(prefs.generatorId),
       });
     },
     [hostSize, prefs.cellSize, prefs.generatorId, session],
@@ -452,7 +454,7 @@ export function PlayPage() {
               label: `Solve with ${solverName}`,
               icon: Route,
               onPress: () => {
-                session.startSolve(prefs.solverId);
+                session.startSolve(prefs.solverId, true, currentParams(prefs.solverId));
               },
               disabled: snap.phase !== 'ready',
             },
@@ -789,7 +791,7 @@ export function PlayPage() {
         onSolverChange={(id) => {
           prefs.set('solverId', id);
         }}
-        onSolve={() => session.startSolve(prefs.solverId)}
+        onSolve={() => session.startSolve(prefs.solverId, true, currentParams(prefs.solverId))}
         onClearSolve={() => {
           session.clearSolve();
         }}

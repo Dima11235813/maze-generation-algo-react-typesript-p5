@@ -1,11 +1,11 @@
 # 17 - Work Queue
 
-> Status: Live | Last updated: 2026-10-03 | Owner: Dmitri Larionov
+> Status: Live | Last updated: 2026-10-10 | Owner: Dmitri Larionov
 > The ordered list of what to build next. "Proceed to the next work item" means: take the item
 > marked **NEXT**, follow `AGENTS.md` section 2, and update this file when it is done.
 > Status values: `NEXT`, `TODO`, `BLOCKED (H-x)`, `DONE yyyy-mm-dd (commit)`.
 
-## Where we are (2026-10-09, `develop` == `main` == 6a67739 + docs, not pushed)
+## Where we are (2026-10-10, `develop` == `main` == MERGE_SHA, not pushed)
 
 Shipped: monorepo foundation and legacy parity; 12 generators + braid; 12 solvers; race scheduler
 in core (no UI yet); Watch (pseudo-code, step log, stats); Explore catalogue + Compare; a11y grid
@@ -14,8 +14,9 @@ step back, restart, scrub) for generation and solving; responsive workspace (pho
 tablet grid, desktop/wide columns); Race page (2-4 solvers, lockstep transport, standings,
 ranking, deep link); Tree view (maze as its spanning tree: upright, radial, 3D; growth, morph,
 outline, Compare); maze tools widget (BUG-01); Ride along (watch a solver in first person).
-Run Maze as a game (WI-02); Build editor (WI-03). Gate: core 305, player 21, renderer 39, web 102
-tests; lint 0 errors (335 warnings); e2e 26/26; initial JS 230/250 kB gzip.
+Run Maze as a game (WI-02); Build editor (WI-03); algorithm parameter forms, pseudo-code for all
+solvers and solver-relative stats (WI-04). Gate: core 305, player 21, renderer 39, web 151 tests;
+lint 0 errors (313 warnings); e2e 27/27; initial JS 234/250 kB gzip.
 
 ## Queue
 
@@ -145,7 +146,7 @@ The owner especially enjoys the first-person walkthrough. Make it a complete exp
   random edits), 5 model, 6 RTL, 2 e2e (a real tap near a wall, axe). Also fixed touch styling that
   squashed toolbar switches into circles.
 
-### WI-04 Algorithm parameters and complete Watch content - **NEXT**
+### WI-04 Algorithm parameters and complete Watch content - DONE 2026-10-10 (MERGE_SHA)
 
 - Scope: forms generated from `ParamDescriptor` for generators and solvers (Play options, Watch,
   Compare, Race); pseudo-code listings for all 12 solvers (only BFS/DFS today); solver-relative
@@ -153,6 +154,20 @@ The owner especially enjoys the first-person walkthrough. Make it a complete exp
 - Acceptance: adding a param to an algorithm's meta shows a control with no UI change (test);
   every solver has a listing whose `stepToLine` covers every step type (exhaustive test).
 - Branch: `feat/algorithm-params`. Blocked by: nothing.
+- Delivered: `ParamFields`/`AlgorithmParams` (`apps/web/src/routes/params/`) render controls from
+  descriptors (slider for short ranges, number input for long ones, switch, select; descriptions
+  under each) with values in `prefs.algoParams` (raw, clamped by `sanitizeParams` on read). Forms
+  on Play (options sheet, "Algorithms"), Watch (above the solver list; an edit re-arms the solve),
+  Compare (per selected generator; edits regenerate the lanes on the same seed) and Race (per
+  racer and the generator; edits restart the race). Parameters reach `MazeSession.generate`
+  (recorded in provenance, reused by "Regenerate") and `startSolve`; status lines name changed
+  values ("A* Search (Heuristic weight 5)"). Pseudo-code for all 12 solvers with a `Record` over
+  every step verb (compile-time exhaustive) plus a test that runs each solver and checks every
+  emitted step lands on a line. Watch statistics add "Explored" (share of cells) and "Vs
+  shortest" (path / shortest), and "Optimal" now measures the path ("yes (not guaranteed)" for
+  weighted A* in a perfect maze). New e2e journey `e2e/params.spec.ts` (27 total).
+- Not done: the Dijkstra weights painter (stretch) and parameters in the Race URL (a shared link
+  uses the recipient's own parameters); both are noted for later.
 
 ### WI-09 Tree view: "treeify" the maze in 2D and 3D - DONE 2026-10-03 (3183337)
 
@@ -180,7 +195,7 @@ way" it looks like a tree (Wikipedia, Maze generation algorithm). Design:
   cells, re-rooted at the start when done); Compare lanes as trees and tree-shape columns.
   The morph slider lives in the tree row for now; BUG-01's widget can absorb it.
 
-### WI-05 Quality debt sweep - TODO
+### WI-05 Quality debt sweep - NEXT
 
 - Scope: promote lint rules from warn to error one by one (339 warnings; biggest:
   restrict-template-expressions, no-confusing-void-expression, unbound-method); act on knip
