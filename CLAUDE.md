@@ -13,6 +13,8 @@
   For interactions (taps, drags, keys) write a short Playwright script in the scratchpad against
   http://127.0.0.1:41920. The Chrome extension cannot resize its window and the Playwright MCP
   browser may be locked by another profile (L-16, L-19).
+- Shared machine (AGENTS.md 3a): run the workspace preflight before heavy jobs; wait on transient
+  breaches; run gate steps one at a time, never two heavy jobs at once.
 - After a work item: queue item DONE with the merge commit, next item NEXT, lessons appended,
   `project-state` memory refreshed, and the report gives the LAN URL to try it.
 - When the owner names a feature idea, log it as a queue item first (with a design note when it

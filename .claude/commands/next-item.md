@@ -12,7 +12,8 @@ Proceed to the next work item.
 4. Meet the Definition of Done in `AGENTS.md` section 4, including the phone/tablet/desktop
    check (`pnpm --filter @maze/web check:viewports -- <routes>`, then look at the screenshots)
    against the always-on LAN dev server (http://127.0.0.1:41920; do not start another one).
-   Commit subjects in lower case; never skip hooks.
+   Commit subjects in lower case; never skip hooks. Shared machine (`AGENTS.md` 3a): run the
+   workspace preflight before each heavy gate step and run those steps one at a time.
 5. Merge into `develop` (`--no-ff`) and fast-forward `main`. Do not push.
 6. Mark the item `DONE` (date, merge commit), mark the following unblocked item `NEXT`, append any
    new lessons to `proj-mgmt/18-lessons-learned.md`, and update the `project-state` memory.

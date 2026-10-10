@@ -1,6 +1,6 @@
 # 18 - Lessons Learned
 
-> Status: Live | Last updated: 2026-10-09
+> Status: Live | Last updated: 2026-10-10
 > Append-only log. Each entry: what happened, why, and the rule we now follow. Rules that every
 > session needs are mirrored in `AGENTS.md` section 6; this file keeps the reasoning.
 
@@ -12,17 +12,19 @@ The one-line rules every session needs; the entries below keep the story behind 
 |------|------|------|
 | Agents | At most two subagents; they commit after every fix; check their base commit | L-01, L-02 |
 | Git | Agents never push; retry git writes when Drive locks `.git/objects` | L-03, L-04 |
-| Git | Lower-case commit subjects; never skip hooks; prettier only the files you changed | L-27, L-28 |
+| Git | Lower-case commit subjects, no `wip` type; never skip hooks; prettier only your files | L-27, L-28, L-33 |
 | Shell | Patch scripts as files in the scratchpad; no long heredocs; watch `\r`/`\f` escapes | L-25, L-30 |
 | Toolchain | Lint pins TS 6; no `baseUrl`; Vite 8 `codeSplitting`; don't trust timer return types | L-06, L-07, L-20 |
 | Tests | Polyfill jsdom gaps; anchor role-name regexes; scope queries to their container | L-09, L-10, L-26 |
 | Tests | Media waits get timeouts; check component state before "fixing" it; rerun slow e2e once | L-29, L-22, L-23 |
+| Tests | Timeouts on a busy machine: run the file alone and the `develop` baseline first | L-32 |
 | Runtime | Sources stay deterministic (rewind = replay); StrictMode-safe disposal | L-11, L-12 |
 | Layout | `pan-y` canvases on touch; `relative` scrollers; nothing over the maze on phones | L-13, L-14, BUG-01 |
 | Layout | Measured layouts need hysteresis; touch sizing must not reshape switches | L-18, L-31 |
 | Colour | Overlay colours mix with the base colour; resolve the theme once | L-21 |
 | Ports | Block 41920-41939; the dev server on 41920 is always on (task + `-Unregister` abort) | L-24 (replaces L-15, L-19 ports) |
 | Checks | `check:viewports` for sizes; Playwright scripts for interactions | L-16, L-19 |
+| Machine | Preflight before heavy jobs; wait on transient breaches; one heavy job at a time | L-35 |
 | Owner | Phone-first, small merged slices, protect the 3D views and the walkthrough | L-17 |
 
 ## Process and orchestration
@@ -172,3 +174,28 @@ quotes failed to parse, and a stray `cat > /dev/null` waited on stdin until the 
 toolbar button (and switch) a 44px minimum width and height, which squashed switches into
 circles on phones. *Rule:* grow hit areas with an invisible `::after` overlay for controls whose
 shape matters; check toolbar screenshots at phone width, not just the maze.
+
+**L-32 A busy machine times out RTL journeys, also on an unchanged `develop`.** During WI-04 the
+full web suite failed 4-10 route journeys at the 5 s default while each passed alone in 1.5-2 s;
+the same run on an untouched `develop` failed ten. Other sessions were running a repo-wide
+`git grep`, an Angular server and another project's Playwright suite. *Rule:* before calling a
+timeout a regression, run the failing file alone and the baseline on `develop` (commit first;
+`git stash` can fail on Drive locks). The web suite now has `testTimeout: 30_000`; long journeys
+set their own (45 s). Do not kill other sessions' processes.
+
+**L-33 commitlint has no `wip` type.** A `wip(params): ...` snapshot commit was rejected
+(type-enum: build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test). *Rule:* use
+`feat(...)`/`fix(...)` for mid-item snapshot commits; the merge commit names the item.
+
+**L-34 Re-arm effects must not double-fire on the change that already re-arms.** Watch re-arms
+the solver when its parameters change; switching solvers changed the parameter key too, so the
+solve was cleared twice and the ride-along journey timed out waiting for Play. *Rule:* compare
+the previous (solver, params) pair and react only to edits of the same solver's parameters.
+
+**L-35 The workspace harness owns ports and machine capacity.** The owner's workspace analysis
+(2026-10-10) measured `D:` at 94% active and ~5% of its sequential throughput while five dev
+servers, three antivirus engines and several agents' jobs competed; it matches the WI-04 test
+timeouts (L-32), where this session ran e2e next to a viewport check while other sessions ran a
+repo-wide `git grep` and another Playwright suite. *Rule:* AGENTS.md section 3a: run
+`preflight-resources.ps1` before heavy jobs, wait on transient breaches, report standing ones
+(antivirus engines, watcher count), and run gate steps one at a time.

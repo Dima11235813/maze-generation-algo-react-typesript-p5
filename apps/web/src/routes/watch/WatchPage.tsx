@@ -542,8 +542,12 @@ export function WatchPage() {
             summary={solvers.get(solverId)?.meta.name}
             defaultOpen={bp === 'wide'}
           >
+            {/* The chosen solver's parameters sit above the (long) list so they stay in view. */}
+            <AlgorithmParams
+              algorithmId={solverId}
+              className="mb-4 flex flex-col gap-3 border-b border-border pb-4"
+            />
             <SolverPicker value={solverId} onChange={changeSolver} hideHeading />
-            <AlgorithmParams algorithmId={solverId} className="mt-4 flex flex-col gap-3" />
           </Section>
         }
         side={

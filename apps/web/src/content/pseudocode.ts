@@ -241,5 +241,5 @@ export const PSEUDOCODE: Readonly<Record<string, PseudocodeListing>> = {
 };
 
 export function pseudocodeFor(solverId: string | null | undefined): PseudocodeListing {
-  return (solverId && PSEUDOCODE[solverId]) || GENERIC_PSEUDOCODE;
+  return (solverId ? PSEUDOCODE[solverId] : undefined) ?? GENERIC_PSEUDOCODE;
 }

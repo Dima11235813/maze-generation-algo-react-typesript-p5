@@ -14,8 +14,8 @@ export interface AlgoParamsApi {
   readonly meta: AlgorithmMeta | null;
   readonly values: ParamValues;
   readonly isDefault: boolean;
-  setParam(key: string, value: unknown): void;
-  reset(): void;
+  setParam: (key: string, value: unknown) => void;
+  reset: () => void;
 }
 
 /** Reads and edits one algorithm's parameters in the prefs store. */

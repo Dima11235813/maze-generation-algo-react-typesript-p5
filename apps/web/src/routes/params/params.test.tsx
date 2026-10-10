@@ -11,6 +11,7 @@ import {
 import { MazeSession } from '../../maze/session';
 import { currentParams } from '../../maze/useAlgoParams';
 import { createPrefsStore, usePrefs } from '../../state/prefs';
+import { optimalText } from '../../maze/statsText';
 import { AlgorithmParams, ParamFields } from './ParamFields';
 
 /** An algorithm nobody wrote UI for: one descriptor of every kind. */
@@ -190,5 +191,16 @@ describe('parameters reach the algorithms', () => {
     s.startSolve('astar', false);
     s.runToEnd();
     expect(s.getSnapshot().solveResult?.stats.optimal).toBe(true);
+  });
+});
+
+describe('optimal statistic', () => {
+  it('measures the path and keeps the guarantee visible', () => {
+    expect(optimalText(true, 1)).toBe('yes');
+    expect(optimalText(false, 1)).toBe('yes (not guaranteed)');
+    expect(optimalText(null, 1)).toBe('yes (not guaranteed)');
+    expect(optimalText(null, 1.4)).toBe('no');
+    expect(optimalText(true, null)).toBe('yes');
+    expect(optimalText(null, null)).toBe('unknown');
   });
 });

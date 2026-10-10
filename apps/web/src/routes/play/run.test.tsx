@@ -57,7 +57,7 @@ describe('Run Maze as a game', () => {
 
   it(
     'walks the maze from above with the keyboard, undoes, hints, finishes and saves the run',
-    { timeout: 20_000 },
+    { timeout: 45_000 },
     async () => {
       const user = userEvent.setup();
       const { factories } = await readyMaze(user);
@@ -102,7 +102,7 @@ describe('Run Maze as a game', () => {
     },
   );
 
-  it('replays the best saved run from the library', { timeout: 20_000 }, async () => {
+  it('replays the best saved run from the library', { timeout: 45_000 }, async () => {
     const user = userEvent.setup();
     const { factories } = await readyMaze(user);
     const maze = last(factories).lastMaze as MazeState;

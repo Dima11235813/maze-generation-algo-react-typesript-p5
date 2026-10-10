@@ -2,6 +2,7 @@ import { formatDuration, solverRelativeMetrics, type SolveTracker } from '@maze/
 import type { StepPlayerSnapshot } from '@maze/player';
 import type { ReactNode } from 'react';
 import type { SessionSnapshot } from '../../maze/session';
+import { optimalText } from '../../maze/statsText';
 
 function Stat({ label, value }: { label: string; value: ReactNode }) {
   return (
@@ -20,7 +21,7 @@ export interface WatchStatsProps {
 }
 
 function percent(ratio: number): string {
-  return `${Math.round(ratio * 100)}%`;
+  return `${String(Math.round(ratio * 100))}%`;
 }
 
 /** "1.00x" (optimal) or "1.35x"; null ratio -> "-". */
@@ -70,7 +71,7 @@ export function WatchStats({ snap, tracker, player, hideHeading = false }: Watch
         <Stat label="Elapsed" value={formatDuration(player?.elapsedMs ?? 0)} />
         <Stat
           label="Optimal"
-          value={stats ? (stats.optimal === null ? 'unknown' : stats.optimal ? 'yes' : 'no') : '-'}
+          value={stats ? optimalText(stats.optimal, relative?.optimalityRatio ?? null) : '-'}
         />
         <Stat
           label="Maze"

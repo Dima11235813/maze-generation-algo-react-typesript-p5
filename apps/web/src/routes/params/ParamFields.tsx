@@ -17,7 +17,7 @@ const MAX_SLIDER_STOPS = 200;
 export interface ParamFieldsProps {
   meta: AlgorithmMeta;
   values: ParamValues;
-  onChange(key: string, value: unknown): void;
+  onChange: (key: string, value: unknown) => void;
 }
 
 function stepOf(p: ParamDescriptor & { kind: 'int' | 'float' }): number {
@@ -37,7 +37,7 @@ function NumericParam({
 }: {
   p: ParamDescriptor & { kind: 'int' | 'float' };
   value: number;
-  onChange(v: number): void;
+  onChange: (v: number) => void;
 }) {
   const step = stepOf(p);
   // Drag a local copy; commit on release so a run is not restarted on every pixel.
@@ -81,7 +81,7 @@ function ParamField({
 }: {
   p: ParamDescriptor;
   value: unknown;
-  onChange(v: unknown): void;
+  onChange: (v: unknown) => void;
 }) {
   switch (p.kind) {
     case 'int':
