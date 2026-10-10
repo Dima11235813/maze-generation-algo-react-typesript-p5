@@ -1,8 +1,29 @@
 # 18 - Lessons Learned
 
-> Status: Live | Last updated: 2026-10-03
+> Status: Live | Last updated: 2026-10-09
 > Append-only log. Each entry: what happened, why, and the rule we now follow. Rules that every
 > session needs are mirrored in `AGENTS.md` section 6; this file keeps the reasoning.
+
+## Rules at a glance (consolidated 2026-10-09)
+
+The one-line rules every session needs; the entries below keep the story behind each.
+
+| Area | Rule | From |
+|------|------|------|
+| Agents | At most two subagents; they commit after every fix; check their base commit | L-01, L-02 |
+| Git | Agents never push; retry git writes when Drive locks `.git/objects` | L-03, L-04 |
+| Git | Lower-case commit subjects; never skip hooks; prettier only the files you changed | L-27, L-28 |
+| Shell | Patch scripts as files in the scratchpad; no long heredocs; watch `\r`/`\f` escapes | L-25, L-30 |
+| Toolchain | Lint pins TS 6; no `baseUrl`; Vite 8 `codeSplitting`; don't trust timer return types | L-06, L-07, L-20 |
+| Tests | Polyfill jsdom gaps; anchor role-name regexes; scope queries to their container | L-09, L-10, L-26 |
+| Tests | Media waits get timeouts; check component state before "fixing" it; rerun slow e2e once | L-29, L-22, L-23 |
+| Runtime | Sources stay deterministic (rewind = replay); StrictMode-safe disposal | L-11, L-12 |
+| Layout | `pan-y` canvases on touch; `relative` scrollers; nothing over the maze on phones | L-13, L-14, BUG-01 |
+| Layout | Measured layouts need hysteresis; touch sizing must not reshape switches | L-18, L-31 |
+| Colour | Overlay colours mix with the base colour; resolve the theme once | L-21 |
+| Ports | Block 41920-41939; the dev server on 41920 is always on (task + `-Unregister` abort) | L-24 (replaces L-15, L-19 ports) |
+| Checks | `check:viewports` for sizes; Playwright scripts for interactions | L-16, L-19 |
+| Owner | Phone-first, small merged slices, protect the 3D views and the walkthrough | L-17 |
 
 ## Process and orchestration
 

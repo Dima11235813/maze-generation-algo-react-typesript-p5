@@ -17,9 +17,10 @@ also apply (never delete files on Google Drive, secrets only via environment var
 | Playback              | `packages/player` - StepPlayer (play/pause/step/seek/stepBack/restart), narrator         |
 | Rendering             | `packages/renderer` - port + `canvas2d`, `three` (3D/first person), `dom` (a11y)         |
 | UI kit                | `packages/ui` (Radix + Tailwind v4)                                                      |
-| App                   | `apps/web` - routes `/play /watch /explore /explore/compare` (+ stubs)                   |
+| App                   | `apps/web` - `/play /watch /race /build /explore /explore/compare` (+ `/learn` stub)     |
 | Original app          | `apps/legacy` - frozen, read-only, not in the workspace                                  |
 | Original brief        | `next.md` (historical; the live queue is `proj-mgmt/17-work-queue.md`)                   |
+| Local ports           | block 41920-41939 in `D:\GDrive\proj-mgmt\inventory\local-ports.md` (see section 3)      |
 
 ## 2. "Proceed to the next work item"
 
@@ -53,6 +54,8 @@ pnpm --filter @maze/<core|player|renderer|web> test
 pnpm lint                                      # 0 errors required; warnings are tracked debt
 pnpm --filter @maze/web build                  # includes the bundle-size gate
 pnpm --filter @maze/web e2e                    # Playwright + axe, builds and serves on :41922
+pnpm --filter @maze/web check:viewports -- play build   # phone/tablet/desktop/wide screenshots +
+                                               # overflow + page errors (no leading slash in Git Bash)
 ```
 
 Ports: block **41920-41939** (registered in `D:\GDrive\proj-mgmt\inventory\local-ports.md`):
@@ -74,10 +77,12 @@ powershell -ExecutionPolicy Bypass -File scripts/register_local_servers.ps1
 
 - [ ] Typecheck clean; all package tests pass; new behaviour has tests (core: property tests for
       invariants; web: RTL with the fake renderer factory in `apps/web/src/test/fakeRenderer.ts`).
-- [ ] `pnpm lint` 0 errors; build passes the size gate; e2e 16+/16+ green (add a journey when a
-      route or major flow is added).
-- [ ] Checked in a real browser at **phone (390px), tablet (820px) and desktop (1280px+)**:
-      no page-level horizontal overflow, the page scrolls on phones, controls reachable by touch.
+- [ ] `pnpm lint` 0 errors; build passes the size gate; e2e all green (26+; add a journey when a
+      route or major flow is added). A timeout on a slow run (> 1.5 min) is rerun once before it
+      counts as a failure; report both runs.
+- [ ] Checked in a real browser at **phone (390px), tablet (820px) and desktop (1280px+)** with
+      `check:viewports` (and look at the screenshots): no page-level horizontal overflow, the page
+      scrolls on phones, controls reachable by touch, **nothing covers the maze** on phones.
 - [ ] Accessible: labelled controls, keyboard path, live-region status for state changes.
 - [ ] Docs: queue item updated; ADR/plan touched if a decision changed; lessons appended.
 
@@ -85,14 +90,21 @@ powershell -ExecutionPolicy Bypass -File scripts/register_local_servers.ps1
 
 - Branch model: `feat/*` -> `develop` (`--no-ff`) -> `main` (fast-forward). `master` is the old
   default and stays untouched.
-- Conventional commits; body lines <= 120 chars (commitlint). End messages with the attribution
-  trailer from the session's system instructions.
+- Conventional commits with a **lower-case subject** (`feat(play): run maze ...`, not `Run Maze`);
+  body lines <= 120 chars (commitlint). End messages with the attribution trailer from the
+  session's system instructions. Never skip hooks; fix what they report.
 - Dependency rule: `packages/*` never import `apps/*`; `@maze/core` has zero runtime deps, no DOM,
   no `Math.random` (lint enforces). Algorithms are ES generators yielding `Step`s with a seeded
   `Rng`; determinism is what makes rewind (replay) and sharing exact.
 - New algorithms: one file + registry entry; the shared property suite and the UI pick it up.
 - Layout: pages use `apps/web/src/layout/Workspace.tsx` + `Section.tsx` (phone column, tablet
   grid, desktop side column, wide three columns). Canvases get `pageScroll` on touch layouts.
+- Controls never sit on top of the maze on phones/tablets: use the maze tools widget
+  (`routes/tools/MazeTools.tsx`, a row below the maze; floating and draggable on desktop) or an
+  in-flow bar below the canvas (`RunBar`, `RideAlongBar`, `TreeControls`). Every action has a
+  tooltip with its shortcut.
+- Shared viewing modes: 2D / 3D / Tree (`maze/treeView.ts`), Ride along (`maze/rideAlong.ts`) and
+  Run Maze runs (`core/run.ts`) are derived from steps or moves, so rewind/undo is exact replay.
 
 ## 6. Gotchas (details and causes in `proj-mgmt/18-lessons-learned.md`)
 
@@ -110,3 +122,15 @@ powershell -ExecutionPolicy Bypass -File scripts/register_local_servers.ps1
 - Max **two** parallel subagents; each must commit after every fix (rate limits killed six
   concurrent agents twice before any commit).
 - Windows Python cannot read Git Bash `/tmp`; use the session scratchpad for temp files.
+- Write multi-line patch scripts to the scratchpad and run them as files; long inline heredocs
+  break the shell, and Python string escapes (`\r`, `\f`) corrupt Windows paths (use the Edit
+  tool or `chr(92)`, then grep for control characters).
+- The LAN dev server on 41920 is always on (`MazeLab-LocalServers` task); never start another dev
+  server. Git Bash rewrites `/route` arguments into Windows paths: pass routes without the slash.
+- Run `prettier --write` only on files you changed (other files have drifted; that is WI-05).
+- jsdom never loads images and has no layout: anything awaiting media needs a timeout fallback;
+  tests needing sizes stub `clientWidth`/`offsetWidth` (see `routes/tools/tools.test.tsx`).
+- A second surface for the same action (toolbar + maze tools) makes loose queries ambiguous:
+  scope RTL/Playwright queries to their container (`within(toolbar)`).
+- `setTimeout` return types depend on which lib (DOM/Node) TypeScript sees first: never rely on
+  them (`Number(setTimeout(...))` or `ReturnType<typeof setTimeout>`).

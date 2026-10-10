@@ -10,7 +10,9 @@ Proceed to the next work item.
 3. Restate the item's goal and acceptance criteria in two or three lines, then work through it on
    a `feat/<slug>` branch from `develop` without asking for confirmation on routine choices.
 4. Meet the Definition of Done in `AGENTS.md` section 4, including the phone/tablet/desktop
-   browser check against the LAN dev server.
+   check (`pnpm --filter @maze/web check:viewports -- <routes>`, then look at the screenshots)
+   against the always-on LAN dev server (http://127.0.0.1:41920; do not start another one).
+   Commit subjects in lower case; never skip hooks.
 5. Merge into `develop` (`--no-ff`) and fast-forward `main`. Do not push.
 6. Mark the item `DONE` (date, merge commit), mark the following unblocked item `NEXT`, append any
    new lessons to `proj-mgmt/18-lessons-learned.md`, and update the `project-state` memory.
