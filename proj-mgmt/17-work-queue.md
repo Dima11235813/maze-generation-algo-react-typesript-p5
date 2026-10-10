@@ -5,7 +5,7 @@
 > marked **NEXT**, follow `AGENTS.md` section 2, and update this file when it is done.
 > Status values: `NEXT`, `TODO`, `BLOCKED (H-x)`, `DONE yyyy-mm-dd (commit)`.
 
-## Where we are (2026-10-05, `develop` == `main` == f92e323 + docs, not pushed)
+## Where we are (2026-10-09, `develop` == `main` == 54d8a6e + docs, not pushed)
 
 Shipped: monorepo foundation and legacy parity; 12 generators + braid; 12 solvers; race scheduler
 in core (no UI yet); Watch (pseudo-code, step log, stats); Explore catalogue + Compare; a11y grid
@@ -14,7 +14,8 @@ step back, restart, scrub) for generation and solving; responsive workspace (pho
 tablet grid, desktop/wide columns); Race page (2-4 solvers, lockstep transport, standings,
 ranking, deep link); Tree view (maze as its spanning tree: upright, radial, 3D; growth, morph,
 outline, Compare); maze tools widget (BUG-01); Ride along (watch a solver in first person).
-Gate: core 294, player 21, renderer 39, web 83 tests; lint 0 errors (325 warnings); e2e 23/23.
+Run Maze as a game (WI-02). Gate: core 300, player 21, renderer 39, web 91 tests; lint 0 errors
+(323 warnings); e2e 24/24.
 
 ## Queue
 
@@ -106,7 +107,7 @@ camera (Run Maze) follows the solver instead of the player.
   solve runs; status line below the canvas and phase announcements; camera buttons hidden while
   riding. Tests: 5 core, 3 RTL, 1 e2e.
 
-### WI-02 Run Maze as a game: timer, moves, undo, hint, recorded solves - **NEXT**
+### WI-02 Run Maze as a game: timer, moves, undo, hint, recorded solves - DONE 2026-10-09 (54d8a6e)
 
 The owner especially enjoys the first-person walkthrough. Make it a complete experience.
 
@@ -117,8 +118,15 @@ The owner especially enjoys the first-person walkthrough. Make it a complete exp
 - Acceptance: unit tests for move history and replay; touch D-pad and keyboard both work; the
   finish summary is announced; phone check of the HUD layout.
 - Branch: `feat/run-maze-game`. Blocked by: nothing.
+- Delivered: core run model (`run.ts`: moves F/B/L/R and N/E/S/W, undo/redo/seek by exact replay,
+  hints, summary, `encodeRun`/`decodeRun`; 6 property tests); session game state (timer from the
+  first step, summary announced assertively, hints drawn as a path, replay of saved runs); run bar
+  below the maze (time, moves vs shortest, undo U / redo Shift+U, a "your moves" scrubber, hint H,
+  restart, exit, finish summary with Save run and Play again); 2D top-down walk (K; arrows, WASD,
+  swipes, touch D-pad); library keeps runs per maze with the best run and "Replay best run".
+  Thumbnails time out after 1.5 s so saves never hang. Tests: 6 core, 5 session, 3 RTL, 1 e2e.
 
-### WI-03 Build mode editor - TODO
+### WI-03 Build mode editor - **NEXT**
 
 `packages/core/src/editing.ts` provides pure edit ops, validation and undo/redo; no UI yet.
 
@@ -201,5 +209,6 @@ Tauri 2 builds; starts with the 2-day WKWebView WebGL spike (ADR-012).
 | Responsive workspace (phone/tablet/desktop/wide) | 2026-10-03 | 551e277 |
 | WI-01 Race page | 2026-10-03 | 17c7471 |
 | WI-09 Tree view (all five slices) | 2026-10-03 | 26c4c69, 3183337 |
+| WI-02 Run Maze as a game | 2026-10-09 | 54d8a6e |
 | WI-10 Ride along | 2026-10-05 | f92e323 |
 | BUG-01 Maze tools widget | 2026-10-05 | 43309d6 |
