@@ -33,7 +33,11 @@ export const PLAY_SHORTCUTS: readonly ShortcutGroup[] = [
   {
     title: 'Run maze (first person)',
     items: [
-      { keys: ['R'], label: 'Enter or leave Run Maze' },
+      { keys: ['R'], label: 'Enter or leave Run Maze (first person)' },
+      { keys: ['K'], label: 'Walk the maze from above (2D game; arrows, WASD or swipe)' },
+      { keys: ['U', 'Backspace'], label: 'Undo your last move' },
+      { keys: ['Shift+U'], label: 'Redo' },
+      { keys: ['H'], label: 'Hint: mark the next cells of the shortest way' },
       { keys: ['W', 'ArrowUp'], label: 'Step forward' },
       { keys: ['S', 'ArrowDown'], label: 'Step backward' },
       { keys: ['A', 'ArrowLeft'], label: 'Turn left' },

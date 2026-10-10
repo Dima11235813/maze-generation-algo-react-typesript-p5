@@ -106,10 +106,11 @@ describe('Ride along on /play', () => {
   beforeEach(() => {
     localStorage.clear();
     usePrefs.getState().reset();
-    usePrefs.getState().set('mode', '2d');
+    usePrefs.getState().patch({ mode: '2d', speed: 100_000 });
   });
 
-  it('is offered once a solve runs and ends with the solve', async () => {
+  // Generates, solves and rides along: a full cycle, so it gets more than the default 5 s.
+  it('is offered once a solve runs and ends with the solve', { timeout: 15_000 }, async () => {
     const user = userEvent.setup();
     const { factories } = renderAt('/play');
     const toolbar = await screen.findByRole('toolbar', { name: /maze controls/i });

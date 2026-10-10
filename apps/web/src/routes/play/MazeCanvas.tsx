@@ -44,7 +44,13 @@ export interface MazeCanvasProps {
    * still orbit the 3D view and two-finger pinches still zoom.
    */
   pageScroll?: boolean;
+  /** Swipe gestures (2D walking): called with the compass direction of a quick swipe. */
+  onSwipe?: (dir: 'N' | 'E' | 'S' | 'W') => void;
 }
+
+/** Minimum swipe length (CSS px) and maximum duration (ms). */
+const SWIPE_MIN_PX = 24;
+const SWIPE_MAX_MS = 700;
 
 const ZOOM_MIN = 0.25;
 const ZOOM_MAX = 8;
@@ -77,6 +83,7 @@ export function MazeCanvas({
   onRenderer,
   className,
   pageScroll = false,
+  onSwipe,
 }: MazeCanvasProps) {
   const factories = useRendererFactories();
   const hostRef = useRef<HTMLDivElement>(null);
@@ -90,6 +97,9 @@ export function MazeCanvas({
   // Active touch points for pinch-to-zoom.
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const pinch = useRef<Pinch | null>(null);
+  const swipe = useRef<{ x: number; y: number; t: number; id: number } | null>(null);
+  const onSwipeRef = useRef(onSwipe);
+  onSwipeRef.current = onSwipe;
 
   useEffect(() => {
     const host = hostRef.current;
@@ -201,6 +211,9 @@ export function MazeCanvas({
   };
 
   const onPointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (onSwipeRef.current) {
+      swipe.current = { x: e.clientX, y: e.clientY, t: e.timeStamp, id: e.pointerId };
+    }
     if (e.pointerType !== 'touch') return;
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.current.size === 2) {
@@ -209,6 +222,17 @@ export function MazeCanvas({
   }, []);
 
   const endPointer = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const s = swipe.current;
+    if (s && s.id === e.pointerId && e.type === 'pointerup') {
+      swipe.current = null;
+      const dx = e.clientX - s.x;
+      const dy = e.clientY - s.y;
+      const long = Math.max(Math.abs(dx), Math.abs(dy)) >= SWIPE_MIN_PX;
+      if (long && e.timeStamp - s.t <= SWIPE_MAX_MS && pointers.current.size <= 1) {
+        const dir = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'E' : 'W') : dy > 0 ? 'S' : 'N';
+        onSwipeRef.current?.(dir);
+      }
+    }
     pointers.current.delete(e.pointerId);
     if (pointers.current.size < 2) pinch.current = null;
   }, []);

@@ -1,4 +1,12 @@
-import { describeCell, randomSeed, solvers } from '@maze/core';
+import {
+  decodeRun,
+  describeCell,
+  encodeRun,
+  randomSeed,
+  solvers,
+  type RunMove,
+  type CellId,
+} from '@maze/core';
 import { useStepPlayer } from '@maze/player/react';
 import { CAMERA_PRESETS, type CameraState, type Renderer, type ViewMode } from '@maze/renderer';
 import type { DomRenderer } from '@maze/renderer/dom';
@@ -14,7 +22,7 @@ import { computeGridDims } from '../../maze/gridSizing';
 import { MazeSession } from '../../maze/session';
 import { buildCamera, buildRenderOptions, buildTheme } from '../../maze/theme';
 import { useCameraView } from '../../maze/view';
-import { makeThumbnail, useLibrary, type LibraryItem } from '../../state/library';
+import { makeThumbnail, useLibrary, type LibraryItem, type SavedRun } from '../../state/library';
 import { usePrefs } from '../../state/prefs';
 import { A11yGridHost } from './A11yGridHost';
 import { FirstPersonHud } from './FirstPersonHud';
@@ -40,13 +48,26 @@ import {
   snapshotAction,
   useStageFullscreen,
 } from '../tools/actions';
-import { Box as BoxIcon, Eye, Footprints, Route, Shuffle, Square, Video, X } from 'lucide-react';
+import {
+  Box as BoxIcon,
+  Eye,
+  Footprints,
+  Navigation,
+  Route,
+  Shuffle,
+  Square,
+  Video,
+  X,
+} from 'lucide-react';
+import { RunBar } from './RunBar';
 import { useRideAlong } from '../../maze/rideAlong';
 import { RideAlongBar } from '../tools/RideAlongBar';
 import { rendererModeFor, treeOptionsFor, type ViewChoice } from '../../maze/treeView';
 import { TreeControls } from '../tree/TreeControls';
 import { TreeOutline } from '../tree/TreeOutline';
-import type { CellId } from '@maze/core';
+
+/** Saved runs replay at this pace. */
+const REPLAY_MOVES_PER_SECOND = 6;
 
 function useMazeSession(): MazeSession {
   const ref = useRef<MazeSession | null>(null);
@@ -63,6 +84,7 @@ export function PlayPage() {
   const snap = useSyncExternalStore(session.subscribe, session.getSnapshot, session.getSnapshot);
   const prefs = usePrefs();
   const addToLibrary = useLibrary((s) => s.add);
+  const addRunToLibrary = useLibrary((s) => s.addRun);
   const reducedMotion = useReducedMotion();
   const coarsePointer = useCoarsePointer();
   const narrowLayout = useIsNarrow();
@@ -84,7 +106,9 @@ export function PlayPage() {
   const rendererRef = useRef<Renderer | null>(null);
   /** Ride along (WI-10): a first-person camera that follows the running solver. */
   const [rideAlong, setRideAlong] = useState(false);
-  const viewChoice: ViewChoice = rideAlong ? '3d' : prefs.treeView ? 'tree' : prefs.mode;
+  const viewChoice: ViewChoice = rideAlong
+    ? '3d'
+    : (snap.runView ?? (prefs.treeView ? 'tree' : prefs.mode));
   const rendererMode = rendererModeFor(viewChoice, prefs.treeLayout);
   const a11yRef = useRef<DomRenderer | null>(null);
 
@@ -280,6 +304,65 @@ export function PlayPage() {
     }
   }, [prefs, session]);
 
+  /** Walk the maze top-down (2D) with arrows, WASD, swipes or the D-pad. */
+  const toggleWalk2d = useCallback(() => {
+    setRideAlong(false);
+    if (session.getSnapshot().firstPerson) {
+      session.exitFirstPerson();
+      return;
+    }
+    if (session.enterRun('2d')) {
+      document.querySelector<HTMLElement>('[data-testid="maze-canvas-host"]')?.focus();
+    }
+  }, [session]);
+
+  const saveRun = useCallback(async () => {
+    const s = session.getSnapshot();
+    if (!s.run || !s.runSummary || !s.runView) return;
+    const name = s.sourceName ?? `Maze ${String(s.width)}x${String(s.height)} ${s.seed}`;
+    const doc = await session.save(name);
+    const dataUrl = rendererRef.current?.toDataURL();
+    const thumbnail = dataUrl ? await makeThumbnail(dataUrl) : undefined;
+    addRunToLibrary({
+      name,
+      document: doc,
+      ...(thumbnail ? { thumbnail } : {}),
+      run: {
+        moves: encodeRun(s.run),
+        view: s.runView,
+        timeMs: s.runSummary.timeMs,
+        moveCount: s.runSummary.moves,
+        optimalMoves: s.runSummary.optimalMoves,
+        hints: s.runSummary.hints,
+        undos: s.runSummary.undos,
+      },
+    });
+    announce(`Run saved to the library with "${name}".`);
+  }, [session, addRunToLibrary, announce]);
+
+  const replayRun = useCallback(
+    (item: LibraryItem, saved: SavedRun) => {
+      session.loadDocument(item.document, item.name);
+      try {
+        session.startReplay(decodeRun(saved.moves), saved.view);
+      } catch {
+        announce('That saved run could not be read.');
+      }
+    },
+    [session, announce],
+  );
+
+  // Replays advance a few moves per second.
+  useEffect(() => {
+    if (!snap.runReplay) return;
+    const id = setInterval(() => {
+      if (!session.replayTick()) clearInterval(id);
+    }, 1000 / REPLAY_MOVES_PER_SECOND);
+    return () => {
+      clearInterval(id);
+    };
+  }, [snap.runReplay, session]);
+
   const cycleCamera = useCallback(() => {
     const i = CAMERA_PRESETS.indexOf(prefs.cameraPreset);
     const next = CAMERA_PRESETS[(i + 1) % CAMERA_PRESETS.length] ?? 'tilt';
@@ -314,6 +397,8 @@ export function PlayPage() {
     },
     [session],
   );
+
+  const runClock = useCallback(() => session.clock(), [session]);
 
   // ---- maze tools ---------------------------------------------------------------------------
   const fullscreen = useStageFullscreen();
@@ -411,6 +496,14 @@ export function PlayPage() {
           disabled: snap.phase !== 'ready',
         },
         {
+          id: 'walk-2d',
+          label: 'Walk the maze from above (2D game)',
+          keys: 'K',
+          icon: Navigation,
+          onPress: toggleWalk2d,
+          disabled: snap.phase !== 'ready',
+        },
+        {
           id: 'switch-view',
           label: rendererMode === '3d' && viewChoice !== 'tree' ? 'Switch to 2D' : 'Switch to 3D',
           keys: 'T',
@@ -462,7 +555,61 @@ export function PlayPage() {
         }
         return;
       }
+      if (fp && snap.runReplay) {
+        if (e.key === ' ') {
+          e.preventDefault();
+          session.stopReplay();
+        }
+        return;
+      }
       if (fp) {
+        switch (e.key) {
+          case 'u':
+          case 'Backspace':
+            e.preventDefault();
+            session.runUndo();
+            return;
+          case 'U':
+            e.preventDefault();
+            session.runRedo();
+            return;
+          case 'h':
+          case 'H':
+            e.preventDefault();
+            session.runHint();
+            return;
+          default:
+            break;
+        }
+      }
+      if (fp && snap.runView === '2d') {
+        const compass: Record<string, RunMove> = {
+          ArrowUp: 'N',
+          w: 'N',
+          W: 'N',
+          ArrowRight: 'E',
+          d: 'E',
+          D: 'E',
+          ArrowDown: 'S',
+          s: 'S',
+          S: 'S',
+          ArrowLeft: 'W',
+          a: 'W',
+          A: 'W',
+        };
+        const m = compass[e.key];
+        if (m) {
+          e.preventDefault();
+          session.runMove(m);
+          return;
+        }
+        if (e.key === 'i' || e.key === 'I') {
+          const text = session.describeCurrentCell();
+          if (text) announce(text);
+          return;
+        }
+      }
+      if (fp && snap.runView !== '2d') {
         switch (e.key) {
           case 'ArrowUp':
           case 'w':
@@ -549,6 +696,10 @@ export function PlayPage() {
         case 'r':
         case 'R':
           toggleFirstPerson();
+          break;
+        case 'k':
+        case 'K':
+          toggleWalk2d();
           break;
         case 'o':
         case 'O':
@@ -672,13 +823,20 @@ export function PlayPage() {
                 firstPerson={ride.firstPerson ?? snap.firstPerson}
                 maze={snap.state}
                 generation={session.generation}
-                solve={session.solveTracker}
+                solve={session.hintTracker ?? session.solveTracker}
                 label={canvasLabel}
                 onHostSize={onHostSize}
                 onCameraChange={onCameraChange}
                 onCellClick={onCellClick}
                 onRenderer={onRenderer}
-                pageScroll={touchLayout}
+                pageScroll={touchLayout && snap.runView !== '2d'}
+                {...(snap.runView === '2d' && !snap.runReplay
+                  ? {
+                      onSwipe: (dir: 'N' | 'E' | 'S' | 'W') => {
+                        session.runMove(dir);
+                      },
+                    }
+                  : {})}
               />
               {snap.firstPerson || touchLayout ? null : (
                 <MazeTools variant="floating" groups={toolGroups} />
@@ -705,7 +863,7 @@ export function PlayPage() {
                   Loaded: <strong>{snap.sourceName}</strong>
                 </div>
               ) : null}
-              {snap.firstPerson && snap.state ? (
+              {snap.firstPerson && snap.state && snap.runView !== '2d' ? (
                 <FirstPersonHud
                   state={snap.state}
                   firstPerson={snap.firstPerson}
@@ -749,6 +907,46 @@ export function PlayPage() {
             </div>
             {touchLayout && !snap.firstPerson ? (
               <MazeTools variant="row" groups={toolGroups} />
+            ) : null}
+            {snap.run && snap.runView ? (
+              <RunBar
+                run={snap.run}
+                view={snap.runView}
+                startedAt={snap.runStartedAt}
+                finishedAt={snap.runFinishedAt}
+                clock={runClock}
+                optimalMoves={snap.metrics?.solutionLength ?? null}
+                hints={snap.runHints}
+                undos={snap.runUndos}
+                summary={snap.runSummary}
+                replaying={snap.runReplay}
+                showPad={showTouchPad}
+                onMove={(m) => {
+                  session.runMove(m);
+                }}
+                onUndo={() => {
+                  session.runUndo();
+                }}
+                onRedo={() => {
+                  session.runRedo();
+                }}
+                onSeek={(n) => {
+                  session.runSeek(n);
+                }}
+                onHint={() => {
+                  session.runHint();
+                }}
+                onRestart={() => {
+                  session.restartRun();
+                }}
+                onExit={() => {
+                  session.exitFirstPerson();
+                }}
+                onSave={() => void saveRun()}
+                onStopReplay={() => {
+                  session.stopReplay();
+                }}
+              />
             ) : null}
             {ride.firstPerson ? (
               <RideAlongBar
@@ -826,7 +1024,12 @@ export function PlayPage() {
         hostWidth={hostSize?.width ?? 1280}
         rows={rows}
       />
-      <LibrarySheet open={libraryOpen} onOpenChange={setLibraryOpen} onLoad={loadItem} />
+      <LibrarySheet
+        open={libraryOpen}
+        onOpenChange={setLibraryOpen}
+        onLoad={loadItem}
+        onReplay={replayRun}
+      />
       <SaveDialog
         open={saveOpen}
         onOpenChange={setSaveOpen}

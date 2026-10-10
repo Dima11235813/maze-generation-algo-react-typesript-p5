@@ -17,4 +17,5 @@ export * from './navigation';
 export * from './editing';
 export * from './treeify';
 export * from './rideAlong';
+export * from './run';
 export { CORE_VERSION } from './version';

@@ -20,23 +20,27 @@ import {
   describeCell,
   encodeDocument,
   generators,
-  initialPose,
   applyGenStep,
   solvers,
-  stepBackward,
-  stepForward,
-  turnLeft,
-  turnRight,
   type GenStep,
   type MazeDocument,
   type MazeMetrics,
   type MazeProvenance,
   type MazeState,
-  type Pose,
   type SolveResult,
   type SolveStep,
   RideAlongTracker,
+  formatDuration,
+  hintCells,
+  recordMove,
+  seekRun,
+  startRun,
+  summarizeRun,
+  type CellId,
   type RidePose,
+  type RunMove,
+  type RunState,
+  type RunSummary,
 } from '@maze/core';
 import { StepPlayer, type StepPlayerOptions } from '@maze/player';
 import type { FirstPersonState } from '@maze/renderer';
@@ -66,6 +70,22 @@ export interface SessionSnapshot {
   /** Library item name when the maze was loaded rather than generated. */
   readonly sourceName: string | null;
   readonly provenance: MazeProvenance | null;
+  // ---- Run Maze as a game (WI-02) ----
+  /** The player's run (moves, undo history) while walking the maze; null otherwise. */
+  readonly run: RunState | null;
+  /** First person (3D) or top-down (2D) walking. */
+  readonly runView: '3d' | '2d' | null;
+  /** Clock time of the first step, and of reaching the goal (ms, on the session clock). */
+  readonly runStartedAt: number | null;
+  readonly runFinishedAt: number | null;
+  readonly runHints: number;
+  readonly runUndos: number;
+  /** Cells revealed by the last hint (next cells of the shortest path). */
+  readonly hint: readonly CellId[] | null;
+  /** A saved run is being replayed (player input is ignored). */
+  readonly runReplay: boolean;
+  /** Set once the goal is reached. */
+  readonly runSummary: RunSummary | null;
 }
 
 export interface GenerateOptions {
@@ -103,7 +123,29 @@ const INITIAL: SessionSnapshot = {
   statusSeq: 0,
   sourceName: null,
   provenance: null,
+  run: null,
+  runView: null,
+  runStartedAt: null,
+  runFinishedAt: null,
+  runHints: 0,
+  runUndos: 0,
+  hint: null,
+  runReplay: false,
+  runSummary: null,
 };
+
+/** Resets every Run Maze field (spread into updates that leave or replace a run). */
+const NO_RUN = {
+  run: null,
+  runView: null,
+  runStartedAt: null,
+  runFinishedAt: null,
+  runHints: 0,
+  runUndos: 0,
+  hint: null,
+  runReplay: false,
+  runSummary: null,
+} as const;
 
 export class MazeSession {
   private snap: SessionSnapshot = INITIAL;
@@ -114,10 +156,17 @@ export class MazeSession {
   private rideRef: RideAlongTracker | null = null;
   private requestRender: () => void = () => undefined;
   private speed: number;
+  private readonly now: () => number;
+  /** Moves still to apply while replaying a saved run. */
+  private replayQueue: RunMove[] = [];
+  /** Overlay showing the hint as a path (drawn like a solver's path). */
+  private hintTrackerRef: SolveTracker | null = null;
   private readonly playerOpts: Pick<StepPlayerOptions<unknown, unknown>, 'schedule' | 'now'>;
 
   constructor(opts: SessionOptions = {}) {
     this.speed = opts.speed ?? 60;
+    this.now =
+      opts.now ?? (() => (typeof performance !== 'undefined' ? performance.now() : Date.now()));
     this.playerOpts = {
       ...(opts.schedule ? { schedule: opts.schedule } : {}),
       ...(opts.now ? { now: opts.now } : {}),
@@ -140,6 +189,16 @@ export class MazeSession {
 
   get solveTracker(): SolveTracker | null {
     return this.solveTrackerRef;
+  }
+
+  /** The hint path overlay (a solved tracker holding only the hint), or null. */
+  get hintTracker(): SolveTracker | null {
+    return this.hintTrackerRef;
+  }
+
+  /** Current time on the session clock (ms), for elapsed-time displays. */
+  clock(): number {
+    return this.now();
   }
 
   /** Where a first-person camera riding along with the solver stands (null without a solve). */
@@ -208,6 +267,7 @@ export class MazeSession {
           solverId: null,
           solveResult: null,
           firstPerson: null,
+          ...NO_RUN,
           reachedGoal: false,
         });
       }
@@ -228,6 +288,7 @@ export class MazeSession {
       solveResult: null,
       metrics: null,
       firstPerson: null,
+      ...NO_RUN,
       reachedGoal: false,
       sourceName: null,
       provenance: { algorithm: generatorId, seed, params: {}, coreVersion: CORE_VERSION },
@@ -407,6 +468,7 @@ export class MazeSession {
       solveResult: null,
       metrics: computeMetrics(state),
       firstPerson: null,
+      ...NO_RUN,
       reachedGoal: false,
       sourceName,
       provenance: doc.provenance ?? null,
@@ -429,54 +491,183 @@ export class MazeSession {
 
   // ---- first person ("Run Maze", P-17) ---------------------------------------------------
 
-  enterFirstPerson(): boolean {
+  /** Starts walking the finished maze: first person (3D) or top-down (2D). */
+  enterRun(view: '3d' | '2d' = '3d'): boolean {
     const { state, phase } = this.snap;
     if (!state || phase !== 'ready') return false;
-    const pose = initialPose(state);
+    this.replayQueue = [];
+    this.hintTrackerRef = null;
+    const run = startRun(state);
     this.update({
-      firstPerson: { cell: pose.cell, heading: pose.heading, peek: false },
-      reachedGoal: pose.cell === state.goal,
+      ...NO_RUN,
+      run,
+      runView: view,
+      firstPerson: { cell: run.pose.cell, heading: run.pose.heading, peek: false },
+      reachedGoal: run.finished,
     });
-    this.setStatus('Run Maze: arrow keys or W A S D to move, hold P to peek, Escape to exit.');
+    this.setStatus(
+      view === '3d'
+        ? 'Run Maze: arrow keys or W A S D to move, hold P to peek, U to undo, H for a hint, Escape to exit.'
+        : 'Walk the maze from above: arrow keys, W A S D or swipe to move, U to undo, H for a hint, Escape to exit.',
+    );
     this.requestRender();
     return true;
   }
 
+  /** First person "Run Maze" (P-17). */
+  enterFirstPerson(): boolean {
+    return this.enterRun('3d');
+  }
+
   exitFirstPerson(): void {
     if (!this.snap.firstPerson) return;
-    this.update({ firstPerson: null });
+    this.replayQueue = [];
+    this.hintTrackerRef = null;
+    this.update({ ...NO_RUN, firstPerson: null, reachedGoal: false });
     this.setStatus('Left Run Maze mode.');
     this.requestRender();
   }
 
-  private movePose(fn: (state: MazeState, pose: Pose) => Pose): void {
-    const { firstPerson, state } = this.snap;
-    if (!firstPerson || !state) return;
-    const next = fn(state, { cell: firstPerson.cell, heading: firstPerson.heading });
-    const reached = next.cell === state.goal;
+  /** Same view, fresh run from the start. */
+  restartRun(): void {
+    const view = this.snap.runView;
+    if (view) this.enterRun(view);
+  }
+
+  /** Applies a run (after a move, undo or redo): pose, goal, timer and summary. */
+  private setRun(run: RunState, extra: Partial<SessionSnapshot> = {}): void {
+    const { state, firstPerson } = this.snap;
+    if (!state) return;
+    const now = this.now();
+    const startedAt = this.snap.runStartedAt ?? (run.moves > 0 ? now : null);
+    const justFinished = run.finished && this.snap.run?.finished !== true;
+    const finishedAt = run.finished ? (this.snap.runFinishedAt ?? now) : null;
+    const undos = extra.runUndos ?? this.snap.runUndos;
+    const summary = run.finished
+      ? summarizeRun(state, run, {
+          timeMs: (finishedAt ?? now) - (startedAt ?? now),
+          hints: this.snap.runHints,
+          undos,
+        })
+      : null;
     this.update({
-      firstPerson: { cell: next.cell, heading: next.heading, peek: firstPerson.peek },
-      reachedGoal: reached,
+      ...extra,
+      run,
+      runStartedAt: startedAt,
+      runFinishedAt: finishedAt,
+      runSummary: summary,
+      firstPerson: {
+        cell: run.pose.cell,
+        heading: run.pose.heading,
+        peek: firstPerson?.peek ?? false,
+      },
+      reachedGoal: run.finished,
     });
-    if (reached && !this.snap.reachedGoal) this.setStatus('You reached the goal!');
-    else if (reached && next.cell !== firstPerson.cell) this.setStatus('You reached the goal!');
+    if (justFinished && summary) this.setStatus(describeSummary(summary));
     this.requestRender();
   }
 
+  /** One player move; walking into a wall changes nothing (and says so). */
+  runMove(m: RunMove, opts: { replay?: boolean } = {}): boolean {
+    const { run, state } = this.snap;
+    if (!run || !state || (this.snap.runReplay && opts.replay !== true)) return false;
+    const next = recordMove(state, run, m);
+    if (next === run) {
+      if (opts.replay !== true) this.setStatus('A wall blocks the way.');
+      return false;
+    }
+    const moved = next.pose.cell !== run.pose.cell;
+    if (moved) this.hintTrackerRef = null;
+    this.setRun(next, moved ? { hint: null } : {});
+    return true;
+  }
+
+  runUndo(n = 1): void {
+    const { run, state } = this.snap;
+    if (!run || !state || this.snap.runReplay || run.cursor === 0) return;
+    this.hintTrackerRef = null;
+    this.setRun(seekRun(state, run, run.cursor - n), {
+      runUndos: this.snap.runUndos + 1,
+      hint: null,
+    });
+  }
+
+  runRedo(n = 1): void {
+    const { run, state } = this.snap;
+    if (!run || !state || this.snap.runReplay || run.cursor >= run.history.length) return;
+    this.setRun(seekRun(state, run, run.cursor + n));
+  }
+
+  /** Rewinds or replays the player's own moves to any point (the "your moves" scrubber). */
+  runSeek(cursor: number): void {
+    const { run, state } = this.snap;
+    if (!run || !state || this.snap.runReplay) return;
+    const to = Math.max(0, Math.min(run.history.length, Math.floor(cursor)));
+    if (to === run.cursor) return;
+    this.hintTrackerRef = null;
+    this.setRun(seekRun(state, run, to), {
+      hint: null,
+      ...(to < run.cursor ? { runUndos: this.snap.runUndos + 1 } : {}),
+    });
+  }
+
+  /** Reveals the next `n` cells of the shortest path from where the player stands. */
+  runHint(n = 5): void {
+    const { run, state } = this.snap;
+    if (!run || !state || run.finished || this.snap.runReplay) return;
+    const cells = hintCells(state, run.pose.cell, n);
+    if (cells.length === 0) return;
+    const tracker = new SolveTracker(state.grid);
+    tracker.path = [run.pose.cell, ...cells];
+    tracker.done = true;
+    this.hintTrackerRef = tracker;
+    const dir = describeDirection(state, run.pose.cell, cells[0] as CellId);
+    this.update({ hint: cells, runHints: this.snap.runHints + 1 });
+    this.setStatus(`Hint: head ${dir}. The next ${String(cells.length)} cells are marked.`);
+    this.requestRender();
+  }
+
+  /** Starts replaying a saved run; call `replayTick` to advance it. */
+  startReplay(moves: readonly RunMove[], view: '3d' | '2d'): boolean {
+    if (!this.enterRun(view)) return false;
+    this.replayQueue = [...moves];
+    this.update({ runReplay: true });
+    this.setStatus(`Replaying a saved run of ${String(moves.length)} moves.`);
+    return true;
+  }
+
+  /** Applies the next replayed move; returns false once the replay has ended. */
+  replayTick(): boolean {
+    if (!this.snap.runReplay) return false;
+    const m = this.replayQueue.shift();
+    if (m === undefined) {
+      this.update({ runReplay: false });
+      return false;
+    }
+    this.runMove(m, { replay: true });
+    if (this.replayQueue.length === 0) this.update({ runReplay: false });
+    return true;
+  }
+
+  stopReplay(): void {
+    this.replayQueue = [];
+    if (this.snap.runReplay) this.update({ runReplay: false });
+  }
+
   fpForward(): void {
-    this.movePose(stepForward);
+    this.runMove('F');
   }
 
   fpBackward(): void {
-    this.movePose(stepBackward);
+    this.runMove('B');
   }
 
   fpTurnLeft(): void {
-    this.movePose((_s, p) => turnLeft(p));
+    this.runMove('L');
   }
 
   fpTurnRight(): void {
-    this.movePose((_s, p) => turnRight(p));
+    this.runMove('R');
   }
 
   setPeek(peek: boolean): void {
@@ -521,4 +712,26 @@ export class MazeSession {
   private emit(): void {
     for (const l of this.listeners) l();
   }
+}
+
+const DIRECTION_WORDS = ['north', 'east', 'south', 'west'] as const;
+
+function describeDirection(state: MazeState, from: CellId, to: CellId): string {
+  const w = state.grid.width;
+  const dc = (to % w) - (from % w);
+  const dr = Math.floor(to / w) - Math.floor(from / w);
+  const d = Math.abs(dc) >= Math.abs(dr) ? (dc > 0 ? 1 : 3) : dr > 0 ? 2 : 0;
+  return DIRECTION_WORDS[d];
+}
+
+/** Spoken and shown when the goal is reached. */
+export function describeSummary(s: RunSummary): string {
+  const eff = s.efficiency === null ? '' : `, ${String(Math.round(s.efficiency * 100))}% efficient`;
+  const optimal = s.optimalMoves === null ? '' : ` (shortest ${String(s.optimalMoves)})`;
+  const extras = [
+    s.hints > 0 ? `${String(s.hints)} hint${s.hints === 1 ? '' : 's'}` : '',
+    s.undos > 0 ? `${String(s.undos)} undo${s.undos === 1 ? '' : 's'}` : '',
+  ].filter(Boolean);
+  const tail = extras.length > 0 ? `, ${extras.join(' and ')}` : '';
+  return `You reached the goal in ${formatDuration(s.timeMs)} with ${String(s.moves)} moves${optimal}${eff}${tail}.`;
 }

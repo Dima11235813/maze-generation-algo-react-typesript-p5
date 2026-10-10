@@ -1,11 +1,14 @@
 import { Button, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@maze/ui';
 import { useState } from 'react';
-import { useLibrary, type LibraryItem } from '../../state/library';
+import { formatDuration } from '@maze/core';
+import { bestRun, useLibrary, type LibraryItem, type SavedRun } from '../../state/library';
 
 export interface LibrarySheetProps {
   open: boolean;
   onOpenChange(open: boolean): void;
   onLoad(item: LibraryItem): void;
+  /** Loads the maze and replays one of its saved runs. */
+  onReplay?(item: LibraryItem, run: SavedRun): void;
 }
 
 function formatDate(iso: string): string {
@@ -13,7 +16,7 @@ function formatDate(iso: string): string {
   return Number.isNaN(d.getTime()) ? iso : d.toLocaleString();
 }
 
-export function LibrarySheet({ open, onOpenChange, onLoad }: LibrarySheetProps) {
+export function LibrarySheet({ open, onOpenChange, onLoad, onReplay }: LibrarySheetProps) {
   const items = useLibrary((s) => s.items);
   const remove = useLibrary((s) => s.remove);
   const [confirmId, setConfirmId] = useState<string | null>(null);
@@ -44,7 +47,10 @@ export function LibrarySheet({ open, onOpenChange, onLoad }: LibrarySheetProps) 
                     className="h-12 w-16 shrink-0 rounded-sm border border-border object-cover"
                   />
                 ) : (
-                  <div aria-hidden="true" className="h-12 w-16 shrink-0 rounded-sm border border-border bg-panel-2" />
+                  <div
+                    aria-hidden="true"
+                    className="h-12 w-16 shrink-0 rounded-sm border border-border bg-panel-2"
+                  />
                 )}
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
                   <div className="truncate text-sm font-medium">{item.name}</div>
@@ -54,6 +60,7 @@ export function LibrarySheet({ open, onOpenChange, onLoad }: LibrarySheetProps) 
                     <br />
                     {formatDate(item.createdAt)}
                   </div>
+                  {item.runs && item.runs.length > 0 ? <BestRunLine item={item} /> : null}
                   <div className="flex gap-1.5">
                     <Button
                       size="sm"
@@ -65,17 +72,51 @@ export function LibrarySheet({ open, onOpenChange, onLoad }: LibrarySheetProps) 
                     >
                       Load
                     </Button>
+                    {onReplay && bestRun(item.runs) ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => {
+                          const run = bestRun(item.runs);
+                          if (run) onReplay(item, run);
+                          onOpenChange(false);
+                        }}
+                        aria-label={`Replay the best run on ${item.name}`}
+                      >
+                        Replay best run
+                      </Button>
+                    ) : null}
                     {confirmId === item.id ? (
                       <>
-                        <Button size="sm" variant="destructive" onClick={() => remove(item.id)} aria-label={`Confirm delete ${item.name}`}>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => {
+                            remove(item.id);
+                          }}
+                          aria-label={`Confirm delete ${item.name}`}
+                        >
                           Confirm delete
                         </Button>
-                        <Button size="sm" variant="ghost" onClick={() => setConfirmId(null)}>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setConfirmId(null);
+                          }}
+                        >
                           Cancel
                         </Button>
                       </>
                     ) : (
-                      <Button size="sm" variant="ghost" onClick={() => setConfirmId(item.id)} aria-label={`Delete ${item.name}`}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setConfirmId(item.id);
+                        }}
+                        aria-label={`Delete ${item.name}`}
+                      >
                         Delete
                       </Button>
                     )}
@@ -87,5 +128,18 @@ export function LibrarySheet({ open, onOpenChange, onLoad }: LibrarySheetProps) 
         )}
       </SheetContent>
     </Sheet>
+  );
+}
+
+function BestRunLine({ item }: { item: LibraryItem }) {
+  const best = bestRun(item.runs);
+  if (!best) return null;
+  const count = item.runs?.length ?? 0;
+  return (
+    <div className="text-xs">
+      {count} run{count === 1 ? '' : 's'} · best {best.moveCount} moves in{' '}
+      {formatDuration(best.timeMs)}
+      {best.optimalMoves !== null ? ` (shortest ${String(best.optimalMoves)})` : ''}
+    </div>
   );
 }
