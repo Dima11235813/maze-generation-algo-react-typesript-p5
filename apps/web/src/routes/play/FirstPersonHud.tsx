@@ -60,13 +60,20 @@ export function FirstPersonHud({
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-2 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
       {reachedGoal ? (
-        <div role="status" className="pointer-events-auto rounded-md border border-accent bg-panel px-4 py-2 text-sm font-semibold shadow">
+        <div
+          role="status"
+          className="pointer-events-auto rounded-md border border-accent bg-panel px-4 py-2 text-sm font-semibold shadow"
+        >
           You reached the goal!
         </div>
       ) : null}
 
       {showPad ? (
-        <div role="group" aria-label="Movement controls" className="pointer-events-auto flex items-end gap-6">
+        <div
+          role="group"
+          aria-label="Movement controls"
+          className="pointer-events-auto flex items-end gap-6"
+        >
           <div className="grid grid-cols-3 gap-1.5">
             <span aria-hidden="true" />
             <PadButton label="Move forward" onPress={onForward}>
@@ -117,7 +124,8 @@ export function FirstPersonHud({
         <span className={cn('items-center gap-1 text-muted', showPad ? 'hidden sm:flex' : 'flex')}>
           <Kbd>W</Kbd>
           <Kbd>S</Kbd> move <Kbd>A</Kbd>
-          <Kbd>D</Kbd> turn <Kbd>P</Kbd> peek <Kbd>Esc</Kbd> exit
+          <Kbd>D</Kbd> turn <Kbd>P</Kbd> peek <Kbd>U</Kbd> undo <Kbd>H</Kbd> hint <Kbd>Esc</Kbd>{' '}
+          exit
         </span>
         <Button size="sm" variant="outline" onClick={onExit}>
           Exit maze
