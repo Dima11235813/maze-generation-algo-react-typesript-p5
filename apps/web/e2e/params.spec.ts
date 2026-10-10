@@ -20,7 +20,10 @@ test.describe('algorithm parameters', () => {
     await expect(form.getByRole('button', { name: 'Reset A* Search parameters' })).toBeEnabled();
 
     await transport.getByRole('button', { name: 'Run to end' }).click();
-    await expect(page.getByRole('status')).toContainText(/Solved with A\* Search/, {
+    // Filter by text: the PWA "ready to work offline" toast is a status region too.
+    await expect(
+      page.getByRole('status').filter({ hasText: /Solved with A\* Search/ }),
+    ).toBeAttached({
       timeout: 30_000,
     });
     const stats = page.getByLabel('Solver statistics');
