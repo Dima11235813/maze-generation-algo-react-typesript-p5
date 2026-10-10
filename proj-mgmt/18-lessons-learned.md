@@ -146,3 +146,8 @@ fire in jsdom, so "Save run" hung in tests (and could in a browser with a stalle
 **L-30 Long inline heredocs break the shell.** A long `python - <<'EOF'` patch with nested
 quotes failed to parse, and a stray `cat > /dev/null` waited on stdin until the tool timed out.
 *Rule:* write patch scripts to the scratchpad with the Write tool and run them as files.
+
+**L-31 Touch sizing rules must not resize every control.** A coarse-pointer rule gave every
+toolbar button (and switch) a 44px minimum width and height, which squashed switches into
+circles on phones. *Rule:* grow hit areas with an invisible `::after` overlay for controls whose
+shape matters; check toolbar screenshots at phone width, not just the maze.
