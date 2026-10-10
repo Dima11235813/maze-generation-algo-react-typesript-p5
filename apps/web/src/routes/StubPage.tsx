@@ -38,16 +38,6 @@ export function WatchPage() {
   );
 }
 
-export function BuildPage() {
-  return (
-    <StubPage
-      title="Build"
-      description="Toggle walls, move the start and goal, resize, braid dead ends, validate reachability, then save, version and share your maze."
-      phase="Phase 4"
-    />
-  );
-}
-
 export function LearnPage() {
   return (
     <StubPage

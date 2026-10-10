@@ -32,7 +32,7 @@ const PILLARS: readonly Pillar[] = [
     to: '/build',
     title: 'Build',
     blurb: 'Edit walls, move start and goal, braid dead ends, save and share.',
-    live: false,
+    live: true,
   },
   {
     to: '/learn',

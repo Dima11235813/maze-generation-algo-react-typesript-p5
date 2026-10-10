@@ -257,8 +257,30 @@ class Canvas2dRenderer implements Renderer {
   private readonly onPointerUp = (e: PointerEvent): void => {
     if (e.button !== 0) return;
     if (Math.hypot(e.clientX - this.downX, e.clientY - this.downY) > CLICK_SLOP_PX) return;
-    this.events.onCellClick?.(this.cellFromClient(e.clientX, e.clientY), e);
+    const cell = this.cellFromClient(e.clientX, e.clientY);
+    const at = cell !== null ? this.fractionInCell(cell, e.clientX, e.clientY) : undefined;
+    this.events.onCellClick?.(cell, e, at);
   };
+
+  /** Where inside `cell` a client point lies, 0..1 from the cell's top-left (grid view only). */
+  private fractionInCell(
+    cell: CellId,
+    clientX: number,
+    clientY: number,
+  ): { fx: number; fy: number } | undefined {
+    const rect = this.canvas?.getBoundingClientRect();
+    const maze = this.maze;
+    if (!rect || !maze || this.treeScene) return undefined;
+    const { scale, ox, oy } = this.layout;
+    const cs = this.options.cellSize;
+    if (!(scale > 0) || !(cs > 0)) return undefined;
+    const lx = ((clientX - rect.left) * this.dpr - ox) / scale / cs;
+    const ly = ((clientY - rect.top) * this.dpr - oy) / scale / cs;
+    const col = cell % maze.grid.width;
+    const row = Math.floor(cell / maze.grid.width);
+    const clamp = (v: number): number => Math.min(1, Math.max(0, v));
+    return { fx: clamp(lx - col), fy: clamp(ly - row) };
+  }
 
   /** Pointer position normalised to [-1, 1]; x grows right, y grows down (screen-like). */
   private normalizePointer(e: PointerEvent): PointerState {

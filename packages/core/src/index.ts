@@ -15,6 +15,7 @@ export * from './document';
 export * from './describe';
 export * from './navigation';
 export * from './editing';
+export * from './buildTools';
 export * from './treeify';
 export * from './rideAlong';
 export * from './run';

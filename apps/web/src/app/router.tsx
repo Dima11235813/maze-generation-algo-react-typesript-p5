@@ -5,7 +5,8 @@ import {
   type RouterHistory,
 } from '@tanstack/react-router';
 import { LandingPage } from '../routes/LandingPage';
-import { AccountPage, BuildPage, LearnPage, NotFoundPage } from '../routes/StubPage';
+import { AccountPage, LearnPage, NotFoundPage } from '../routes/StubPage';
+import { BuildPage, type BuildSearch } from '../routes/build/BuildPage';
 import { ComparePage, type CompareSearch } from '../routes/explore/ComparePage';
 import { ExplorePage } from '../routes/explore/ExplorePage';
 import { PlayPage } from '../routes/play/PlayPage';
@@ -55,6 +56,7 @@ const buildRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/build',
   component: BuildPage,
+  validateSearch: (raw: Record<string, unknown>): BuildSearch => pickStrings(raw, ['item']),
 });
 const learnRoute = createRoute({
   getParentRoute: () => rootRoute,

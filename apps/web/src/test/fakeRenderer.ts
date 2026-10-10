@@ -2,6 +2,7 @@ import type {
   CameraState,
   Renderer,
   RendererFactory,
+  RendererEvents,
   RendererFactoryOptions,
 } from '@maze/renderer';
 import type { RendererFactories } from '../maze/rendererFactories';
@@ -16,6 +17,8 @@ export interface FakeRenderer extends Renderer {
   lastOptions: RendererFactoryOptions['options'];
   lastTheme: RendererFactoryOptions['theme'];
   renderCount: number;
+  /** The events the app registered, so tests can simulate canvas clicks. */
+  events: RendererEvents;
 }
 
 export function createFakeRenderer(kind: '2d' | '3d', opts: RendererFactoryOptions): FakeRenderer {
@@ -30,6 +33,7 @@ export function createFakeRenderer(kind: '2d' | '3d', opts: RendererFactoryOptio
     lastOptions: opts.options,
     lastTheme: opts.theme,
     renderCount: 0,
+    events: opts.events ?? {},
     mount: () => r.calls.push('mount'),
     setMaze: (m) => {
       r.lastMaze = m;
@@ -60,7 +64,9 @@ export function createFakeRenderer(kind: '2d' | '3d', opts: RendererFactoryOptio
       r.calls.push('setFirstPerson');
     },
     setPointer: () => undefined,
-    setEvents: () => undefined,
+    setEvents: (e) => {
+      r.events = e;
+    },
     resize: () => r.calls.push('resize'),
     requestRender: () => {
       r.renderCount++;
