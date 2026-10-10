@@ -5,7 +5,7 @@
 > marked **NEXT**, follow `AGENTS.md` section 2, and update this file when it is done.
 > Status values: `NEXT`, `TODO`, `BLOCKED (H-x)`, `DONE yyyy-mm-dd (commit)`.
 
-## Where we are (2026-10-10, `develop` == `main` == MERGE_SHA, not pushed)
+## Where we are (2026-10-10, `develop` == `main` == 8d2d10c, not pushed)
 
 Shipped: monorepo foundation and legacy parity; 12 generators + braid; 12 solvers; race scheduler
 in core (no UI yet); Watch (pseudo-code, step log, stats); Explore catalogue + Compare; a11y grid
@@ -146,7 +146,7 @@ The owner especially enjoys the first-person walkthrough. Make it a complete exp
   random edits), 5 model, 6 RTL, 2 e2e (a real tap near a wall, axe). Also fixed touch styling that
   squashed toolbar switches into circles.
 
-### WI-04 Algorithm parameters and complete Watch content - DONE 2026-10-10 (MERGE_SHA)
+### WI-04 Algorithm parameters and complete Watch content - DONE 2026-10-10 (8d2d10c)
 
 - Scope: forms generated from `ParamDescriptor` for generators and solvers (Play options, Watch,
   Compare, Race); pseudo-code listings for all 12 solvers (only BFS/DFS today); solver-relative
