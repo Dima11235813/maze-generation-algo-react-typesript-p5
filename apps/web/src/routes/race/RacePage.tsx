@@ -21,6 +21,7 @@ import {
   parseAgents,
   parseScoring,
   parseSize,
+  raceParamsKey,
   solverName,
   type RaceSetup,
 } from '../../maze/race';
@@ -30,6 +31,7 @@ import { TimelineBar } from '../play/TimelineBar';
 import { useKeyboardShortcuts } from '../play/useKeyboardShortcuts';
 import { RaceLane } from './RaceLane';
 import { bestColumns, winnerSentence } from './raceView';
+import { AlgorithmParams } from '../params/ParamFields';
 import { RacersPicker, RaceRules } from './RaceSetupPanel';
 import { RaceRanking, RaceStandings } from './RaceStandings';
 import { RaceToolbar } from './RaceToolbar';
@@ -96,6 +98,7 @@ export function RacePage() {
       agents: parseAgents(search.agents, solvers.ids),
       scoring: parseScoring(search.scoring),
       size: parseSize(search.size),
+      params: prefs.algoParams,
     }),
     [
       search.seed,
@@ -105,9 +108,10 @@ export function RacePage() {
       search.size,
       fallbackSeed,
       prefs.generatorId,
+      prefs.algoParams,
     ],
   );
-  const setupKey = `${setup.seed}|${setup.generatorId}|${setup.size}|${setup.agents.join(',')}|${setup.scoring}`;
+  const setupKey = `${setup.seed}|${setup.generatorId}|${setup.size}|${setup.agents.join(',')}|${setup.scoring}|${raceParamsKey(setup)}`;
 
   const setSearch = useCallback(
     (patch: Partial<RaceSetup>) => {
@@ -334,6 +338,9 @@ export function RacePage() {
                   setSearch({ agents });
                 }}
               />
+              {setup.agents.map((id) => (
+                <AlgorithmParams key={id} algorithmId={id} className="mt-4 flex flex-col gap-3" />
+              ))}
             </Section>
             <Section
               id="race-rules"
@@ -354,6 +361,10 @@ export function RacePage() {
                 onSizeChange={(size) => {
                   setSearch({ size });
                 }}
+              />
+              <AlgorithmParams
+                algorithmId={setup.generatorId}
+                className="mt-4 flex flex-col gap-3"
               />
             </Section>
           </>

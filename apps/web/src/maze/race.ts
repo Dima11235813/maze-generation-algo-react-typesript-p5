@@ -27,6 +27,7 @@ import {
   type RaceTick,
 } from '@maze/core';
 import { StepPlayer, type StepPlayerOptions } from '@maze/player';
+import { paramsFor, type ParamValues } from './algoParams';
 
 export const RACE_SCORINGS: readonly RaceScoring[] = [
   'first-to-goal',
@@ -52,6 +53,11 @@ export interface RaceSetup {
   readonly scoring: RaceScoring;
   /** The maze is `size` x `size` cells, so the URL alone fixes the race. */
   readonly size: number;
+  /**
+   * Parameters per algorithm id (`prefs.algoParams`), clamped per algorithm when used. Not in
+   * the URL: a shared link reproduces the race with each recipient's own parameters.
+   */
+  readonly params?: Readonly<Record<string, ParamValues>>;
 }
 
 /** Parses `agents=bfs,astar`: known solver ids, unique, at most four; tops up to two. */
@@ -80,18 +86,19 @@ export function parseSize(raw: string | undefined): number {
 }
 
 /** Generates the race maze synchronously from the setup (seeded, so always identical). */
-export function buildRaceMaze(setup: Pick<RaceSetup, 'seed' | 'generatorId' | 'size'>): {
+export function buildRaceMaze(setup: Pick<RaceSetup, 'seed' | 'generatorId' | 'size' | 'params'>): {
   state: MazeState;
   document: MazeDocument;
 } {
   const generator = generators.require(setup.generatorId);
+  const params = paramsFor(setup.params ?? {}, generator.meta);
   const state = runToEnd(
-    generator.run(createGrid(setup.size, setup.size), createRng(setup.seed), {}),
+    generator.run(createGrid(setup.size, setup.size), createRng(setup.seed), params),
   );
   const document: MazeDocument = {
     id: '',
     ...encodeDocumentSync(state, {
-      provenance: { algorithm: setup.generatorId, seed: setup.seed, params: {} },
+      provenance: { algorithm: setup.generatorId, seed: setup.seed, params },
     }),
   };
   return { state, document };
@@ -100,7 +107,9 @@ export function buildRaceMaze(setup: Pick<RaceSetup, 'seed' | 'generatorId' | 's
 export function raceConfig(setup: RaceSetup, document: MazeDocument): RaceConfig {
   return {
     document,
-    agents: setup.agents.map((id) => createAgent(id)),
+    agents: setup.agents.map((id) =>
+      createAgent(id, paramsFor(setup.params ?? {}, solvers.require(id).meta)),
+    ),
     lockstep: true,
     scoring: setup.scoring,
     seed: setup.seed,
@@ -127,6 +136,18 @@ export interface LaneStanding {
   readonly pathLength: number | null;
   /** Tick on which the agent finished (or was stopped). */
   readonly finishedAtTick: number | null;
+}
+
+/** Restarts the race when any parameter that affects it changes. */
+export function raceParamsKey(setup: RaceSetup): string {
+  const stored = setup.params ?? {};
+  const gen = generators.get(setup.generatorId);
+  const parts = [gen ? paramsFor(stored, gen.meta) : {}];
+  for (const id of setup.agents) {
+    const s = solvers.get(id);
+    parts.push(s ? paramsFor(stored, s.meta) : {});
+  }
+  return JSON.stringify(parts);
 }
 
 export function solverName(id: string): string {

@@ -1,4 +1,4 @@
-import { formatDuration, type SolveTracker } from '@maze/core';
+import { formatDuration, solverRelativeMetrics, type SolveTracker } from '@maze/core';
 import type { StepPlayerSnapshot } from '@maze/player';
 import type { ReactNode } from 'react';
 import type { SessionSnapshot } from '../../maze/session';
@@ -19,10 +19,27 @@ export interface WatchStatsProps {
   hideHeading?: boolean;
 }
 
-/** Live solver statistics (expanded, discovered, frontier peak, path length, elapsed). */
+function percent(ratio: number): string {
+  return `${Math.round(ratio * 100)}%`;
+}
+
+/** "1.00x" (optimal) or "1.35x"; null ratio -> "-". */
+function times(ratio: number | null): string {
+  return ratio === null ? '-' : `${ratio.toFixed(2)}x`;
+}
+
+/**
+ * Live solver statistics (expanded, discovered, frontier peak, path length, elapsed) plus the
+ * solver-relative metrics: share of the maze explored and path length against the shortest.
+ */
 export function WatchStats({ snap, tracker, player, hideHeading = false }: WatchStatsProps) {
   const result = snap.solveResult;
   const stats = result?.stats ?? null;
+  const cells = snap.metrics?.cells ?? snap.width * snap.height;
+  const relative = stats && snap.metrics ? solverRelativeMetrics(stats, snap.metrics) : null;
+  // While running, the explored share follows the tracker; the final value comes from the stats.
+  const exploredRatio =
+    relative?.expandedRatio ?? (cells > 0 ? (tracker?.expanded ?? 0) / cells : 0);
   return (
     <section aria-labelledby="stats-heading" className="flex flex-col gap-2">
       <h3
@@ -69,6 +86,8 @@ export function WatchStats({ snap, tracker, player, hideHeading = false }: Watch
               : '-'
           }
         />
+        <Stat label="Explored" value={tracker || relative ? percent(exploredRatio) : '-'} />
+        <Stat label="Vs shortest" value={relative ? times(relative.optimalityRatio) : '-'} />
       </dl>
     </section>
   );

@@ -8,6 +8,7 @@
 import {
   ALL_WALLS,
   CORE_VERSION,
+  sanitizeParams,
   GenerationTracker,
   SolveTracker,
   cellCount,
@@ -43,6 +44,7 @@ import {
   type RunSummary,
 } from '@maze/core';
 import { StepPlayer, type StepPlayerOptions } from '@maze/player';
+import { nameWithParams } from './algoParams';
 import type { FirstPersonState } from '@maze/renderer';
 
 export type SessionPhase = 'empty' | 'generating' | 'ready';
@@ -94,6 +96,8 @@ export interface GenerateOptions {
   readonly cellSize: number;
   readonly seed?: string;
   readonly generatorId?: string;
+  /** Generator parameters (clamped against its descriptors); defaults when omitted. */
+  readonly params?: Record<string, unknown>;
   /** Start playing immediately (legacy behaviour). Default true. */
   readonly autoplay?: boolean;
 }
@@ -216,6 +220,7 @@ export class MazeSession {
     this.disposePlayers();
     const generatorId = opts.generatorId ?? this.snap.generatorId;
     const generator = generators.require(generatorId);
+    const params = sanitizeParams(generator.meta, opts.params);
     const seed = createRng(opts.seed).seed;
     const grid = createGrid(opts.width, opts.height);
     const total = cellCount(grid);
@@ -231,7 +236,7 @@ export class MazeSession {
     const liveState = createMazeState(grid, liveWalls, 0, total - 1);
 
     const player = new StepPlayer<GenStep, MazeState>({
-      source: () => generator.run(grid, createRng(seed), {}),
+      source: () => generator.run(grid, createRng(seed), params),
       stepsPerSecond: this.speed,
       ...this.playerOpts,
     });
@@ -291,10 +296,10 @@ export class MazeSession {
       ...NO_RUN,
       reachedGoal: false,
       sourceName: null,
-      provenance: { algorithm: generatorId, seed, params: {}, coreVersion: CORE_VERSION },
+      provenance: { algorithm: generatorId, seed, params, coreVersion: CORE_VERSION },
     });
     this.setStatus(
-      `Generating a ${grid.width} by ${grid.height} maze with ${generator.meta.name}.`,
+      `Generating a ${grid.width} by ${grid.height} maze with ${nameWithParams(generator.meta, params)}.`,
     );
     this.requestRender();
     if (opts.autoplay !== false) player.play();
@@ -309,6 +314,7 @@ export class MazeSession {
       cellSize: this.snap.cellSize,
       seed: this.snap.seed,
       generatorId: this.snap.generatorId,
+      ...(this.snap.provenance ? { params: this.snap.provenance.params } : {}),
     });
   }
 
@@ -388,18 +394,20 @@ export class MazeSession {
 
   // ---- solving ---------------------------------------------------------------------------
 
-  startSolve(solverId: string, autoplay = true): boolean {
+  /** Solves the finished maze; `params` are clamped against the solver's descriptors. */
+  startSolve(solverId: string, autoplay = true, params?: Record<string, unknown>): boolean {
     const { state, phase } = this.snap;
     if (!state || phase !== 'ready') return false;
     this.snap.solvePlayer?.dispose();
     const solver = solvers.require(solverId);
+    const solverParams = sanitizeParams(solver.meta, params);
     const tracker = new SolveTracker(state.grid);
     this.solveTrackerRef = tracker;
     const ride = new RideAlongTracker(state);
     this.rideRef = ride;
 
     const player = new StepPlayer<SolveStep, SolveResult>({
-      source: () => solver.run(state, {}),
+      source: () => solver.run(state, solverParams),
       stepsPerSecond: this.speed,
       ...this.playerOpts,
     });
@@ -432,7 +440,7 @@ export class MazeSession {
     });
 
     this.update({ solvePlayer: player, solverId, solveResult: null });
-    this.setStatus(`Solving with ${solver.meta.name}.`);
+    this.setStatus(`Solving with ${nameWithParams(solver.meta, solverParams)}.`);
     this.requestRender();
     if (autoplay) player.play();
     return true;

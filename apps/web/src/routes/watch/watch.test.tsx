@@ -77,6 +77,29 @@ describe('/watch', () => {
     expect(within(log).getByText(/path found with \d+ moves/i)).toBeInTheDocument();
     // After 'done' no line is current; the status is announced.
     expect(screen.getByRole('status')).toHaveTextContent(/solved with breadth-first search/i);
+    // Solver-relative metrics: BFS is optimal, so its path is 1.00x the shortest.
+    expect(within(stats).getByText('1.00x')).toBeInTheDocument();
+    expect(within(stats).getByText(/^\d+%$/)).toBeInTheDocument();
+  });
+
+  it('shows the solver parameters and re-arms the solve when one changes', async () => {
+    const user = userEvent.setup();
+    usePrefs.getState().set('solverId', 'random-mouse');
+    renderWatch();
+    const toolbar = await screen.findByRole('toolbar', { name: /watch controls/i });
+    const params = screen.getByRole('region', { name: /random mouse parameters/i });
+    const step = within(toolbar).getByRole('button', { name: /step once/i });
+    await waitFor(() => expect(step).toBeEnabled());
+    await user.click(step);
+    const log = screen.getByRole('log', { name: /solver steps/i });
+    await waitFor(() => expect(within(log).getAllByRole('listitem').length).toBeGreaterThan(0));
+
+    await user.click(within(params).getByRole('switch'));
+    expect(usePrefs.getState().algoParams['random-mouse']).toEqual({ noBacktrack: false });
+    // The new parameters re-arm the solve from step 0, so the log starts over.
+    await waitFor(() => expect(within(log).getByText(/no steps yet/i)).toBeInTheDocument());
+    await waitFor(() => expect(step).toBeEnabled());
+    expect(within(toolbar).getByRole('button', { name: /step back/i })).toBeDisabled();
   });
 
   it('switches solver, re-arms it and filters the log by verbosity', async () => {
