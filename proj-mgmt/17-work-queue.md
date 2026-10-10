@@ -5,7 +5,7 @@
 > marked **NEXT**, follow `AGENTS.md` section 2, and update this file when it is done.
 > Status values: `NEXT`, `TODO`, `BLOCKED (H-x)`, `DONE yyyy-mm-dd (commit)`.
 
-## Where we are (2026-10-09, `develop` == `main` == 54d8a6e + docs, not pushed)
+## Where we are (2026-10-09, `develop` == `main` == 6a67739 + docs, not pushed)
 
 Shipped: monorepo foundation and legacy parity; 12 generators + braid; 12 solvers; race scheduler
 in core (no UI yet); Watch (pseudo-code, step log, stats); Explore catalogue + Compare; a11y grid
@@ -14,8 +14,8 @@ step back, restart, scrub) for generation and solving; responsive workspace (pho
 tablet grid, desktop/wide columns); Race page (2-4 solvers, lockstep transport, standings,
 ranking, deep link); Tree view (maze as its spanning tree: upright, radial, 3D; growth, morph,
 outline, Compare); maze tools widget (BUG-01); Ride along (watch a solver in first person).
-Run Maze as a game (WI-02). Gate: core 300, player 21, renderer 39, web 91 tests; lint 0 errors
-(323 warnings); e2e 24/24.
+Run Maze as a game (WI-02); Build editor (WI-03). Gate: core 305, player 21, renderer 39, web 102
+tests; lint 0 errors (335 warnings); e2e 26/26; initial JS 230/250 kB gzip.
 
 ## Queue
 
@@ -126,7 +126,7 @@ The owner especially enjoys the first-person walkthrough. Make it a complete exp
   swipes, touch D-pad); library keeps runs per maze with the best run and "Replay best run".
   Thumbnails time out after 1.5 s so saves never hang. Tests: 6 core, 5 session, 3 RTL, 1 e2e.
 
-### WI-03 Build mode editor - **NEXT**
+### WI-03 Build mode editor - DONE 2026-10-09 (6a67739)
 
 `packages/core/src/editing.ts` provides pure edit ops, validation and undo/redo; no UI yet.
 
@@ -136,8 +136,16 @@ The owner especially enjoys the first-person walkthrough. Make it a complete exp
 - Acceptance: edits keep wall symmetry (tests); validation shown; saved maze reloads identically;
   works on touch (tap targets) and keyboard.
 - Branch: `feat/build-editor`. Blocked by: nothing.
+- Delivered: `/build?item=` with Walls/Start/Goal tap tools (the 2D renderer reports where in a
+  cell a click landed; core `nearestWall` picks the wall), keyboard cursor (arrows, Shift+arrow
+  toggles a wall, S/G, Enter, U/Shift+U), resize, braid and close/open all as single undo steps
+  (core `snapshotEdit`), validation list that moves the cursor to the problem, show-solution
+  overlay, Save (over the library item, `replace`) and Save as a copy, PNG/SVG (core `mazeToSvg`)/
+  JSON export, JSON import with errors explained. Tests: 5 core (incl. a symmetry property over
+  random edits), 5 model, 6 RTL, 2 e2e (a real tap near a wall, axe). Also fixed touch styling that
+  squashed toolbar switches into circles.
 
-### WI-04 Algorithm parameters and complete Watch content - TODO
+### WI-04 Algorithm parameters and complete Watch content - **NEXT**
 
 - Scope: forms generated from `ParamDescriptor` for generators and solvers (Play options, Watch,
   Compare, Race); pseudo-code listings for all 12 solvers (only BFS/DFS today); solver-relative
@@ -179,6 +187,8 @@ way" it looks like a tree (Wikipedia, Maze generation algorithm). Design:
   findings (unused deps/exports); fix the landing "coming soon" card contrast (axe serious,
   excluded via `KNOWN_ISSUES` in `apps/web/e2e/a11y.spec.ts`); "Regenerate same seed" should
   reuse the stored grid size; add an e2e journey at a phone viewport.
+- Also: the initial JS bundle reached 230 of 250 kB gzip after WI-03 (pages are not lazy-loaded):
+  split the routes (`lazyRouteComponent`) so new pages do not push it over the gate.
 - Acceptance: lint warnings < 50 with no new suppressions; knip clean or annotated; axe exclusion
   removed.
 - Branch: `chore/quality-debt`. Blocked by: nothing.
@@ -209,6 +219,7 @@ Tauri 2 builds; starts with the 2-day WKWebView WebGL spike (ADR-012).
 | Responsive workspace (phone/tablet/desktop/wide) | 2026-10-03 | 551e277 |
 | WI-01 Race page | 2026-10-03 | 17c7471 |
 | WI-09 Tree view (all five slices) | 2026-10-03 | 26c4c69, 3183337 |
+| WI-03 Build editor | 2026-10-09 | 6a67739 |
 | WI-02 Run Maze as a game | 2026-10-09 | 54d8a6e |
 | WI-10 Ride along | 2026-10-05 | f92e323 |
 | BUG-01 Maze tools widget | 2026-10-05 | 43309d6 |
