@@ -74,7 +74,8 @@ export function LandingPage() {
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="list">
           {PILLARS.map((p) => (
             <li key={p.to}>
-              <Card className={cn('h-full', !p.live && 'opacity-80')}>
+              {/* Upcoming pillars get a dashed outline, not reduced opacity: text keeps 4.5:1. */}
+              <Card className={cn('h-full', !p.live && 'border-dashed')}>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between gap-2 text-base">
                     {p.title}

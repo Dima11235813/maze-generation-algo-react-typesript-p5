@@ -9,11 +9,9 @@ type Violation = Awaited<ReturnType<AxeBuilder['analyze']>>['violations'][number
  * proj-mgmt/12 "Lint and a11y debt"). Remove an entry as soon as the fix lands so the gate
  * tightens automatically.
  */
-const KNOWN_ISSUES: Record<string, string[]> = {
-  // LandingPage.tsx renders "coming soon" cards with `opacity-80`, dropping their muted
-  // text and badge below the 4.5:1 contrast ratio (color-contrast, serious).
-  '/': ['li .opacity-80'],
-};
+// Selectors excluded per page while a known violation is being fixed (each with its reason).
+// Empty since WI-05 fixed the landing cards' contrast; keep it that way.
+const KNOWN_ISSUES: Record<string, string[]> = {};
 
 /** Fails on serious/critical violations; prints moderate/minor ones for the follow-up list. */
 async function expectNoSeriousViolations(page: Page, label: string): Promise<void> {
