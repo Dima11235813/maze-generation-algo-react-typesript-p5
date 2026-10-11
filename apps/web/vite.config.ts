@@ -33,8 +33,7 @@ export default defineConfig({
         id: '/',
         name: 'Maze Lab',
         short_name: 'Maze Lab',
-        description:
-          'Generate, solve, race and learn maze algorithms in 2D and 3D. Works offline.',
+        description: 'Generate, solve, race and learn maze algorithms in 2D and 3D. Works offline.',
         lang: 'en',
         dir: 'ltr',
         start_url: '/play',

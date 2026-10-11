@@ -1,9 +1,18 @@
-import { createGrid, describeGenStep, describeSolveStep, type GenStep, type SolveStep } from '@maze/core';
+import {
+  createGrid,
+  describeGenStep,
+  describeSolveStep,
+  type GenStep,
+  type SolveStep,
+} from '@maze/core';
 import { createNarrator, type NarratorVerbosity, type Politeness } from '../src';
 
 const grid = createGrid(10, 10);
 
-function setup(verbosity: NarratorVerbosity, extra: Partial<Parameters<typeof createNarrator>[0]> = {}) {
+function setup(
+  verbosity: NarratorVerbosity,
+  extra: Partial<Parameters<typeof createNarrator>[0]> = {},
+) {
   const spoken: Array<[string, Politeness]> = [];
   const narrator = createNarrator({
     grid,
@@ -57,7 +66,17 @@ describe('narrator verbosity', () => {
       { t: 'discover', cell: 1, from: 0, g: 1 },
       { t: 'expand', cell: 1, g: 1 },
       { t: 'path', cells: [0, 1] },
-      { t: 'done', stats: { expanded: 2, discovered: 2, frontierPeak: 1, pathLength: 1, optimal: true, steps: 5 } },
+      {
+        t: 'done',
+        stats: {
+          expanded: 2,
+          discovered: 2,
+          frontierPeak: 1,
+          pathLength: 1,
+          optimal: true,
+          steps: 5,
+        },
+      },
     ]);
     vi.advanceTimersByTime(5000);
     expect(texts().at(-1)).toBe('Path found with 1 moves after exploring 2 cells.');
@@ -77,7 +96,10 @@ describe('narrator verbosity', () => {
     expect(texts()).toHaveLength(1);
     narrator.handleGenSteps([carve(2, 3), visit(3)]);
     vi.advanceTimersByTime(1000);
-    expect(texts()).toEqual(['Visited 3 of 100 cells, depth 2.', 'Visited 4 of 100 cells, depth 3.']);
+    expect(texts()).toEqual([
+      'Visited 3 of 100 cells, depth 2.',
+      'Visited 4 of 100 cells, depth 3.',
+    ]);
     // Solve progress uses explored/frontier wording.
     narrator.handleGenSteps([{ t: 'done' }]);
     narrator.handleSolveSteps([

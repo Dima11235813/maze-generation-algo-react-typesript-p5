@@ -4,7 +4,10 @@ import { cn } from '../cn';
 
 export const Tabs = TabsPrimitive.Root;
 
-export function TabsList({ className, ...props }: ComponentPropsWithRef<typeof TabsPrimitive.List>) {
+export function TabsList({
+  className,
+  ...props
+}: ComponentPropsWithRef<typeof TabsPrimitive.List>) {
   return (
     <TabsPrimitive.List
       className={cn(

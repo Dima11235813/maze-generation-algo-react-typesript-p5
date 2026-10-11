@@ -70,7 +70,10 @@ describe('legacy preference import', () => {
   it('sanitises corrupt persisted values', () => {
     localStorage.setItem(
       PREFS_STORAGE_KEY,
-      JSON.stringify({ state: { cellSize: -4, mode: 'weird', cellColor: 'red', speed: 'fast' }, version: 1 }),
+      JSON.stringify({
+        state: { cellSize: -4, mode: 'weird', cellColor: 'red', speed: 'fast' },
+        version: 1,
+      }),
     );
     const store = createPrefsStore(localStorage);
     expect(store.getState().cellSize).toBe(3);

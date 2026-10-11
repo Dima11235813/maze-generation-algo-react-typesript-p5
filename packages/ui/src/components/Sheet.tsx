@@ -61,9 +61,7 @@ export function SheetTitle({
   className,
   ...props
 }: ComponentPropsWithRef<typeof DialogPrimitive.Title>) {
-  return (
-    <DialogPrimitive.Title className={cn('text-base font-semibold', className)} {...props} />
-  );
+  return <DialogPrimitive.Title className={cn('text-base font-semibold', className)} {...props} />;
 }
 
 export function SheetDescription({

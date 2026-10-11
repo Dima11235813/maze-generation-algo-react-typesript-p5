@@ -1,5 +1,5 @@
 packages:
-  - "apps/*"
-  - "packages/*"
+  - 'apps/*'
+  - 'packages/*'
   # The frozen legacy CRA app keeps its own Yarn lockfile and dependency set (ADR-019).
-  - "!apps/legacy"
+  - '!apps/legacy'
