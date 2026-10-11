@@ -1,6 +1,6 @@
 # 18 - Lessons Learned
 
-> Status: Live | Last updated: 2026-10-10
+> Status: Live | Last updated: 2026-10-11
 > Append-only log. Each entry: what happened, why, and the rule we now follow. Rules that every
 > session needs are mirrored in `AGENTS.md` section 6; this file keeps the reasoning.
 
@@ -26,6 +26,8 @@ The one-line rules every session needs; the entries below keep the story behind 
 | Checks | `check:viewports` for sizes; Playwright scripts for interactions | L-16, L-19 |
 | Machine | Preflight before heavy jobs; wait on transient breaches; one heavy job at a time | L-35 |
 | Machine | Preflight exits 1 on standing breaches: judge by the transient rows, not the exit code | L-36 |
+| Git | Anchor ignore patterns (`/build/`); check new folders with `git status`, not just tests | L-37 |
+| Lint | Every rule is an error; relax in the config with a reason, widen untrusted input explicitly | L-38, L-39 |
 | Owner | Phone-first, small merged slices, protect the 3D views and the walkthrough | L-17 |
 
 ## Process and orchestration
@@ -210,3 +212,32 @@ same gate under contention had needed reruns (L-32). The preflight exits 1 whene
 breach exists (3 antivirus engines, 4-6 watchers including our 41920 server), so it never
 returns 0 here today. *Rule:* read the table: proceed when every transient row (D: active time
 and response, transfers, RAM, CPU, GPU) is OK; wait when one is not; report standing rows.
+
+**L-37 A bare `build/` ignore pattern hid a whole feature from git for two days.** The root
+`.gitignore` listed `build/` for build output; it also matched `apps/web/src/routes/build`, so the
+WI-03 Build editor (page, panels, toolbar, tests) was never committed while every local check
+passed: tests, typecheck and the dev server read the files from disk, and ESLint (`**/build/**`)
+and prettier (which reads `.gitignore`) skipped them silently. Found in WI-05 when an
+`eslint-disable` count differed between `develop` and the working tree. *Rule:* anchor ignore
+patterns to the folders they mean (`/build/`, `apps/*/build/`); after adding a folder, check
+`git status` shows it; `git ls-files --others --ignored --exclude-standard` must list no source.
+
+**L-38 Paying lint debt: change what the rule sees, not the rule.** 313 warnings went to 0 in
+three passes: numbers in template literals allowed by option (164 findings; typescript-eslint's
+own non-strict default), callback props and store actions typed as function properties
+(`onX: () => void`, 59 `unbound-method` findings), then ESLint's autofixes and ~40 hand fixes.
+Every rule was then promoted to `error` so the count cannot creep back. *Rule:* relax a rule in
+`packages/config/eslint` with a comment, never inline; non-component exports live outside
+component files (react-refresh).
+
+**L-39 A typed local does not widen a union; an assertion does.** `const ok: boolean =
+config.lockstep` (typed `true`) is still narrowed to `true` on assignment, so
+`no-unnecessary-condition` keeps firing; non-union targets (`const v: number = doc.v`) do widen.
+*Rule:* for runtime guards on typed-but-untrusted input, widen with `x as boolean` / `as T |
+undefined` and say why in a comment.
+
+**L-40 Lazy routes were nearly free.** `lazyRouteComponent` for the six feature pages cut the
+initial JS from 233.7 to 157.4 kB gzip with no test changes: RTL journeys already awaited their
+first element (`findBy...`), Playwright waits by default, and `defaultPreload: 'intent'` plus the
+service-worker precache keep navigation instant and offline-safe. *Rule:* new pages are lazy by
+default; tests start with an async query.

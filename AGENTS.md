@@ -51,7 +51,7 @@ $env:Path = "$(fnm env --json | ConvertFrom-Json | Select-Object -ExpandProperty
 pnpm install                                   # also installs git hooks (lefthook)
 pnpm turbo run typecheck                       # TS 7 strict, all packages
 pnpm --filter @maze/<core|player|renderer|web> test
-pnpm lint                                      # 0 errors required; warnings are tracked debt
+pnpm lint                                      # 0 problems: every rule is an error (WI-05)
 pnpm --filter @maze/web build                  # includes the bundle-size gate
 pnpm --filter @maze/web e2e                    # Playwright + axe, builds and serves on :41922
 pnpm --filter @maze/web check:viewports -- play build   # phone/tablet/desktop/wide screenshots +
@@ -108,9 +108,9 @@ powershell -ExecutionPolicy Bypass -File D:\GDrive\proj-mgmt\inventory\scripts\p
 
 - [ ] Typecheck clean; all package tests pass; new behaviour has tests (core: property tests for
       invariants; web: RTL with the fake renderer factory in `apps/web/src/test/fakeRenderer.ts`).
-- [ ] `pnpm lint` 0 errors; build passes the size gate; e2e all green (26+; add a journey when a
-      route or major flow is added). A timeout on a slow run (> 1.5 min) is rerun once before it
-      counts as a failure; report both runs.
+- [ ] `pnpm lint` and `pnpm knip` clean; build passes the size gate; e2e all green (28+; add a
+      journey when a route or major flow is added). A timeout on a slow run (> 1.5 min) is rerun
+      once before it counts as a failure; report both runs.
 - [ ] Checked in a real browser at **phone (390px), tablet (820px) and desktop (1280px+)** with
       `check:viewports` (and look at the screenshots): no page-level horizontal overflow, the page
       scrolls on phones, controls reachable by touch, **nothing covers the maze** on phones.
@@ -159,7 +159,10 @@ powershell -ExecutionPolicy Bypass -File D:\GDrive\proj-mgmt\inventory\scripts\p
   tool or `chr(92)`, then grep for control characters).
 - The LAN dev server on 41920 is always on (`MazeLab-LocalServers` task); never start another dev
   server. Git Bash rewrites `/route` arguments into Windows paths: pass routes without the slash.
-- Run `prettier --write` only on files you changed (other files have drifted; that is WI-05).
+- The workspace is prettier-clean (`pnpm exec prettier --check .`; legacy, planning docs and the
+  lockfile are in `.prettierignore`). Keep it so: format the files you touch.
+- Ignore patterns must be anchored (`/build/`, not `build/`): a bare `build/` hid the Build
+  editor source from git, ESLint and prettier (L-37). New pages are lazy routes (L-40).
 - jsdom never loads images and has no layout: anything awaiting media needs a timeout fallback;
   tests needing sizes stub `clientWidth`/`offsetWidth` (see `routes/tools/tools.test.tsx`).
 - A second surface for the same action (toolbar + maze tools) makes loose queries ambiguous:

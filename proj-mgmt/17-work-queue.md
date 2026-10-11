@@ -1,11 +1,11 @@
 # 17 - Work Queue
 
-> Status: Live | Last updated: 2026-10-10 | Owner: Dmitri Larionov
+> Status: Live | Last updated: 2026-10-11 | Owner: Dmitri Larionov
 > The ordered list of what to build next. "Proceed to the next work item" means: take the item
 > marked **NEXT**, follow `AGENTS.md` section 2, and update this file when it is done.
 > Status values: `NEXT`, `TODO`, `BLOCKED (H-x)`, `DONE yyyy-mm-dd (commit)`.
 
-## Where we are (2026-10-10, `develop` == `main`, WI-04 merged at 8d2d10c, not pushed)
+## Where we are (2026-10-11, `develop` == `main`, WI-05 merged at a89409b, not pushed)
 
 Shipped: monorepo foundation and legacy parity; 12 generators + braid; 12 solvers; race scheduler
 in core (no UI yet); Watch (pseudo-code, step log, stats); Explore catalogue + Compare; a11y grid
@@ -15,8 +15,10 @@ tablet grid, desktop/wide columns); Race page (2-4 solvers, lockstep transport, 
 ranking, deep link); Tree view (maze as its spanning tree: upright, radial, 3D; growth, morph,
 outline, Compare); maze tools widget (BUG-01); Ride along (watch a solver in first person).
 Run Maze as a game (WI-02); Build editor (WI-03); algorithm parameter forms, pseudo-code for all
-solvers and solver-relative stats (WI-04). Gate: core 305, player 21, renderer 39, web 151 tests;
-lint 0 errors (313 warnings); e2e 27/27; initial JS 234/250 kB gzip.
+solvers and solver-relative stats (WI-04); quality debt paid (WI-05: every lint rule an error,
+knip and prettier clean, lazy-loaded pages, the Build editor source finally tracked in git).
+Gate: core 305, player 21, renderer 39, web 152 tests; lint 0 problems; e2e 28/28; initial JS
+157/250 kB gzip.
 
 ## Queue
 
@@ -195,7 +197,7 @@ way" it looks like a tree (Wikipedia, Maze generation algorithm). Design:
   cells, re-rooted at the start when done); Compare lanes as trees and tree-shape columns.
   The morph slider lives in the tree row for now; BUG-01's widget can absorb it.
 
-### WI-05 Quality debt sweep - NEXT
+### WI-05 Quality debt sweep - DONE 2026-10-11 (a89409b)
 
 - Scope: promote lint rules from warn to error one by one (313 warnings at 91705db; biggest:
   restrict-template-expressions, no-confusing-void-expression, unbound-method); act on knip
@@ -211,8 +213,24 @@ way" it looks like a tree (Wikipedia, Maze generation algorithm). Design:
 - Acceptance: lint warnings < 50 with no new suppressions; knip clean or annotated; axe exclusion
   removed.
 - Branch: `chore/quality-debt`. Blocked by: nothing.
+- Delivered: lint 313 warnings -> 0, and every rule is now an `error` (only the advisory
+  `import-x/no-unresolved` stays `warn`) with no new inline disables: numbers allowed in
+  template literals (typescript-eslint's own default), callback props and store actions typed as
+  function properties, non-component exports moved out of component files, runtime guards on
+  untrusted input widened explicitly. knip clean: unused deps dropped (web clsx/three, three
+  Radix packages, root vitest), jsdom listed in renderer, private symbols unexported, stale stubs
+  removed, tailwindcss and vite/client annotated. Landing cards: dashed outline instead of
+  `opacity-80`; the axe exclusion is gone. Regenerate (Play and Watch) keeps the grid size and
+  uses the current generator and parameters (RTL test drives a resize). Feature pages are
+  lazy-loaded: initial JS 233.7 -> 157.4 kB gzip. New `e2e/phone.spec.ts` (touch, 390px:
+  landing -> Play solve -> Watch -> Race, no overflow). `prettier --check .` is clean with a
+  `.prettierignore` for legacy, planning docs and the lockfile.
+- Found on the way (fixed first as `fix/track-build-route`, adc9a05): the root `.gitignore`'s bare
+  `build/` matched `apps/web/src/routes/build`, so the WI-03 Build editor source (page, panels,
+  toolbar, tests) had never been committed; ESLint's `**/build/**` and prettier skipped it too.
+  Both patterns are anchored to output folders now (L-37).
 
-### WI-06 Learn mode MVP (roadmap Phase 5) - TODO
+### WI-06 Learn mode MVP (roadmap Phase 5) - NEXT
 
 Lesson framework (MDX, embedded StepPlayer demos, quizzes, progress) and modules M1-M5, M7 per
 `proj-mgmt/13-education-and-playground.md`. Plan it into smaller items when it becomes NEXT.
@@ -242,3 +260,6 @@ Tauri 2 builds; starts with the 2-day WKWebView WebGL spike (ADR-012).
 | WI-02 Run Maze as a game | 2026-10-09 | 54d8a6e |
 | WI-10 Ride along | 2026-10-05 | f92e323 |
 | BUG-01 Maze tools widget | 2026-10-05 | 43309d6 |
+| WI-04 Algorithm parameters, pseudo-code, solver stats | 2026-10-10 | 8d2d10c |
+| Build editor source tracked (`.gitignore` fix) | 2026-10-11 | adc9a05 |
+| WI-05 Quality debt sweep | 2026-10-11 | a89409b |
