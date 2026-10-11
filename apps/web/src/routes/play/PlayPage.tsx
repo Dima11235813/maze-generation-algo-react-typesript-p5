@@ -14,7 +14,7 @@ import { Button } from '@maze/ui';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { ShortcutsDialog } from '../../a11y/ShortcutsDialog';
 import { useNarrator } from '../../a11y/useNarrator';
-import { useAnnouncer } from '../../app/Announcer';
+import { useAnnouncer } from '../../app/useAnnouncer';
 import { useReducedMotion } from '../../app/documentPrefs';
 import { log } from '../../lib/log';
 import { useCoarsePointer, useIsNarrow } from '../../lib/useMediaQuery';
@@ -72,7 +72,7 @@ const REPLAY_MOVES_PER_SECOND = 6;
 
 function useMazeSession(): MazeSession {
   const ref = useRef<MazeSession | null>(null);
-  if (!ref.current) ref.current = new MazeSession({ speed: usePrefs.getState().speed });
+  ref.current ??= new MazeSession({ speed: usePrefs.getState().speed });
   useEffect(() => {
     const s = ref.current;
     return () => s?.dispose();
@@ -285,7 +285,7 @@ export function PlayPage() {
   const ride = useRideAlong({
     session,
     enabled: rideAlong && snap.solvePlayer !== null,
-    status: snap.solvePlayer ? (snap.solvePlayer.getSnapshot().status ?? null) : null,
+    status: snap.solvePlayer ? snap.solvePlayer.getSnapshot().status : null,
     stepCount: snap.solvePlayer ? (playerSnap?.stepCount ?? 0) : 0,
     grid: snap.state?.grid ?? null,
     path: snap.solveResult?.path ?? null,

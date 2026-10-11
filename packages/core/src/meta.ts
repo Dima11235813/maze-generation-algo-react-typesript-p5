@@ -52,17 +52,17 @@ export interface AlgorithmMeta {
 }
 
 /** Builds the default parameter object from a descriptor list. */
-export function defaultParams<P extends Record<string, unknown>>(meta: AlgorithmMeta): P {
+export function defaultParams(meta: AlgorithmMeta): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const p of meta.params) out[p.key] = p.default;
-  return out as P;
+  return out;
 }
 
 /** Clamps/normalises a raw params object against the descriptors (unknown keys dropped). */
-export function sanitizeParams<P extends Record<string, unknown>>(
+export function sanitizeParams(
   meta: AlgorithmMeta,
   raw: Record<string, unknown> | undefined,
-): P {
+): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const p of meta.params) {
     const v = raw?.[p.key];
@@ -85,5 +85,5 @@ export function sanitizeParams<P extends Record<string, unknown>>(
         break;
     }
   }
-  return out as P;
+  return out;
 }

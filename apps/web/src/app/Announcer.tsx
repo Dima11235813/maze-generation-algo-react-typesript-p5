@@ -1,12 +1,5 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-
-export type Politeness = 'polite' | 'assertive';
-
-interface AnnouncerContextValue {
-  announce: (message: string, politeness?: Politeness) => void;
-}
-
-const AnnouncerContext = createContext<AnnouncerContextValue>({ announce: () => undefined });
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { AnnouncerContext, type Politeness } from './useAnnouncer';
 
 interface Message {
   text: string;
@@ -39,8 +32,4 @@ export function AnnouncerProvider({ children }: { children: ReactNode }) {
       </div>
     </AnnouncerContext.Provider>
   );
-}
-
-export function useAnnouncer(): AnnouncerContextValue['announce'] {
-  return useContext(AnnouncerContext).announce;
 }

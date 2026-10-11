@@ -224,7 +224,7 @@ export function MazeCanvas({
 
   const endPointer = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     const s = swipe.current;
-    if (s && s.id === e.pointerId && e.type === 'pointerup') {
+    if (s?.id === e.pointerId && e.type === 'pointerup') {
       swipe.current = null;
       const dx = e.clientX - s.x;
       const dy = e.clientY - s.y;

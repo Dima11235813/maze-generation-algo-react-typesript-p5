@@ -87,7 +87,7 @@ export function RaceRanking({ result, solutionLength }: RaceRankingProps) {
       ? compositeScores(
           result.perAgent,
           result.ranking.filter(
-            (id) => result.perAgent[id]?.reachedGoal && !result.perAgent[id]?.disqualified,
+            (id) => result.perAgent[id]?.reachedGoal && !result.perAgent[id].disqualified,
           ),
           { solutionLength },
         )

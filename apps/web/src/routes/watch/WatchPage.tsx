@@ -7,7 +7,7 @@ import { TreeControls } from '../tree/TreeControls';
 import { TreeOutline } from '../tree/TreeOutline';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { useAnnouncer } from '../../app/Announcer';
+import { useAnnouncer } from '../../app/useAnnouncer';
 import { useReducedMotion } from '../../app/documentPrefs';
 import { pseudocodeFor } from '../../content/pseudocode';
 import { computeGridDims } from '../../maze/gridSizing';
@@ -49,7 +49,7 @@ export interface WatchSearch {
 
 function useOwnedSession(): MazeSession {
   const ref = useRef<MazeSession | null>(null);
-  if (!ref.current) ref.current = new MazeSession({ speed: usePrefs.getState().speed });
+  ref.current ??= new MazeSession({ speed: usePrefs.getState().speed });
   useEffect(() => {
     const s = ref.current;
     return () => s?.dispose();
@@ -58,7 +58,7 @@ function useOwnedSession(): MazeSession {
 }
 
 /** Runs generation to completion synchronously (bounded; each call advances up to 50k steps). */
-export function drainGeneration(session: MazeSession): void {
+function drainGeneration(session: MazeSession): void {
   let guard = 0;
   while (session.getSnapshot().phase === 'generating' && guard++ < 1_000) session.runToEnd();
 }

@@ -133,7 +133,7 @@ export function isConnected(state: MazeState): boolean {
   let head = 0;
   let count = 1;
   while (head < queue.length) {
-    const cell = queue[head++]!;
+    const cell = queue[head++] as CellId;
     for (const nb of openNeighbors(state, cell)) {
       if (seen[nb] === 0) {
         seen[nb] = 1;

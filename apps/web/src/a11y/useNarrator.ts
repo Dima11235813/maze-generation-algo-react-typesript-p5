@@ -11,7 +11,7 @@ import {
   type NarratorVerbosity,
 } from '@maze/player';
 import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
-import type { Politeness } from '../app/Announcer';
+import type { Politeness } from '../app/useAnnouncer';
 import type { SessionSnapshot } from '../maze/session';
 
 export interface UseNarratorOptions {

@@ -143,9 +143,8 @@ class DomGridRenderer implements DomRenderer {
 
   setMaze(state: MazeState | null): void {
     const sameGrid =
-      this.maze &&
-      state &&
-      this.maze.grid.width === state.grid.width &&
+      state !== null &&
+      this.maze?.grid.width === state.grid.width &&
       this.maze.grid.height === state.grid.height;
     this.maze = state;
     if (!sameGrid) {
@@ -381,7 +380,7 @@ class DomGridRenderer implements DomRenderer {
       if (this.pathSet?.has(cell)) parts.push('On the solution path.');
     }
     const fp = this.fp;
-    if (fp && fp.cell === cell) {
+    if (fp?.cell === cell) {
       parts.push(`Player here, facing ${DIR_NAMES[fp.heading]}${fp.peek ? ', peeking' : ''}.`);
     }
     return parts.join(' ');
@@ -574,7 +573,8 @@ function scheduleFrame(cb: () => void): number {
   if (typeof requestAnimationFrame === 'function') return requestAnimationFrame(cb);
   // Number(): with both DOM and Node timer types loaded, which `setTimeout` overload TypeScript
   // picks depends on file order; a numeric id works with `clearTimeout` everywhere.
-  return Number(setTimeout(cb, 0));
+  const id: unknown = setTimeout(cb, 0);
+  return Number(id);
 }
 
 function cancelFrame(id: number): void {

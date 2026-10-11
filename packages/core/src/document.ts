@@ -72,7 +72,7 @@ export function unpackWalls(bytes: Uint8Array, cellCountTotal: number): Uint8Arr
 
 export function toBase64Url(bytes: Uint8Array): string {
   let bin = '';
-  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i] as number);
+  for (const b of bytes) bin += String.fromCharCode(b);
   return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
@@ -178,7 +178,9 @@ export function isMazeDocument(x: unknown): x is MazeDocument {
 
 /** Rebuilds a frozen `MazeState`; validates dimensions, cell ids and wall symmetry. */
 export function decodeDocument(doc: MazeDocument | UnidentifiedDocument): MazeState {
-  if (doc.v !== 1) throw new RangeError(`Unsupported MazeDocument version ${String(doc.v)}`);
+  // Typed `1`, but documents arrive as parsed JSON from storage, files and links.
+  const version: number = doc.v;
+  if (version !== 1) throw new RangeError(`Unsupported MazeDocument version ${String(version)}`);
   const grid = createGrid(doc.width, doc.height);
   const total = cellCount(grid);
   const walls = unpackWalls(fromBase64Url(doc.walls), total);

@@ -248,9 +248,12 @@ function sanitize(input: Partial<Prefs> | undefined): Prefs {
     LIMITS.speed.max,
     Math.max(LIMITS.speed.min, Math.round(p.speed) || DEFAULT_PREFS.speed),
   );
-  if (p.mode !== '2d' && p.mode !== '3d') p.mode = DEFAULT_PREFS.mode;
+  // Stored prefs are untyped JSON: widen before checking.
+  const mode: string = p.mode;
+  if (mode !== '2d' && mode !== '3d') p.mode = DEFAULT_PREFS.mode;
   if (p.maxProjectionDepth !== 'auto') {
-    const n = Number(p.maxProjectionDepth);
+    const raw: unknown = p.maxProjectionDepth;
+    const n = Number(raw);
     p.maxProjectionDepth = Number.isFinite(n)
       ? Math.min(
           LIMITS.maxProjectionDepth.max,

@@ -21,7 +21,7 @@ import {
   type ThemePref,
 } from '../../state/prefs';
 import { AlgorithmParams } from '../params/ParamFields';
-import { VERBOSITY_OPTIONS } from './StepLogPanel';
+import { VERBOSITY_OPTIONS } from './verbosity';
 
 export interface OptionsSheetProps {
   open: boolean;

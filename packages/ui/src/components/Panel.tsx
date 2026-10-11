@@ -15,8 +15,12 @@ export function PanelHeader({ className, ...props }: ComponentPropsWithRef<'head
   return <header className={cn('flex flex-col gap-1 p-4 pb-2', className)} {...props} />;
 }
 
-export function PanelTitle({ className, ...props }: ComponentPropsWithRef<'h2'>) {
-  return <h2 className={cn('text-sm font-semibold tracking-tight', className)} {...props} />;
+export function PanelTitle({ className, children, ...props }: ComponentPropsWithRef<'h2'>) {
+  return (
+    <h2 className={cn('text-sm font-semibold tracking-tight', className)} {...props}>
+      {children}
+    </h2>
+  );
 }
 
 export function PanelDescription({ className, ...props }: ComponentPropsWithRef<'p'>) {
