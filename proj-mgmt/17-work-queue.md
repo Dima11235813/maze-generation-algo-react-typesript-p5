@@ -5,7 +5,7 @@
 > marked **NEXT**, follow `AGENTS.md` section 2, and update this file when it is done.
 > Status values: `NEXT`, `TODO`, `BLOCKED (H-x)`, `DONE yyyy-mm-dd (commit)`.
 
-## Where we are (2026-10-10, `develop` == `main` == 8d2d10c, not pushed)
+## Where we are (2026-10-10, `develop` == `main`, WI-04 merged at 8d2d10c, not pushed)
 
 Shipped: monorepo foundation and legacy parity; 12 generators + braid; 12 solvers; race scheduler
 in core (no UI yet); Watch (pseudo-code, step log, stats); Explore catalogue + Compare; a11y grid
@@ -197,13 +197,17 @@ way" it looks like a tree (Wikipedia, Maze generation algorithm). Design:
 
 ### WI-05 Quality debt sweep - NEXT
 
-- Scope: promote lint rules from warn to error one by one (339 warnings; biggest:
+- Scope: promote lint rules from warn to error one by one (313 warnings at 91705db; biggest:
   restrict-template-expressions, no-confusing-void-expression, unbound-method); act on knip
   findings (unused deps/exports); fix the landing "coming soon" card contrast (axe serious,
   excluded via `KNOWN_ISSUES` in `apps/web/e2e/a11y.spec.ts`); "Regenerate same seed" should
   reuse the stored grid size; add an e2e journey at a phone viewport.
-- Also: the initial JS bundle reached 230 of 250 kB gzip after WI-03 (pages are not lazy-loaded):
+- Also: the initial JS bundle is at 234 of 250 kB gzip after WI-04 (pages are not lazy-loaded):
   split the routes (`lazyRouteComponent`) so new pages do not push it over the gate.
+- Also (review of WI-04): Play's Regenerate with an empty seed box calls `session.regenerate()`,
+  which replays the old maze's parameters (provenance), while a typed seed uses the current
+  ones. The box is normally filled with the current seed, so this is an edge; make both paths
+  agree (current parameters, matching "changes apply to the next maze").
 - Acceptance: lint warnings < 50 with no new suppressions; knip clean or annotated; axe exclusion
   removed.
 - Branch: `chore/quality-debt`. Blocked by: nothing.
