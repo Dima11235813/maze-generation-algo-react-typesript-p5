@@ -7,8 +7,8 @@ import { createAppRouter } from '../../app/router';
 import { RendererFactoriesContext } from '../../maze/rendererFactories';
 import { usePrefs } from '../../state/prefs';
 import { createFakeFactories } from '../../test/fakeRenderer';
-import { describeParam } from './AlgorithmCard';
-import { bestLanes } from './CompareMetricsTable';
+import { describeParam } from './describeParam';
+import { bestLanes } from './bestLanes';
 
 function renderAt(path: string) {
   const factories = createFakeFactories();

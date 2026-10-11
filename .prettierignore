@@ -1,0 +1,6 @@
+# Frozen original app (read-only, its own toolchain).
+apps/legacy/
+# Planning docs keep their own ~100-column prose style (proj-mgmt/README.md); the hook skips them too.
+proj-mgmt/
+# Generated.
+pnpm-lock.yaml

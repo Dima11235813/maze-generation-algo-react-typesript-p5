@@ -3,7 +3,7 @@ import { PLAY_SHORTCUTS } from './shortcuts';
 
 export interface ShortcutsDialogProps {
   open: boolean;
-  onOpenChange(open: boolean): void;
+  onOpenChange: (open: boolean) => void;
 }
 
 /** `?` help: every Play-page shortcut in one place (WCAG 2.1.4 single-key shortcut disclosure). */
@@ -20,7 +20,10 @@ export function ShortcutsDialog({ open, onOpenChange }: ShortcutsDialogProps) {
         <div className="grid gap-4 sm:grid-cols-2">
           {PLAY_SHORTCUTS.map((group) => (
             <section key={group.title} aria-labelledby={`sc-${group.title}`}>
-              <h3 id={`sc-${group.title}`} className="mb-1 text-xs font-semibold tracking-wide text-muted uppercase">
+              <h3
+                id={`sc-${group.title}`}
+                className="mb-1 text-xs font-semibold tracking-wide text-muted uppercase"
+              >
                 {group.title}
               </h3>
               <dl className="flex flex-col gap-1 text-sm">

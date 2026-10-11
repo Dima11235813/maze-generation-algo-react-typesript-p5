@@ -3,10 +3,10 @@
  * size at generation time. Resizing later only re-fits the view (P-13).
  */
 export const MIN_CELL_SIZE = 3;
-export const MIN_SIDE = 2;
-export const MAX_CELLS = 40_000;
+const MIN_SIDE = 2;
+const MAX_CELLS = 40_000;
 /** Legacy MIN_NUMBER_OF_CELLS_HORIZONTALLY: the cell-size slider max is width / 9 (P-08). */
-export const MIN_CELLS_HORIZONTALLY = 9;
+const MIN_CELLS_HORIZONTALLY = 9;
 
 export interface GridDims {
   width: number;

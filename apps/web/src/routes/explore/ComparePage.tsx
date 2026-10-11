@@ -35,7 +35,7 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from 'react';
-import { useAnnouncer } from '../../app/Announcer';
+import { useAnnouncer } from '../../app/useAnnouncer';
 import { useIsNarrow } from '../../lib/useMediaQuery';
 import { useReducedMotion } from '../../app/documentPrefs';
 import { formatSpeed, indexToSpeed, speedToIndex } from '../../lib/speed';
@@ -159,7 +159,7 @@ export function ComparePage() {
   });
   const paramsKey = JSON.stringify(lanesParams);
   const lanesRef = useRef<Lanes | null>(null);
-  if (!lanesRef.current || lanesRef.current.key !== laneKey) {
+  if (lanesRef.current?.key !== laneKey) {
     lanesRef.current?.controller.dispose();
     lanesRef.current?.sessions.forEach((s) => {
       s.dispose();
@@ -249,7 +249,7 @@ export function ComparePage() {
     [prefs.cellColor, prefs.wallColor, prefs.backgroundColor, prefs.invert],
   );
   const first = sessions[0]?.getSnapshot();
-  const rows = first?.height || 1;
+  const rows = first?.height ?? 1;
   const gridCellSize = first && first.phase !== 'empty' ? first.cellSize : prefs.cellSize;
   const options = useMemo(
     () => ({

@@ -21,7 +21,8 @@ export interface PledgeParams extends Record<string, unknown> {
   readonly maxMoves: number;
 }
 
-const PREFERRED: Readonly<Record<PledgeParams['preferred'], DirT>> = {
+// Looked up with raw params, so a missing key is possible at runtime (falls back to south).
+const PREFERRED: Readonly<Partial<Record<string, DirT>>> = {
   N: Dir.N,
   E: Dir.E,
   S: Dir.S,

@@ -13,8 +13,8 @@ export interface A11yGridHostProps {
   generation: GenerationTracker | null;
   solve: SolveTracker | null;
   /** Fired when the user asks (`I`) for the focused cell to be read out. */
-  onDescribe?(text: string): void;
-  onRenderer?(renderer: DomRenderer | null): void;
+  onDescribe?: (text: string) => void;
+  onRenderer?: (renderer: DomRenderer | null) => void;
 }
 
 /**
@@ -45,7 +45,9 @@ export function A11yGridHost({
     const events: DomRendererEvents = {
       onCellFocus: (cell, reason) => {
         const label =
-          host.querySelector(`[role="gridcell"][data-cell="${cell}"]`)?.getAttribute('aria-label') ?? null;
+          host
+            .querySelector(`[role="gridcell"][data-cell="${cell}"]`)
+            ?.getAttribute('aria-label') ?? null;
         setFocusedLabel(label);
         if (reason === 'describe' && label) latest.current.onDescribe?.(label);
       },
@@ -80,19 +82,33 @@ export function A11yGridHost({
   useEffect(() => {
     if (!renderer) return;
     const offs: Array<() => void> = [];
-    if (snap.genPlayer) offs.push(snap.genPlayer.subscribe(() => renderer.requestRender()));
-    if (snap.solvePlayer) offs.push(snap.solvePlayer.subscribe(() => renderer.requestRender()));
-    return () => offs.forEach((off) => off());
+    if (snap.genPlayer)
+      offs.push(
+        snap.genPlayer.subscribe(() => {
+          renderer.requestRender();
+        }),
+      );
+    if (snap.solvePlayer)
+      offs.push(
+        snap.solvePlayer.subscribe(() => {
+          renderer.requestRender();
+        }),
+      );
+    return () => {
+      offs.forEach((off) => {
+        off();
+      });
+    };
   }, [renderer, snap.genPlayer, snap.solvePlayer]);
 
   const onFocus = (e: React.FocusEvent<HTMLDivElement>) => {
     const target = e.target;
-    if (target instanceof HTMLElement && target.dataset['cell'] !== undefined) {
+    if (target instanceof HTMLElement && target.dataset.cell !== undefined) {
       setFocusedLabel(target.getAttribute('aria-label'));
     }
   };
   const onBlur = (e: React.FocusEvent<HTMLDivElement>) => {
-    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocusedLabel(null);
+    if (!e.currentTarget.contains(e.relatedTarget)) setFocusedLabel(null);
   };
 
   return (

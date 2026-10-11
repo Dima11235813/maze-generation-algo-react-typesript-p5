@@ -10,7 +10,7 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
-import { useAnnouncer } from '../../app/Announcer';
+import { useAnnouncer } from '../../app/useAnnouncer';
 import { useReducedMotion } from '../../app/documentPrefs';
 import { useBreakpoint } from '../../layout/breakpoints';
 import { Section } from '../../layout/Section';

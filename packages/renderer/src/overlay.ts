@@ -47,7 +47,7 @@ export function tileColor(
     if (markColor) c = mix(c, resolve(theme, markColor), SOLVE_TINT_ALPHA);
     if (solve.current === cell && !solve.done) c = mix(c, resolve(theme, theme.path), 0.5);
   }
-  if (gen && gen.current === cell && !gen.done && gen.current !== NO_CELL) {
+  if (gen?.current === cell && !gen.done && gen.current !== NO_CELL) {
     const { color, alpha } = legacyCurrentColor(theme, gen.visitCount[cell] ?? 0);
     c = mix(c, color, alpha);
   }

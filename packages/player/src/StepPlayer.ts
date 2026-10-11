@@ -44,10 +44,16 @@ const defaultNow = (): number =>
 const defaultSchedule = (cb: (time: number) => void): (() => void) => {
   if (typeof requestAnimationFrame === 'function') {
     const id = requestAnimationFrame(cb);
-    return () => { cancelAnimationFrame(id); };
+    return () => {
+      cancelAnimationFrame(id);
+    };
   }
-  const id = setTimeout(() => { cb(defaultNow()); }, 16);
-  return () => { clearTimeout(id); };
+  const id = setTimeout(() => {
+    cb(defaultNow());
+  }, 16);
+  return () => {
+    clearTimeout(id);
+  };
 };
 
 export const SPEED_MIN = 1;

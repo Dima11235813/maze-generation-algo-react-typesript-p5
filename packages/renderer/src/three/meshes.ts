@@ -245,7 +245,7 @@ export class MazeMeshes {
     const show =
       options.showProjection && options.mode === '3d' && gen !== null && !ctx.firstPerson;
     this.cubes.visible = show;
-    if (!show || !gen) {
+    if (!show) {
       this.cubes.count = 0;
       return;
     }

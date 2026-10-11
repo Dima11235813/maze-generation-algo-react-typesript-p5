@@ -61,16 +61,16 @@ export interface Prefs {
   algoParams: Record<string, Record<string, unknown>>;
 }
 
-export interface PrefsActions {
-  set<K extends keyof Prefs>(key: K, value: Prefs[K]): void;
-  patch(partial: Partial<Prefs>): void;
-  reset(): void;
+interface PrefsActions {
+  set: <K extends keyof Prefs>(key: K, value: Prefs[K]) => void;
+  patch: (partial: Partial<Prefs>) => void;
+  reset: () => void;
 }
 
 export type PrefsStore = Prefs & PrefsActions;
 
 export const PREFS_STORAGE_KEY = 'maze-lab:prefs';
-export const PREFS_VERSION = 1;
+const PREFS_VERSION = 1;
 
 export const LIMITS = {
   cellSize: { min: 3, max: 400 },
@@ -198,7 +198,7 @@ export function importLegacyPrefs(storage: Pick<Storage, 'getItem'>): Partial<Pr
  * One-time seed of the new store from legacy keys. Idempotent: does nothing once
  * `maze-lab:prefs` exists. Legacy keys are left untouched.
  */
-export function seedPrefsFromLegacy(storage: Storage): boolean {
+function seedPrefsFromLegacy(storage: Storage): boolean {
   try {
     if (storage.getItem(PREFS_STORAGE_KEY) !== null) return false;
     const imported = importLegacyPrefs(storage);
@@ -248,9 +248,12 @@ function sanitize(input: Partial<Prefs> | undefined): Prefs {
     LIMITS.speed.max,
     Math.max(LIMITS.speed.min, Math.round(p.speed) || DEFAULT_PREFS.speed),
   );
-  if (p.mode !== '2d' && p.mode !== '3d') p.mode = DEFAULT_PREFS.mode;
+  // Stored prefs are untyped JSON: widen before checking.
+  const mode: string = p.mode;
+  if (mode !== '2d' && mode !== '3d') p.mode = DEFAULT_PREFS.mode;
   if (p.maxProjectionDepth !== 'auto') {
-    const n = Number(p.maxProjectionDepth);
+    const raw: unknown = p.maxProjectionDepth;
+    const n = Number(raw);
     p.maxProjectionDepth = Number.isFinite(n)
       ? Math.min(
           LIMITS.maxProjectionDepth.max,

@@ -9,33 +9,41 @@ class FakeResizeObserver {
   observe(target: Element): void {
     const entry = {
       target,
-      contentRect: { width: 800, height: 600, x: 0, y: 0, top: 0, left: 0, right: 800, bottom: 600 },
+      contentRect: {
+        width: 800,
+        height: 600,
+        x: 0,
+        y: 0,
+        top: 0,
+        left: 0,
+        right: 800,
+        bottom: 600,
+      },
     } as unknown as ResizeObserverEntry;
-    this.cb([entry], this as unknown as ResizeObserver);
+    this.cb([entry], this);
   }
   unobserve(): void {}
   disconnect(): void {}
 }
 if (typeof globalThis.ResizeObserver === 'undefined') {
-  globalThis.ResizeObserver = FakeResizeObserver as unknown as typeof ResizeObserver;
+  globalThis.ResizeObserver = FakeResizeObserver;
 }
 
 if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
-  window.matchMedia = (query: string): MediaQueryList =>
-    ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addEventListener: () => undefined,
-      removeEventListener: () => undefined,
-      addListener: () => undefined,
-      removeListener: () => undefined,
-      dispatchEvent: () => false,
-    }) as unknown as MediaQueryList;
+  window.matchMedia = (query: string): MediaQueryList => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+    dispatchEvent: () => false,
+  });
 }
 
 // jsdom's `crypto` has no `subtle`; MazeDocument hashing needs SHA-256.
-if (typeof globalThis.crypto === 'undefined' || !globalThis.crypto.subtle) {
+if (!globalThis.crypto?.subtle) {
   const specifier = 'node:crypto';
   const mod = (await import(/* @vite-ignore */ specifier)) as { webcrypto: Crypto };
   Object.defineProperty(globalThis, 'crypto', { value: mod.webcrypto, configurable: true });

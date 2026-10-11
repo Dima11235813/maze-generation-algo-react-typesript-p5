@@ -22,7 +22,7 @@ const COARSE: ReadonlySet<SolveStep['t']> = new Set([
   'move',
 ]);
 
-export function isCoarse(kind: SolveStep['t']): boolean {
+function isCoarse(kind: SolveStep['t']): boolean {
   return COARSE.has(kind);
 }
 
@@ -30,7 +30,7 @@ export interface StepLogProps {
   entries: readonly LogEntry[];
   verbosity: LogVerbosity;
   hideHeading?: boolean;
-  onVerbosityChange(v: LogVerbosity): void;
+  onVerbosityChange: (v: LogVerbosity) => void;
 }
 
 /** Textual log of the last steps (a11y alternative to the canvas overlay). */
@@ -44,10 +44,11 @@ export function StepLog({
   const visible = verbosity === 'all' ? entries : entries.filter((e) => isCoarse(e.kind));
 
   // Keep the newest entry in view.
+  const lastSeq = visible[visible.length - 1]?.seq;
   useEffect(() => {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [visible.length, visible[visible.length - 1]?.seq]);
+  }, [visible.length, lastSeq]);
 
   return (
     <section aria-labelledby="steplog-heading" className="flex flex-col gap-2">

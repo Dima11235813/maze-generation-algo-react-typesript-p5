@@ -60,20 +60,37 @@ for (const key of initialKeys) {
   const s = sizes(m.file);
   initialJsGzip += s.gzip;
   initialJsRaw += s.raw;
-  rows.push({ kind: 'initial', file: m.file, rawKb: +(s.raw / KB).toFixed(1), gzipKb: +(s.gzip / KB).toFixed(1) });
+  rows.push({
+    kind: 'initial',
+    file: m.file,
+    rawKb: +(s.raw / KB).toFixed(1),
+    gzipKb: +(s.gzip / KB).toFixed(1),
+  });
 }
 let initialCssGzip = 0;
 for (const css of initialCss) {
   const s = sizes(css);
   initialCssGzip += s.gzip;
-  rows.push({ kind: 'css', file: css, rawKb: +(s.raw / KB).toFixed(1), gzipKb: +(s.gzip / KB).toFixed(1) });
+  rows.push({
+    kind: 'css',
+    file: css,
+    rawKb: +(s.raw / KB).toFixed(1),
+    gzipKb: +(s.gzip / KB).toFixed(1),
+  });
 }
 
 // ---- lazy chunks ---------------------------------------------------------------------------
-const lazy = Object.entries(manifest).filter(([k, m]) => !initialKeys.has(k) && m.file.endsWith('.js'));
+const lazy = Object.entries(manifest).filter(
+  ([k, m]) => !initialKeys.has(k) && m.file.endsWith('.js'),
+);
 for (const [, m] of lazy) {
   const s = sizes(m.file);
-  rows.push({ kind: 'lazy', file: m.file, rawKb: +(s.raw / KB).toFixed(1), gzipKb: +(s.gzip / KB).toFixed(1) });
+  rows.push({
+    kind: 'lazy',
+    file: m.file,
+    rawKb: +(s.raw / KB).toFixed(1),
+    gzipKb: +(s.gzip / KB).toFixed(1),
+  });
 }
 
 rows.sort((a, b) => b.gzipKb - a.gzipKb);
@@ -84,15 +101,21 @@ console.log(
 
 const failures = [];
 if (initialJsGzip > budget.initialJsGzipKb * KB) {
-  failures.push(`initial JS ${(initialJsGzip / KB).toFixed(1)} kB gzip exceeds ${budget.initialJsGzipKb} kB`);
+  failures.push(
+    `initial JS ${(initialJsGzip / KB).toFixed(1)} kB gzip exceeds ${budget.initialJsGzipKb} kB`,
+  );
 }
 if (initialCssGzip > budget.initialCssGzipKb * KB) {
-  failures.push(`initial CSS ${(initialCssGzip / KB).toFixed(1)} kB gzip exceeds ${budget.initialCssGzipKb} kB`);
+  failures.push(
+    `initial CSS ${(initialCssGzip / KB).toFixed(1)} kB gzip exceeds ${budget.initialCssGzipKb} kB`,
+  );
 }
 for (const [name, limits] of Object.entries(budget.lazyChunks ?? {})) {
   const match = lazy.find(([, m]) => m.file.includes(`/${name}-`) || m.file.includes(`/${name}.`));
   if (!match) {
-    failures.push(`expected a lazy chunk named '${name}' (is three.js still loaded through import()?)`);
+    failures.push(
+      `expected a lazy chunk named '${name}' (is three.js still loaded through import()?)`,
+    );
     continue;
   }
   const s = sizes(match[1].file);

@@ -11,10 +11,14 @@ export function useMediaQuery(query: string): boolean {
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
     const mq = window.matchMedia(query);
-    const onChange = () => setValue(mq.matches);
+    const onChange = () => {
+      setValue(mq.matches);
+    };
     setValue(mq.matches);
     mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
+    return () => {
+      mq.removeEventListener('change', onChange);
+    };
   }, [query]);
   return value;
 }

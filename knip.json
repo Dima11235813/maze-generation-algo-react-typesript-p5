@@ -2,14 +2,17 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "workspaces": {
     ".": {},
-    "apps/web": {},
+    "apps/web": {
+      "ignoreDependencies": ["tailwindcss"]
+    },
     "packages/core": {},
     "packages/player": {},
     "packages/renderer": {},
     "packages/ui": {},
     "packages/config": {
       "entry": ["eslint/index.js"],
-      "project": ["eslint/**/*.js"]
+      "project": ["eslint/**/*.js"],
+      "ignoreUnresolved": ["vite/client"]
     }
   }
 }

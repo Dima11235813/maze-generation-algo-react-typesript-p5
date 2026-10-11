@@ -1,5 +1,6 @@
 import { useEffect, useId, useState } from 'react';
 import { cn } from '../cn';
+import { normalizeHex } from './hex';
 import { Label } from './Label';
 
 export interface ColorFieldProps {
@@ -10,22 +11,6 @@ export interface ColorFieldProps {
   disabled?: boolean;
   className?: string;
   id?: string;
-}
-
-const HEX = /^#?([0-9a-f]{6})$/i;
-const SHORT_HEX = /^#?([0-9a-f]{3})$/i;
-
-/** Normalises user text to `#rrggbb`, or null when invalid. */
-export function normalizeHex(input: string): string | null {
-  const s = input.trim();
-  const long = HEX.exec(s);
-  if (long) return `#${(long[1] as string).toLowerCase()}`;
-  const short = SHORT_HEX.exec(s);
-  if (short) {
-    const [a, b, c] = (short[1] as string).toLowerCase();
-    return `#${a}${a}${b}${b}${c}${c}`;
-  }
-  return null;
 }
 
 /**
@@ -44,7 +29,9 @@ export function ColorField({
   const id = idProp ?? autoId;
   const textId = `${id}-hex`;
   const [text, setText] = useState(value);
-  useEffect(() => setText(value), [value]);
+  useEffect(() => {
+    setText(value);
+  }, [value]);
 
   const commitText = (raw: string) => {
     const hex = normalizeHex(raw);
@@ -66,7 +53,9 @@ export function ColorField({
           className="h-9 w-12 cursor-pointer rounded-md border border-border bg-panel p-0.5 disabled:opacity-50"
           value={value}
           {...(disabled !== undefined ? { disabled } : {})}
-          onChange={(e) => onValueChange(e.target.value)}
+          onChange={(e) => {
+            onValueChange(e.target.value);
+          }}
         />
         <input
           id={textId}
@@ -77,8 +66,12 @@ export function ColorField({
           spellCheck={false}
           maxLength={7}
           {...(disabled !== undefined ? { disabled } : {})}
-          onChange={(e) => setText(e.target.value)}
-          onBlur={(e) => commitText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value);
+          }}
+          onBlur={(e) => {
+            commitText(e.target.value);
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') commitText((e.target as HTMLInputElement).value);
           }}

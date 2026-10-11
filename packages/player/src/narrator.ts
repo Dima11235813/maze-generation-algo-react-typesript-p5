@@ -208,7 +208,12 @@ class NarratorImpl implements Narrator {
         default:
           break;
       }
-      if (this.verbosity === 'high' && step.t !== 'done' && step.t !== 'path' && step.t !== 'fail') {
+      if (
+        this.verbosity === 'high' &&
+        step.t !== 'done' &&
+        step.t !== 'path' &&
+        step.t !== 'fail'
+      ) {
         const s = step;
         this.enqueue(() => this.describeSolve(this.grid, s), 'solve', 'polite');
       }
@@ -275,7 +280,11 @@ class NarratorImpl implements Narrator {
   }
 
   /** Spoken right away regardless of verbosity (except off) and of the rate limit. */
-  private milestone(text: string, kind: NarratorLogEntry['kind'], politeness: Politeness = 'polite'): void {
+  private milestone(
+    text: string,
+    kind: NarratorLogEntry['kind'],
+    politeness: Politeness = 'polite',
+  ): void {
     if (this.verbosity === 'off') return;
     this.dropPending();
     if (kind !== 'info' && !this.announceMilestones) return;
@@ -283,7 +292,11 @@ class NarratorImpl implements Narrator {
   }
 
   /** Rate-limited path used by everything that is not a milestone. */
-  private enqueue(text: () => string, kind: NarratorLogEntry['kind'], politeness: Politeness): void {
+  private enqueue(
+    text: () => string,
+    kind: NarratorLogEntry['kind'],
+    politeness: Politeness,
+  ): void {
     if (this.verbosity === 'off') return;
     const since = this.now() - this.lastSpokeAt;
     if (!this.pending && since >= this.minGapMs) {
@@ -308,7 +321,8 @@ class NarratorImpl implements Narrator {
     const p = this.pending;
     this.dropPending();
     if (!p) return;
-    const suffix = p.skipped > 0 ? ` ...and ${p.skipped} more ${p.skipped === 1 ? 'step' : 'steps'}.` : '';
+    const suffix =
+      p.skipped > 0 ? ` ...and ${p.skipped} more ${p.skipped === 1 ? 'step' : 'steps'}.` : '';
     this.speakNow(p.text() + suffix, p.kind, p.politeness);
   }
 

@@ -14,7 +14,7 @@ import { Button } from '@maze/ui';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { ShortcutsDialog } from '../../a11y/ShortcutsDialog';
 import { useNarrator } from '../../a11y/useNarrator';
-import { useAnnouncer } from '../../app/Announcer';
+import { useAnnouncer } from '../../app/useAnnouncer';
 import { useReducedMotion } from '../../app/documentPrefs';
 import { log } from '../../lib/log';
 import { useCoarsePointer, useIsNarrow } from '../../lib/useMediaQuery';
@@ -72,7 +72,7 @@ const REPLAY_MOVES_PER_SECOND = 6;
 
 function useMazeSession(): MazeSession {
   const ref = useRef<MazeSession | null>(null);
-  if (!ref.current) ref.current = new MazeSession({ speed: usePrefs.getState().speed });
+  ref.current ??= new MazeSession({ speed: usePrefs.getState().speed });
   useEffect(() => {
     const s = ref.current;
     return () => s?.dispose();
@@ -182,9 +182,15 @@ export function PlayPage() {
   }, [snap.seed]);
 
   const generate = useCallback(
-    (seed?: string) => {
+    (seed?: string, sameGrid = false) => {
       if (!hostSize) return;
-      const dims = computeGridDims(hostSize.width, hostSize.height, prefs.cellSize);
+      const current = session.getSnapshot();
+      // "Regenerate same seed" keeps the grid too: same seed + same grid = same maze, even
+      // after the window (or the metrics strip) changed the canvas size.
+      const dims =
+        sameGrid && current.phase !== 'empty'
+          ? { width: current.width, height: current.height, cellSize: current.cellSize }
+          : computeGridDims(hostSize.width, hostSize.height, prefs.cellSize);
       log('generate', dims, seed);
       session.generate({
         ...dims,
@@ -285,7 +291,7 @@ export function PlayPage() {
   const ride = useRideAlong({
     session,
     enabled: rideAlong && snap.solvePlayer !== null,
-    status: snap.solvePlayer ? (snap.solvePlayer.getSnapshot().status ?? null) : null,
+    status: snap.solvePlayer ? snap.solvePlayer.getSnapshot().status : null,
     stepCount: snap.solvePlayer ? (playerSnap?.stepCount ?? 0) : 0,
     grid: snap.state?.grid ?? null,
     path: snap.solveResult?.path ?? null,
@@ -747,8 +753,8 @@ export function PlayPage() {
           generate();
         }}
         onRegenerate={() => {
-          if (seedDraft.trim()) generate(seedDraft.trim());
-          else session.regenerate();
+          // Same grid, current generator and parameters; the typed seed, else the current one.
+          generate(seedDraft.trim() || snap.seed, true);
         }}
         onRandomSeed={() => {
           generate(randomSeed());

@@ -299,7 +299,7 @@ describe('astar', () => {
         expect(result.stats.expanded).toBeLessThanOrEqual(bfsExpanded);
         expect(result.stats.optimal).toBe(true);
         const ex = steps.find((s) => s.t === 'expand');
-        expect(ex && ex.t === 'expand' && ex.f !== undefined && ex.h !== undefined).toBe(true);
+        expect(ex?.t === 'expand' && ex.f !== undefined && ex.h !== undefined).toBe(true);
       }
     }
   });

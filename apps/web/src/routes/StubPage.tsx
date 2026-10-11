@@ -1,14 +1,14 @@
 import { Button } from '@maze/ui';
 import { Link } from '@tanstack/react-router';
 
-export interface StubPageProps {
+interface StubPageProps {
   title: string;
   description: string;
   /** Roadmap phase that ships it (see proj-mgmt/14-roadmap.md). */
   phase: string;
 }
 
-export function StubPage({ title, description, phase }: StubPageProps) {
+function StubPage({ title, description, phase }: StubPageProps) {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-10">
       <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
@@ -28,32 +28,12 @@ export function StubPage({ title, description, phase }: StubPageProps) {
   );
 }
 
-export function WatchPage() {
-  return (
-    <StubPage
-      title="Watch"
-      description="Pick a solver and watch it run with play, pause, step and speed controls, frontier and visited overlays, pseudo-code highlighting and a data-structure view."
-      phase="Phase 3"
-    />
-  );
-}
-
 export function LearnPage() {
   return (
     <StubPage
       title="Learn"
       description="A twelve-module curriculum from grids and graphs through DFS, BFS, spanning trees, Dijkstra and A*, each lesson bound to a live demo you can step through."
       phase="Phase 5"
-    />
-  );
-}
-
-export function ExplorePage() {
-  return (
-    <StubPage
-      title="Explore"
-      description="The algorithm catalogue with complexity, bias and texture, side-by-side Compare mode on one seed, and a metrics dashboard for any maze."
-      phase="Phase 3"
     />
   );
 }

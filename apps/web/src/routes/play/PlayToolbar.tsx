@@ -55,42 +55,42 @@ export interface PlayToolbarProps {
   phase: 'empty' | 'generating' | 'ready';
   playerStatus: PlayerStatus | null;
   seed: string;
-  onSeedChange(seed: string): void;
-  onGenerate(): void;
-  onRegenerate(): void;
-  onRandomSeed(): void;
-  onCopySeed(): void;
+  onSeedChange: (seed: string) => void;
+  onGenerate: () => void;
+  onRegenerate: () => void;
+  onRandomSeed: () => void;
+  onCopySeed: () => void;
   generatorId: string;
-  onGeneratorChange(id: string): void;
-  onPlayToggle(): void;
-  onStep(): void;
-  onStepBack(): void;
+  onGeneratorChange: (id: string) => void;
+  onPlayToggle: () => void;
+  onStep: () => void;
+  onStepBack: () => void;
   /** True when the active player has moved past step 0. */
   canStepBack: boolean;
-  onRunToEnd(): void;
+  onRunToEnd: () => void;
   speed: number;
-  onSpeedChange(speed: number): void;
+  onSpeedChange: (speed: number) => void;
   /** Renderer in use (camera controls apply to 3D, including the 3D tree). */
   mode: ViewMode;
   /** 2D, 3D or Tree. */
   view: ViewChoice;
-  onViewChange(view: ViewChoice): void;
+  onViewChange: (view: ViewChoice) => void;
   cameraPreset: CameraPreset;
-  onCameraPresetChange(preset: CameraPreset): void;
+  onCameraPresetChange: (preset: CameraPreset) => void;
   followPointer: boolean;
-  onFollowPointerChange(v: boolean): void;
+  onFollowPointerChange: (v: boolean) => void;
   solverId: string;
-  onSolverChange(id: string): void;
-  onSolve(): void;
-  onClearSolve(): void;
+  onSolverChange: (id: string) => void;
+  onSolve: () => void;
+  onClearSolve: () => void;
   canSolve: boolean;
   solveActive: boolean;
   firstPerson: boolean;
-  onFirstPersonToggle(): void;
+  onFirstPersonToggle: () => void;
   canSave: boolean;
-  onSave(): void;
-  onOpenLibrary(): void;
-  onOpenOptions(): void;
+  onSave: () => void;
+  onOpenLibrary: () => void;
+  onOpenOptions: () => void;
 }
 
 function Group({

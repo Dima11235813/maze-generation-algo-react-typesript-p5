@@ -8,7 +8,10 @@ export function ToggleGroup({
 }: ComponentPropsWithRef<typeof ToggleGroupPrimitive.Root>) {
   return (
     <ToggleGroupPrimitive.Root
-      className={cn('inline-flex items-center gap-0.5 rounded-md border border-border bg-panel-2 p-0.5', className)}
+      className={cn(
+        'inline-flex items-center gap-0.5 rounded-md border border-border bg-panel-2 p-0.5',
+        className,
+      )}
       {...props}
     />
   );

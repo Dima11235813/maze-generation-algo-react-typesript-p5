@@ -95,16 +95,17 @@ export const base = tseslint.config(
       eqeqeq: ['error', 'always', { null: 'ignore' }],
       'prefer-const': 'error',
       'no-var': 'error',
-      'object-shorthand': 'warn',
-      'import-x/no-cycle': 'warn',
-      'import-x/no-duplicates': 'warn',
+      'object-shorthand': 'error',
+      'import-x/no-cycle': 'error',
+      'import-x/no-duplicates': 'error',
       'import-x/no-self-import': 'error',
-      'import-x/no-useless-path-segments': 'warn',
-      'import-x/first': 'warn',
-      'import-x/newline-after-import': 'warn',
+      'import-x/no-useless-path-segments': 'error',
+      'import-x/first': 'error',
+      'import-x/newline-after-import': 'error',
       // TypeScript resolves these; the TS resolver handles `exports` maps, but keep it
-      // advisory so a resolver hiccup never blocks a commit.
-      'import-x/no-unresolved': 'warn',
+      // advisory so a resolver hiccup never blocks a commit. `virtual:` modules come from Vite
+      // plugins (vite-plugin-pwa) and exist only at build time.
+      'import-x/no-unresolved': ['warn', { ignore: ['^virtual:'] }],
       'import-x/named': 'off',
       'import-x/namespace': 'off',
       'import-x/default': 'off',
@@ -116,9 +117,9 @@ export const base = tseslint.config(
 );
 
 /**
- * Strict, type-aware TypeScript rules for project sources. Rules that currently fire in code
- * owned by other workstreams are `warn` (see the "Lint debt" note in proj-mgmt/12); they are
- * promoted to `error` as the follow-up wave lands.
+ * Strict, type-aware TypeScript rules for project sources. Everything is an `error`: the lint
+ * debt that was parked at `warn` was paid off in WI-05 (2026-10-11), so a warning never piles
+ * up again. Relax a rule here with a reason rather than adding inline disables.
  */
 export const typeAware = tseslint.config(
   {
@@ -148,46 +149,47 @@ export const typeAware = tseslint.config(
       // House style: `xs[i] as T` is preferred over `xs[i]!` under noUncheckedIndexedAccess
       // (the `!` form is itself flagged by no-non-null-assertion), so the inverse rule is off.
       '@typescript-eslint/non-nullable-type-assertion-style': 'off',
-      // React callback props are declared as method signatures; passing them is intended.
-      '@typescript-eslint/unbound-method': 'warn',
-      // Lint debt (warn until the follow-up wave): these fire in existing sources.
-      '@typescript-eslint/consistent-type-exports': 'warn',
-      '@typescript-eslint/no-unnecessary-type-conversion': 'warn',
-      '@typescript-eslint/no-unnecessary-condition': 'warn',
-      '@typescript-eslint/no-confusing-void-expression': 'warn',
-      '@typescript-eslint/restrict-template-expressions': 'warn',
-      '@typescript-eslint/no-non-null-assertion': 'warn',
-      '@typescript-eslint/prefer-nullish-coalescing': 'warn',
-      '@typescript-eslint/no-unnecessary-type-parameters': 'warn',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-misused-promises': 'warn',
-      '@typescript-eslint/no-unsafe-assignment': 'warn',
-      '@typescript-eslint/no-unsafe-member-access': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn',
-      '@typescript-eslint/no-unsafe-call': 'warn',
-      '@typescript-eslint/no-unsafe-return': 'warn',
-      '@typescript-eslint/no-deprecated': 'warn',
+      // Callback props and store actions are function-typed properties (`onX: () => void`).
+      '@typescript-eslint/unbound-method': 'error',
+      '@typescript-eslint/consistent-type-exports': 'error',
+      '@typescript-eslint/no-unnecessary-type-conversion': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'error',
+      '@typescript-eslint/no-confusing-void-expression': 'error',
+      // Numbers format predictably in templates (`${n} cells`); objects, nullish and unions
+      // still need an explicit conversion.
+      '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
+      '@typescript-eslint/no-non-null-assertion': 'error',
+      '@typescript-eslint/prefer-nullish-coalescing': 'error',
+      '@typescript-eslint/no-unnecessary-type-parameters': 'error',
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/no-unsafe-assignment': 'error',
+      '@typescript-eslint/no-unsafe-member-access': 'error',
+      '@typescript-eslint/no-unsafe-argument': 'error',
+      '@typescript-eslint/no-unsafe-call': 'error',
+      '@typescript-eslint/no-unsafe-return': 'error',
+      '@typescript-eslint/no-deprecated': 'error',
       '@typescript-eslint/prefer-readonly': 'off',
       '@typescript-eslint/consistent-type-definitions': 'off',
       '@typescript-eslint/array-type': 'off',
       '@typescript-eslint/no-inferrable-types': 'off',
-      '@typescript-eslint/unified-signatures': 'warn',
-      '@typescript-eslint/no-extraneous-class': 'warn',
-      '@typescript-eslint/prefer-for-of': 'warn',
-      '@typescript-eslint/class-literal-property-style': 'warn',
-      '@typescript-eslint/no-unnecessary-type-arguments': 'warn',
-      '@typescript-eslint/no-dynamic-delete': 'warn',
-      '@typescript-eslint/no-invalid-void-type': 'warn',
-      '@typescript-eslint/restrict-plus-operands': 'warn',
-      '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
-      '@typescript-eslint/no-redundant-type-constituents': 'warn',
-      '@typescript-eslint/dot-notation': 'warn',
-      '@typescript-eslint/prefer-optional-chain': 'warn',
-      '@typescript-eslint/no-empty-function': 'warn',
-      '@typescript-eslint/require-await': 'warn',
-      '@typescript-eslint/no-base-to-string': 'warn',
-      '@typescript-eslint/use-unknown-in-catch-callback-variable': 'warn',
-      '@typescript-eslint/no-unnecessary-boolean-literal-compare': 'warn',
+      '@typescript-eslint/unified-signatures': 'error',
+      '@typescript-eslint/no-extraneous-class': 'error',
+      '@typescript-eslint/prefer-for-of': 'error',
+      '@typescript-eslint/class-literal-property-style': 'error',
+      '@typescript-eslint/no-unnecessary-type-arguments': 'error',
+      '@typescript-eslint/no-dynamic-delete': 'error',
+      '@typescript-eslint/no-invalid-void-type': 'error',
+      '@typescript-eslint/restrict-plus-operands': 'error',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'error',
+      '@typescript-eslint/no-redundant-type-constituents': 'error',
+      '@typescript-eslint/dot-notation': 'error',
+      '@typescript-eslint/prefer-optional-chain': 'error',
+      '@typescript-eslint/no-empty-function': 'error',
+      '@typescript-eslint/require-await': 'error',
+      '@typescript-eslint/no-base-to-string': 'error',
+      '@typescript-eslint/use-unknown-in-catch-callback-variable': 'error',
+      '@typescript-eslint/no-unnecessary-boolean-literal-compare': 'error',
     },
   },
   {
@@ -248,19 +250,19 @@ export const react = tseslint.config({
   rules: {
     ...jsxA11y.flatConfigs.recommended.rules,
     'react-hooks/rules-of-hooks': 'error',
-    'react-hooks/exhaustive-deps': 'warn',
+    'react-hooks/exhaustive-deps': 'error',
     'react-refresh/only-export-components': [
-      'warn',
+      'error',
       { allowConstantExport: true, allowExportNames: ['routeTree', 'createAppRouter'] },
     ],
-    'jsx-a11y/no-autofocus': 'warn',
-    'jsx-a11y/no-noninteractive-tabindex': ['warn', { roles: ['img'], tags: [] }],
+    'jsx-a11y/no-autofocus': 'error',
+    'jsx-a11y/no-noninteractive-tabindex': ['error', { roles: ['img'], tags: [] }],
     // `<ul role="list">` is deliberate: Safari/VoiceOver drops list semantics when
     // `list-style: none` is applied, and the explicit role restores them.
     'jsx-a11y/no-redundant-roles': ['error', { ul: ['list'], ol: ['list'] }],
     // Headings whose content arrives through `{...props}` (design-system wrappers) are
     // false positives; the Storybook a11y addon covers rendered output.
-    'jsx-a11y/heading-has-content': 'warn',
+    'jsx-a11y/heading-has-content': 'error',
   },
 });
 
@@ -347,7 +349,7 @@ export const boundaries = tseslint.config(
 export const logging = tseslint.config(
   {
     files: ['apps/**/*.{ts,tsx}'],
-    rules: { 'no-console': 'warn' },
+    rules: { 'no-console': 'error' },
   },
   {
     files: ['apps/web/src/lib/log.ts', 'apps/web/e2e/**/*.ts', '**/*.test.{ts,tsx}'],

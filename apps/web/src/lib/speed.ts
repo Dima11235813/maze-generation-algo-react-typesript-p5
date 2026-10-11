@@ -21,5 +21,7 @@ export function indexToSpeed(index: number): number {
 }
 
 export function formatSpeed(speed: number): string {
-  return speed >= 1000 ? `${(speed / 1000).toFixed(speed % 1000 === 0 ? 0 : 1)}k steps/s` : `${speed} steps/s`;
+  return speed >= 1000
+    ? `${(speed / 1000).toFixed(speed % 1000 === 0 ? 0 : 1)}k steps/s`
+    : `${speed} steps/s`;
 }

@@ -8,19 +8,20 @@ import {
   DialogTitle,
   Label,
 } from '@maze/ui';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export interface SaveDialogProps {
   open: boolean;
-  onOpenChange(open: boolean): void;
+  onOpenChange: (open: boolean) => void;
   defaultName: string;
-  onSave(name: string): Promise<void>;
+  onSave: (name: string) => Promise<void>;
 }
 
 export function SaveDialog({ open, onOpenChange, defaultName, onSave }: SaveDialogProps) {
   const [name, setName] = useState(defaultName);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (open) {
       setName(defaultName);
@@ -43,7 +44,15 @@ export function SaveDialog({ open, onOpenChange, defaultName, onSave }: SaveDial
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent aria-describedby="save-desc">
+      <DialogContent
+        aria-describedby="save-desc"
+        onOpenAutoFocus={(e) => {
+          // Start in the name field (not the first button) so typing renames at once.
+          e.preventDefault();
+          inputRef.current?.focus();
+          inputRef.current?.select();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Save maze</DialogTitle>
           <DialogDescription id="save-desc">
@@ -61,10 +70,12 @@ export function SaveDialog({ open, onOpenChange, defaultName, onSave }: SaveDial
             <Label htmlFor="save-name">Name</Label>
             <input
               id="save-name"
+              ref={inputRef}
               className="h-9 rounded-md border border-border bg-panel px-2 text-sm"
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              autoFocus
+              onChange={(e) => {
+                setName(e.target.value);
+              }}
               maxLength={80}
             />
           </div>
@@ -74,7 +85,13 @@ export function SaveDialog({ open, onOpenChange, defaultName, onSave }: SaveDial
             </p>
           ) : null}
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                onOpenChange(false);
+              }}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={busy}>

@@ -41,33 +41,34 @@ export function bestRun(runs: readonly SavedRun[] | undefined): SavedRun | null 
 
 export interface LibraryState {
   items: LibraryItem[];
-  add(input: { name: string; document: MazeDocument; thumbnail?: string }): LibraryItem;
+  add: (input: { name: string; document: MazeDocument; thumbnail?: string }) => LibraryItem;
   /** Saves a run with its maze: added to the item holding the same maze, or a new item. */
-  addRun(input: {
+  addRun: (input: {
     name: string;
     document: MazeDocument;
     thumbnail?: string;
     run: Omit<SavedRun, 'id' | 'at'>;
-  }): LibraryItem;
+  }) => LibraryItem;
   /**
    * Replaces an item's maze (Build editor "Save"). Saved runs belonged to the old maze, so they
    * are dropped. Returns the updated item, or null when the id is unknown.
    */
-  replace(
+  replace: (
     id: string,
     input: { name: string; document: MazeDocument; thumbnail?: string },
-  ): LibraryItem | null;
-  remove(id: string): void;
-  rename(id: string, name: string): void;
-  clear(): void;
+  ) => LibraryItem | null;
+  remove: (id: string) => void;
+  rename: (id: string, name: string) => void;
+  clear: () => void;
 }
 
 export const LIBRARY_STORAGE_KEY = 'maze-lab:library';
-export const LIBRARY_VERSION = 1;
-export const LIBRARY_MAX_ITEMS = 200;
+const LIBRARY_VERSION = 1;
+const LIBRARY_MAX_ITEMS = 200;
 
 function newId(): string {
-  const c = globalThis.crypto;
+  // Absent in old browsers and some test environments, whatever the DOM types say.
+  const c = globalThis.crypto as Crypto | undefined;
   if (c && typeof c.randomUUID === 'function') return c.randomUUID();
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }

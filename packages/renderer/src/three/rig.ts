@@ -30,7 +30,7 @@ const EASE_TAU_MS = 90;
 const FIT_NDC = 0.92;
 const FIT_ITERATIONS = 28;
 
-export function wrapAngle(a: number): number {
+function wrapAngle(a: number): number {
   const twoPi = Math.PI * 2;
   return ((((a + Math.PI) % twoPi) + twoPi) % twoPi) - Math.PI;
 }

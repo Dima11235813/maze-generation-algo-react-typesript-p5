@@ -1,5 +1,6 @@
 export { cn } from './cn';
-export { Button, IconButton, buttonVariants, type ButtonProps, type IconButtonProps } from './components/Button';
+export { Button, IconButton, type ButtonProps, type IconButtonProps } from './components/Button';
+export { buttonVariants } from './components/buttonVariants';
 export { Label, VisuallyHidden, type LabelProps } from './components/Label';
 export { Slider, type SliderProps } from './components/Slider';
 export { Switch, SwitchField, type SwitchProps, type SwitchFieldProps } from './components/Switch';
@@ -44,7 +45,8 @@ export { Tabs, TabsContent, TabsList, TabsTrigger } from './components/Tabs';
 export { ToggleGroup, ToggleGroupItem } from './components/ToggleGroup';
 export { ScrollArea } from './components/ScrollArea';
 export { NumberField, type NumberFieldProps } from './components/NumberField';
-export { ColorField, normalizeHex, type ColorFieldProps } from './components/ColorField';
+export { ColorField, type ColorFieldProps } from './components/ColorField';
+export { normalizeHex } from './components/hex';
 export { Kbd } from './components/Kbd';
 export {
   Card,

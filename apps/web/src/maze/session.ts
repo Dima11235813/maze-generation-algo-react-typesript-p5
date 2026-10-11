@@ -47,7 +47,7 @@ import { StepPlayer, type StepPlayerOptions } from '@maze/player';
 import { nameWithParams } from './algoParams';
 import type { FirstPersonState } from '@maze/renderer';
 
-export type SessionPhase = 'empty' | 'generating' | 'ready';
+type SessionPhase = 'empty' | 'generating' | 'ready';
 
 export interface SessionSnapshot {
   readonly phase: SessionPhase;
@@ -733,7 +733,7 @@ function describeDirection(state: MazeState, from: CellId, to: CellId): string {
 }
 
 /** Spoken and shown when the goal is reached. */
-export function describeSummary(s: RunSummary): string {
+function describeSummary(s: RunSummary): string {
   const eff = s.efficiency === null ? '' : `, ${String(Math.round(s.efficiency * 100))}% efficient`;
   const optimal = s.optimalMoves === null ? '' : ` (shortest ${String(s.optimalMoves)})`;
   const extras = [

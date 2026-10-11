@@ -4,7 +4,7 @@ import { useId } from 'react';
 
 export interface SolverPickerProps {
   value: string;
-  onChange(id: string): void;
+  onChange: (id: string) => void;
   disabled?: boolean;
   /** The surrounding Section already shows a visible title. */
   hideHeading?: boolean;

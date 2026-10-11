@@ -1,5 +1,5 @@
 import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createAppRouter } from '../../app/router';
@@ -218,5 +218,51 @@ describe('/play', () => {
     expect(scrubber).toHaveAttribute('aria-valuenow', '3');
     await user.click(within(toolbar).getByRole('button', { name: /^step back$/i }));
     expect(scrubber).toHaveAttribute('aria-valuenow', '2');
+  });
+
+  it('regenerates the same seed on the same grid after the canvas changed size', async () => {
+    // A ResizeObserver the test can drive: 800x600 on observe, then whatever `resize` says.
+    const observed: { cb: ResizeObserverCallback; target: Element }[] = [];
+    const entry = (target: Element, width: number, height: number) =>
+      ({ target, contentRect: { width, height } }) as unknown as ResizeObserverEntry;
+    class DrivenResizeObserver {
+      private readonly cb: ResizeObserverCallback;
+      constructor(cb: ResizeObserverCallback) {
+        this.cb = cb;
+      }
+      observe(target: Element): void {
+        observed.push({ cb: this.cb, target });
+        this.cb([entry(target, 800, 600)], this);
+      }
+      unobserve(): void {}
+      disconnect(): void {}
+    }
+    const original = globalThis.ResizeObserver;
+    globalThis.ResizeObserver = DrivenResizeObserver;
+    try {
+      const user = userEvent.setup();
+      const { factories } = renderPlay();
+      const toolbar = await screen.findByRole('toolbar', { name: /maze controls/i });
+      await screen.findByRole('img', { name: /maze canvas: 20 by 15 cells/i });
+      const seed = screen.getByRole('textbox', { name: 'Seed' });
+      const seedValue = (seed as HTMLInputElement).value;
+      expect(seedValue).not.toBe('');
+      const renderer = factories.created[0]!;
+      const before = renderer.lastGeneration;
+
+      // Half the canvas: the maze keeps its shape and offers a refit.
+      act(() => {
+        for (const o of observed) o.cb([entry(o.target, 400, 300)], {} as ResizeObserver);
+      });
+      expect(await screen.findByText(/the window changed size/i)).toBeInTheDocument();
+
+      // Regenerate same seed rebuilds on the same 20 x 15 grid, not the refitted size.
+      await user.click(within(toolbar).getByRole('button', { name: 'Regenerate same seed' }));
+      await waitFor(() => expect(renderer.lastGeneration).not.toBe(before));
+      expect(screen.getByRole('img', { name: /maze canvas: 20 by 15 cells/i })).toBeInTheDocument();
+      expect(seed).toHaveValue(seedValue);
+    } finally {
+      globalThis.ResizeObserver = original;
+    }
   });
 });

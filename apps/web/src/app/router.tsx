@@ -2,17 +2,33 @@ import {
   createRootRoute,
   createRoute,
   createRouter,
+  lazyRouteComponent,
   type RouterHistory,
 } from '@tanstack/react-router';
 import { LandingPage } from '../routes/LandingPage';
 import { AccountPage, LearnPage, NotFoundPage } from '../routes/StubPage';
-import { BuildPage, type BuildSearch } from '../routes/build/BuildPage';
-import { ComparePage, type CompareSearch } from '../routes/explore/ComparePage';
-import { ExplorePage } from '../routes/explore/ExplorePage';
-import { PlayPage } from '../routes/play/PlayPage';
-import { RacePage, type RaceSearch } from '../routes/race/RacePage';
-import { WatchPage, type WatchSearch } from '../routes/watch/WatchPage';
+import type { BuildSearch } from '../routes/build/BuildPage';
+import type { CompareSearch } from '../routes/explore/ComparePage';
+import type { RaceSearch } from '../routes/race/RacePage';
+import type { WatchSearch } from '../routes/watch/WatchPage';
 import { RootLayout } from './RootLayout';
+import { RouteLoading } from './RouteLoading';
+
+// Feature pages load on demand (WI-05): the landing page and shell stay in the initial bundle,
+// each page is its own chunk, preloaded on link hover/focus (`defaultPreload: 'intent'`) and
+// precached by the service worker for offline use.
+const PlayPage = lazyRouteComponent(() => import('../routes/play/PlayPage'), 'PlayPage');
+const WatchPage = lazyRouteComponent(() => import('../routes/watch/WatchPage'), 'WatchPage');
+const RacePage = lazyRouteComponent(() => import('../routes/race/RacePage'), 'RacePage');
+const BuildPage = lazyRouteComponent(() => import('../routes/build/BuildPage'), 'BuildPage');
+const ExplorePage = lazyRouteComponent(
+  () => import('../routes/explore/ExplorePage'),
+  'ExplorePage',
+);
+const ComparePage = lazyRouteComponent(
+  () => import('../routes/explore/ComparePage'),
+  'ComparePage',
+);
 
 /** Keeps only non-empty string values for the given keys (search params are untrusted). */
 function pickStrings<K extends string>(
@@ -81,7 +97,7 @@ const accountRoute = createRoute({
   component: AccountPage,
 });
 
-export const routeTree = rootRoute.addChildren([
+const routeTree = rootRoute.addChildren([
   indexRoute,
   playRoute,
   watchRoute,
@@ -98,12 +114,13 @@ export function createAppRouter(history?: RouterHistory) {
   return createRouter({
     routeTree,
     defaultPreload: 'intent',
+    defaultPendingComponent: RouteLoading,
     scrollRestoration: true,
     ...(history ? { history } : {}),
   });
 }
 
-export type AppRouter = ReturnType<typeof createAppRouter>;
+type AppRouter = ReturnType<typeof createAppRouter>;
 
 declare module '@tanstack/react-router' {
   interface Register {

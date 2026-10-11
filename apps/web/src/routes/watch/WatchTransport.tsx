@@ -28,18 +28,18 @@ export interface WatchTransportProps {
   status: PlayerStatus | null;
   /** True once a solver is armed on a finished maze. */
   armed: boolean;
-  onPlayToggle(): void;
-  onStep(): void;
-  onStepBack(): void;
+  onPlayToggle: () => void;
+  onStep: () => void;
+  onStepBack: () => void;
   canStepBack: boolean;
-  onRunToEnd(): void;
-  onReset(): void;
+  onRunToEnd: () => void;
+  onReset: () => void;
   speed: number;
-  onSpeedChange(speed: number): void;
+  onSpeedChange: (speed: number) => void;
   view: ViewChoice;
-  onViewChange(view: ViewChoice): void;
-  onNewMaze(): void;
-  onRegenerate(): void;
+  onViewChange: (view: ViewChoice) => void;
+  onNewMaze: () => void;
+  onRegenerate: () => void;
   seed: string;
 }
 

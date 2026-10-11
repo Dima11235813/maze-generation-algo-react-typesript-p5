@@ -1,26 +1,14 @@
 import type { NarratorLogEntry, NarratorVerbosity } from '@maze/player';
-import { NARRATOR_VERBOSITIES } from '@maze/player';
 import { Button, Kbd, ScrollArea, SimpleSelect } from '@maze/ui';
 import { useEffect, useRef } from 'react';
-
-export const VERBOSITY_LABELS: Record<NarratorVerbosity, string> = {
-  off: 'Off',
-  low: 'Milestones only',
-  medium: 'Milestones and progress',
-  high: 'Every step (rate limited)',
-};
-
-export const VERBOSITY_OPTIONS = NARRATOR_VERBOSITIES.map((v) => ({
-  value: v,
-  label: VERBOSITY_LABELS[v],
-}));
+import { VERBOSITY_OPTIONS } from './verbosity';
 
 export interface StepLogPanelProps {
   entries: readonly NarratorLogEntry[];
   verbosity: NarratorVerbosity;
-  onVerbosityChange(v: NarratorVerbosity): void;
-  onClose(): void;
-  onClear(): void;
+  onVerbosityChange: (v: NarratorVerbosity) => void;
+  onClose: () => void;
+  onClear: () => void;
 }
 
 /**

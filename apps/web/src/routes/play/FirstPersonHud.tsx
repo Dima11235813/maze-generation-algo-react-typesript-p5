@@ -8,14 +8,14 @@ export interface FirstPersonHudProps {
   state: MazeState;
   firstPerson: FirstPersonState;
   reachedGoal: boolean;
-  onExit(): void;
+  onExit: () => void;
   /** Touch controls (shown on coarse pointers / narrow screens). */
   showPad?: boolean;
-  onForward?(): void;
-  onBackward?(): void;
-  onTurnLeft?(): void;
-  onTurnRight?(): void;
-  onPeekChange?(peek: boolean): void;
+  onForward?: () => void;
+  onBackward?: () => void;
+  onTurnLeft?: () => void;
+  onTurnRight?: () => void;
+  onPeekChange?: (peek: boolean) => void;
 }
 
 function PadButton({

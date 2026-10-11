@@ -27,7 +27,7 @@ export function randomSeed(length = 12): string {
   const bytes = new Uint8Array(length);
   globalThis.crypto.getRandomValues(bytes);
   let out = '';
-  for (const b of bytes) out += SEED_ALPHABET[b & 31];
+  for (const b of bytes) out += SEED_ALPHABET.charAt(b & 31);
   return out;
 }
 

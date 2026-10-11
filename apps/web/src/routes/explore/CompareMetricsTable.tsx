@@ -7,6 +7,7 @@ import {
 } from '@maze/core';
 import { cn } from '@maze/ui';
 import type { MazeSession } from '../../maze/session';
+import { bestLanes } from './bestLanes';
 
 interface Column {
   key: string;
@@ -20,7 +21,7 @@ interface Column {
 
 const int = (v: number | null): string => (v === null ? '-' : String(v));
 
-export const COLUMNS: readonly Column[] = [
+const COLUMNS: readonly Column[] = [
   {
     key: 'deadEnds',
     label: 'Dead ends',
@@ -105,18 +106,6 @@ function treeOf(state: MazeState | null): TreeMetrics | null {
     treeCache.set(state, t);
   }
   return t;
-}
-
-/** Indices of lanes holding the best value for a column; empty when all lanes tie or <2 lanes. */
-export function bestLanes(values: readonly (number | null)[], best: 'min' | 'max'): Set<number> {
-  const present = values.filter((v): v is number => v !== null);
-  if (present.length < 2) return new Set();
-  const target = best === 'min' ? Math.min(...present) : Math.max(...present);
-  const out = new Set<number>();
-  values.forEach((v, i) => {
-    if (v === target) out.add(i);
-  });
-  return out.size === present.length ? new Set() : out;
 }
 
 export interface CompareMetricsTableProps {

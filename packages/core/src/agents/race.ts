@@ -58,7 +58,9 @@ export function validateRaceConfig(config: RaceConfig): void {
     ids.add(a.id);
     if (!(a.budget.maxSteps > 0)) throw new RangeError(`Agent '${a.id}' has a non-positive budget`);
   }
-  if (!config.lockstep) throw new RangeError('Only lockstep races are supported');
+  // Typed `true`, but configs also arrive from untyped callers (JSON, tests).
+  const lockstep = config.lockstep as boolean;
+  if (!lockstep) throw new RangeError('Only lockstep races are supported');
 }
 
 export interface RunRaceOptions {
@@ -220,9 +222,10 @@ export function raceRanking(
   reference: RankingReference = { solutionLength: null },
 ): string[] {
   const ids = Object.keys(perAgent);
-  const winners = ids.filter((id) => perAgent[id]!.reachedGoal && !perAgent[id]!.disqualified);
-  const failed = ids.filter((id) => !perAgent[id]!.reachedGoal && !perAgent[id]!.disqualified);
-  const disqualified = ids.filter((id) => perAgent[id]!.disqualified);
+  const at = (id: string): RaceAgentResult => perAgent[id] as RaceAgentResult;
+  const winners = ids.filter((id) => at(id).reachedGoal && !at(id).disqualified);
+  const failed = ids.filter((id) => !at(id).reachedGoal && !at(id).disqualified);
+  const disqualified = ids.filter((id) => at(id).disqualified);
 
   const byId = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
   const cmp =
@@ -234,9 +237,9 @@ export function raceRanking(
       }
       return byId(a, b);
     };
-  const tickOf = (id: string): number => perAgent[id]!.finishedAtTick ?? Number.POSITIVE_INFINITY;
-  const expandedOf = (id: string): number => perAgent[id]!.expanded;
-  const lengthOf = (id: string): number => perAgent[id]!.pathLength ?? Number.POSITIVE_INFINITY;
+  const tickOf = (id: string): number => at(id).finishedAtTick ?? Number.POSITIVE_INFINITY;
+  const expandedOf = (id: string): number => at(id).expanded;
+  const lengthOf = (id: string): number => at(id).pathLength ?? Number.POSITIVE_INFINITY;
 
   let orderedWinners: string[];
   switch (scoring) {
@@ -272,12 +275,13 @@ export function compositeScores(
 ): Record<string, number> {
   const scores: Record<string, number> = {};
   if (ids.length === 0) return scores;
-  const bestTick = Math.max(1, Math.min(...ids.map((id) => perAgent[id]!.finishedAtTick ?? 1)));
-  const bestExpanded = Math.max(1, Math.min(...ids.map((id) => perAgent[id]!.expanded)));
+  const at = (id: string): RaceAgentResult => perAgent[id] as RaceAgentResult;
+  const bestTick = Math.max(1, Math.min(...ids.map((id) => at(id).finishedAtTick ?? 1)));
+  const bestExpanded = Math.max(1, Math.min(...ids.map((id) => at(id).expanded)));
   const bestLength =
-    reference.solutionLength ?? Math.min(...ids.map((id) => perAgent[id]!.pathLength ?? 0));
+    reference.solutionLength ?? Math.min(...ids.map((id) => at(id).pathLength ?? 0));
   for (const id of ids) {
-    const r = perAgent[id]!;
+    const r = at(id);
     const ratio = bestLength > 0 && r.pathLength !== null ? r.pathLength / bestLength : 1;
     scores[id] =
       0.5 * ((r.finishedAtTick ?? bestTick) / bestTick) +
