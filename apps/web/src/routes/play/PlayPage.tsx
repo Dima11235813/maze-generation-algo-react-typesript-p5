@@ -182,9 +182,15 @@ export function PlayPage() {
   }, [snap.seed]);
 
   const generate = useCallback(
-    (seed?: string) => {
+    (seed?: string, sameGrid = false) => {
       if (!hostSize) return;
-      const dims = computeGridDims(hostSize.width, hostSize.height, prefs.cellSize);
+      const current = session.getSnapshot();
+      // "Regenerate same seed" keeps the grid too: same seed + same grid = same maze, even
+      // after the window (or the metrics strip) changed the canvas size.
+      const dims =
+        sameGrid && current.phase !== 'empty'
+          ? { width: current.width, height: current.height, cellSize: current.cellSize }
+          : computeGridDims(hostSize.width, hostSize.height, prefs.cellSize);
       log('generate', dims, seed);
       session.generate({
         ...dims,
@@ -747,8 +753,8 @@ export function PlayPage() {
           generate();
         }}
         onRegenerate={() => {
-          if (seedDraft.trim()) generate(seedDraft.trim());
-          else session.regenerate();
+          // Same grid, current generator and parameters; the typed seed, else the current one.
+          generate(seedDraft.trim() || snap.seed, true);
         }}
         onRandomSeed={() => {
           generate(randomSeed());

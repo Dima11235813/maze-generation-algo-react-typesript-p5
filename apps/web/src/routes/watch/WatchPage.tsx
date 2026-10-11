@@ -167,9 +167,14 @@ export function WatchPage() {
   }, []);
 
   const generateWith = useCallback(
-    (seed?: string) => {
+    (seed?: string, sameGrid = false) => {
       if (!hostSize) return;
-      const dims = computeGridDims(hostSize.width, hostSize.height, prefs.cellSize);
+      const current = session.getSnapshot();
+      // Regenerate keeps the grid: same seed + same grid = same maze.
+      const dims =
+        sameGrid && current.phase !== 'empty'
+          ? { width: current.width, height: current.height, cellSize: current.cellSize }
+          : computeGridDims(hostSize.width, hostSize.height, prefs.cellSize);
       session.generate({
         ...dims,
         ...(seed ? { seed } : {}),
@@ -471,7 +476,7 @@ export function WatchPage() {
           generateWith(randomSeed());
         }}
         onRegenerate={() => {
-          generateWith(snap.seed || undefined);
+          generateWith(snap.seed, true);
         }}
         seed={snap.seed}
       />
