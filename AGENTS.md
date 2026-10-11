@@ -92,6 +92,8 @@ repo-wide search):
 powershell -ExecutionPolicy Bypass -File D:\GDrive\proj-mgmt\inventory\scripts\preflight-resources.ps1
 ```
 
+- The script exits 1 while any standing breach exists, so read its table, not the exit code
+  (L-36).
 - A **transient** breach (D: active time or response, CPU, free RAM) means **wait**, not
   "proceed carefully". Re-check in a few minutes.
 - A **standing** breach (antivirus engine count; dev-server/watcher count, which our always-on
@@ -137,7 +139,8 @@ powershell -ExecutionPolicy Bypass -File D:\GDrive\proj-mgmt\inventory\scripts\p
 
 ## 6. Gotchas (details and causes in `proj-mgmt/18-lessons-learned.md`)
 
-- `git push` is blocked for agents; ask the owner. Google Drive sometimes locks `.git/objects`:
+- `git push` is blocked for agents, even with the owner's go-ahead in chat; the owner pushes
+  (`! git push -u origin develop main`). Google Drive sometimes locks `.git/objects`:
   retry git writes after ~2 s.
 - Commit hook runs `eslint --fix` + `prettier --check` on staged files. If it fails or reports
   "conflict while merging unstaged changes": `pnpm exec prettier --write <staged files>`,

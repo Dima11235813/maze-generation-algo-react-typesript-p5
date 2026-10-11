@@ -4,7 +4,7 @@
 > Append-only log. Each entry: what happened, why, and the rule we now follow. Rules that every
 > session needs are mirrored in `AGENTS.md` section 6; this file keeps the reasoning.
 
-## Rules at a glance (consolidated 2026-10-09)
+## Rules at a glance (consolidated 2026-10-10)
 
 The one-line rules every session needs; the entries below keep the story behind each.
 
@@ -25,21 +25,24 @@ The one-line rules every session needs; the entries below keep the story behind 
 | Ports | Block 41920-41939; the dev server on 41920 is always on (task + `-Unregister` abort) | L-24 (replaces L-15, L-19 ports) |
 | Checks | `check:viewports` for sizes; Playwright scripts for interactions | L-16, L-19 |
 | Machine | Preflight before heavy jobs; wait on transient breaches; one heavy job at a time | L-35 |
+| Machine | Preflight exits 1 on standing breaches: judge by the transient rows, not the exit code | L-36 |
 | Owner | Phone-first, small merged slices, protect the 3D views and the walkthrough | L-17 |
 
 ## Process and orchestration
 
 **L-01 Six parallel agents exhausted the session limit before anyone committed.** Two rounds of
 six concurrent subagents hit the rate limit and lost hours of uncommitted work. *Rule:* at most
-two agents at once; the coordinator commits a `wip(...)` snapshot on each agent branch before
-resuming; briefs say "commit after each fix" and "keep tool output to grep'd lines".
+two agents at once; the coordinator commits a snapshot (`feat(...)`/`fix(...)`, there is no
+`wip` type, L-33) on each agent branch before resuming; briefs say "commit after each fix" and "keep tool output to grep'd lines".
 
 **L-02 Isolated worktrees sometimes start from `origin/master`.** Two agents' worktrees were cut
 from the old default branch. *Rule:* briefs tell agents to check `git log -1` against the
 expected base and reset their branch before working.
 
-**L-03 Agents cannot push.** The auto-mode classifier blocks `git push`. *Rule:* merge locally
-into `develop`/`main`; list the push in `16-human-actions.md` and the final report.
+**L-03 Agents cannot push.** The auto-mode classifier blocks `git push`, also after the owner
+grants it in chat (2026-10-10). *Rule:* merge locally into `develop`/`main`; list the push in
+`16-human-actions.md` and the final report, and suggest `! git push -u origin develop main` or a
+Bash permission rule for `git push`.
 
 **L-04 Google Drive locks `.git/objects` mid-write.** `git add`/`commit` fail with "Permission
 denied" intermittently. *Rule:* wrap git writes in a short retry loop.
@@ -199,3 +202,11 @@ timeouts (L-32), where this session ran e2e next to a viewport check while other
 repo-wide `git grep` and another Playwright suite. *Rule:* AGENTS.md section 3a: run
 `preflight-resources.ps1` before heavy jobs, wait on transient breaches, report standing ones
 (antivirus engines, watcher count), and run gate steps one at a time.
+
+**L-36 Paced, the gate is clean on the first run; the preflight's exit code is not the signal.**
+Re-verifying WI-04 (2026-10-10) with the transient preflight rows green and every step run
+alone: typecheck, 516 unit tests, lint and e2e 27/27 (1.2 min) all passed first time, where the
+same gate under contention had needed reruns (L-32). The preflight exits 1 whenever a standing
+breach exists (3 antivirus engines, 4-6 watchers including our 41920 server), so it never
+returns 0 here today. *Rule:* read the table: proceed when every transient row (D: active time
+and response, transfers, RAM, CPU, GPU) is OK; wait when one is not; report standing rows.
