@@ -230,10 +230,50 @@ way" it looks like a tree (Wikipedia, Maze generation algorithm). Design:
   toolbar, tests) had never been committed; ESLint's `**/build/**` and prettier skipped it too.
   Both patterns are anchored to output folders now (L-37).
 
-### WI-06 Learn mode MVP (roadmap Phase 5) - NEXT
+### WI-06 Learn mode MVP (roadmap Phase 5) - IN PROGRESS (planned 2026-10-11)
 
-Lesson framework (MDX, embedded StepPlayer demos, quizzes, progress) and modules M1-M5, M7 per
-`proj-mgmt/13-education-and-playground.md`. Plan it into smaller items when it becomes NEXT.
+Lesson framework, embedded StepPlayer demos, data-structure views, quizzes, progress and modules
+M1-M5, M7 per `proj-mgmt/13-education-and-playground.md`. Planned into six slices with design
+note [20-learn-mode.md](./20-learn-mode.md) (decision D-20: lessons are typed TSX modules, not
+MDX). Each slice is merged and phone-checked on its own.
+
+### WI-06a Learn: lesson shell and pilot lesson - NEXT
+
+- Scope: content model and curriculum registry (all twelve modules; unwritten ones "planned");
+  `/learn` index with local progress; `/learn/$lessonId` lesson page with concept, live demo
+  (transport below the maze), pseudo-code, data-structure view and complexity regions; BFS queue
+  view rebuilt from steps; landing "Learn" card goes live. Pilot lesson: M3.1 "The frontier is a
+  ring" (BFS).
+- Acceptance: index and navigation derive from the registry (a test adds a fake module); the
+  queue model is FIFO-exact against BFS on real mazes; progress survives a reload; phone,
+  tablet and desktop checked; e2e journey for the lesson.
+- Branch: `feat/learn-shell`. Blocked by: nothing.
+
+### WI-06b Learn: data-structure views - TODO
+
+Stack (DFS, backtracker), priority queue with g/h/f (Dijkstra, A*, greedy), disjoint-set forest
+(Kruskal), distance map; also a "Data structure" section on Watch. Each model checked against
+its algorithm on real mazes. Design: [20-learn-mode.md](./20-learn-mode.md) section 3.
+
+### WI-06c Learn: breakpoints, quizzes, try-it checks - TODO
+
+`StepPlayer.runUntil(predicate)` with a breakpoint picker; data-driven `<Quiz>` and `<TryIt>`;
+a passed quiz completes the lesson. Keyboard-operable, results announced.
+
+### WI-06d Learn: modules M1-M3 - TODO
+
+Grids & graphs (Build-style demo), DFS & the backtracker (stack view, breakpoint on backtrack),
+BFS & shortest paths completed (rings, DFS vs BFS). Playwright smoke per lesson demo.
+
+### WI-06e Learn: modules M4, M5, M7 - TODO
+
+Prim/Kruskal with disjoint sets; Aldous-Broder & Wilson with a dead-end histogram; A* and
+heuristics with Compare and the weight slider.
+
+### WI-06f Learn: stub modules and "Learn more" links - TODO
+
+M6, M8-M11 short lessons with demos; "Learn more" links from Watch, Race and Explore via
+`docsSlug`; a test that every `docsSlug` resolves.
 
 ### WI-07 Backend, accounts, cloud saves (roadmap Phase 4) - BLOCKED (H-5, H-6, H-7, H-8)
 
