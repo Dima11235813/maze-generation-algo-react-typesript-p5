@@ -38,7 +38,7 @@ const PILLARS: readonly Pillar[] = [
     to: '/learn',
     title: 'Learn',
     blurb: 'A guided curriculum from grids and graphs to heuristics and complexity.',
-    live: false,
+    live: true,
   },
   {
     to: '/explore',

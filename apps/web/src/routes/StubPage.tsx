@@ -28,16 +28,6 @@ function StubPage({ title, description, phase }: StubPageProps) {
   );
 }
 
-export function LearnPage() {
-  return (
-    <StubPage
-      title="Learn"
-      description="A twelve-module curriculum from grids and graphs through DFS, BFS, spanning trees, Dijkstra and A*, each lesson bound to a live demo you can step through."
-      phase="Phase 5"
-    />
-  );
-}
-
 export function AccountPage() {
   return (
     <StubPage

@@ -1,4 +1,9 @@
 import '@testing-library/jest-dom/vitest';
+import { configure } from '@testing-library/react';
+
+// Pages are lazy routes (L-40): the first `findBy...` in a file waits for Vite to transform the
+// page module, which under a full parallel run can exceed RTL's 1 s default (L-41).
+configure({ asyncUtilTimeout: 5_000 });
 
 // jsdom lacks ResizeObserver; report a fixed host size so pages can size their grids.
 class FakeResizeObserver {
