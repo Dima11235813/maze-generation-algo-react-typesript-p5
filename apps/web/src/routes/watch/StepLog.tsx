@@ -30,7 +30,7 @@ export interface StepLogProps {
   entries: readonly LogEntry[];
   verbosity: LogVerbosity;
   hideHeading?: boolean;
-  onVerbosityChange(v: LogVerbosity): void;
+  onVerbosityChange: (v: LogVerbosity) => void;
 }
 
 /** Textual log of the last steps (a11y alternative to the canvas overlay). */

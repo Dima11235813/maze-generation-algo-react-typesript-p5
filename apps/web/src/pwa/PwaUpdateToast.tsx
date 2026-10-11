@@ -14,8 +14,12 @@ export function PwaUpdateToast() {
   // The offline-ready note is informational; hide it by itself after a few seconds.
   useEffect(() => {
     if (!snap.offlineReady || snap.needRefresh) return;
-    const id = setTimeout(() => pwaStore.dismiss(), OFFLINE_READY_MS);
-    return () => clearTimeout(id);
+    const id = setTimeout(() => {
+      pwaStore.dismiss();
+    }, OFFLINE_READY_MS);
+    return () => {
+      clearTimeout(id);
+    };
   }, [snap.offlineReady, snap.needRefresh]);
 
   if (!snap.needRefresh && !snap.offlineReady) return null;
@@ -33,14 +37,26 @@ export function PwaUpdateToast() {
           <Button size="sm" onClick={() => void pwaStore.applyUpdate()}>
             Reload
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => pwaStore.dismiss()}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              pwaStore.dismiss();
+            }}
+          >
             Later
           </Button>
         </>
       ) : (
         <>
           <span className="flex-1">Maze Lab is ready to work offline.</span>
-          <Button size="sm" variant="ghost" onClick={() => pwaStore.dismiss()}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              pwaStore.dismiss();
+            }}
+          >
             Dismiss
           </Button>
         </>

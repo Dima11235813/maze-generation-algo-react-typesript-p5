@@ -5,10 +5,10 @@ import { bestRun, useLibrary, type LibraryItem, type SavedRun } from '../../stat
 
 export interface LibrarySheetProps {
   open: boolean;
-  onOpenChange(open: boolean): void;
-  onLoad(item: LibraryItem): void;
+  onOpenChange: (open: boolean) => void;
+  onLoad: (item: LibraryItem) => void;
   /** Loads the maze and replays one of its saved runs. */
-  onReplay?(item: LibraryItem, run: SavedRun): void;
+  onReplay?: (item: LibraryItem, run: SavedRun) => void;
 }
 
 function formatDate(iso: string): string {

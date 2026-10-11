@@ -18,9 +18,9 @@ export const VERBOSITY_OPTIONS = NARRATOR_VERBOSITIES.map((v) => ({
 export interface StepLogPanelProps {
   entries: readonly NarratorLogEntry[];
   verbosity: NarratorVerbosity;
-  onVerbosityChange(v: NarratorVerbosity): void;
-  onClose(): void;
-  onClear(): void;
+  onVerbosityChange: (v: NarratorVerbosity) => void;
+  onClose: () => void;
+  onClear: () => void;
 }
 
 /**

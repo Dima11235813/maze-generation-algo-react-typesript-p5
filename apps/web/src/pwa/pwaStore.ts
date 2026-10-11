@@ -28,13 +28,14 @@ function set(partial: Partial<PwaSnapshot>): void {
 }
 
 export const pwaStore = {
-  subscribe(listener: Listener): () => void {
+  // Arrow properties: React calls these detached (useSyncExternalStore).
+  subscribe: (listener: Listener): (() => void) => {
     listeners.add(listener);
-    return () => listeners.delete(listener);
+    return () => {
+      listeners.delete(listener);
+    };
   },
-  getSnapshot(): PwaSnapshot {
-    return snapshot;
-  },
+  getSnapshot: (): PwaSnapshot => snapshot,
   /** Called by register.ts once `registerSW` has returned its update function. */
   attach(update: UpdateFn): void {
     updateFn = update;

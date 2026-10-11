@@ -152,7 +152,9 @@ export const typeAware = tseslint.config(
       '@typescript-eslint/no-unnecessary-type-conversion': 'warn',
       '@typescript-eslint/no-unnecessary-condition': 'warn',
       '@typescript-eslint/no-confusing-void-expression': 'warn',
-      '@typescript-eslint/restrict-template-expressions': 'warn',
+      // Numbers format predictably in templates (`${n} cells`); objects, nullish and unions
+      // still need an explicit conversion.
+      '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
       '@typescript-eslint/no-non-null-assertion': 'warn',
       '@typescript-eslint/prefer-nullish-coalescing': 'warn',
       '@typescript-eslint/no-unnecessary-type-parameters': 'warn',

@@ -7,10 +7,10 @@ export function useApplyDocumentPrefs(): void {
   const motion = usePrefs((s) => s.reducedMotion);
   useEffect(() => {
     const root = document.documentElement;
-    if (theme === 'system') delete root.dataset['theme'];
-    else root.dataset['theme'] = theme;
-    if (motion === 'system') delete root.dataset['reducedMotion'];
-    else root.dataset['reducedMotion'] = motion;
+    if (theme === 'system') delete root.dataset.theme;
+    else root.dataset.theme = theme;
+    if (motion === 'system') delete root.dataset.reducedMotion;
+    else root.dataset.reducedMotion = motion;
   }, [theme, motion]);
 }
 
@@ -26,9 +26,13 @@ export function useReducedMotion(): boolean {
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const onChange = () => setSystem(mq.matches);
+    const onChange = () => {
+      setSystem(mq.matches);
+    };
     mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
+    return () => {
+      mq.removeEventListener('change', onChange);
+    };
   }, []);
   return pref === 'system' ? system : pref === 'on';
 }

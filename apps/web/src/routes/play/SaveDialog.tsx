@@ -12,9 +12,9 @@ import { useEffect, useState } from 'react';
 
 export interface SaveDialogProps {
   open: boolean;
-  onOpenChange(open: boolean): void;
+  onOpenChange: (open: boolean) => void;
   defaultName: string;
-  onSave(name: string): Promise<void>;
+  onSave: (name: string) => Promise<void>;
 }
 
 export function SaveDialog({ open, onOpenChange, defaultName, onSave }: SaveDialogProps) {
@@ -63,7 +63,9 @@ export function SaveDialog({ open, onOpenChange, defaultName, onSave }: SaveDial
               id="save-name"
               className="h-9 rounded-md border border-border bg-panel px-2 text-sm"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+              }}
               autoFocus
               maxLength={80}
             />
@@ -74,7 +76,13 @@ export function SaveDialog({ open, onOpenChange, defaultName, onSave }: SaveDial
             </p>
           ) : null}
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                onOpenChange(false);
+              }}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={busy}>

@@ -62,9 +62,9 @@ export interface Prefs {
 }
 
 export interface PrefsActions {
-  set<K extends keyof Prefs>(key: K, value: Prefs[K]): void;
-  patch(partial: Partial<Prefs>): void;
-  reset(): void;
+  set: <K extends keyof Prefs>(key: K, value: Prefs[K]) => void;
+  patch: (partial: Partial<Prefs>) => void;
+  reset: () => void;
 }
 
 export type PrefsStore = Prefs & PrefsActions;

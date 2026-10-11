@@ -44,7 +44,9 @@ export function ColorField({
   const id = idProp ?? autoId;
   const textId = `${id}-hex`;
   const [text, setText] = useState(value);
-  useEffect(() => setText(value), [value]);
+  useEffect(() => {
+    setText(value);
+  }, [value]);
 
   const commitText = (raw: string) => {
     const hex = normalizeHex(raw);
@@ -66,7 +68,9 @@ export function ColorField({
           className="h-9 w-12 cursor-pointer rounded-md border border-border bg-panel p-0.5 disabled:opacity-50"
           value={value}
           {...(disabled !== undefined ? { disabled } : {})}
-          onChange={(e) => onValueChange(e.target.value)}
+          onChange={(e) => {
+            onValueChange(e.target.value);
+          }}
         />
         <input
           id={textId}
@@ -77,8 +81,12 @@ export function ColorField({
           spellCheck={false}
           maxLength={7}
           {...(disabled !== undefined ? { disabled } : {})}
-          onChange={(e) => setText(e.target.value)}
-          onBlur={(e) => commitText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value);
+          }}
+          onBlur={(e) => {
+            commitText(e.target.value);
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') commitText((e.target as HTMLInputElement).value);
           }}

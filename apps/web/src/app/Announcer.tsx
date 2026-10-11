@@ -3,7 +3,7 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 export type Politeness = 'polite' | 'assertive';
 
 interface AnnouncerContextValue {
-  announce(message: string, politeness?: Politeness): void;
+  announce: (message: string, politeness?: Politeness) => void;
 }
 
 const AnnouncerContext = createContext<AnnouncerContextValue>({ announce: () => undefined });

@@ -7,8 +7,8 @@ export interface TimelineBarProps {
   snapshot: StepPlayerSnapshot<unknown> | null;
   /** What the timeline is scrubbing, e.g. "Generation" or "Solve". */
   label: string;
-  onSeek(step: number): void;
-  onRestart(): void;
+  onSeek: (step: number) => void;
+  onRestart: () => void;
   className?: string;
 }
 

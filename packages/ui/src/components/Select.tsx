@@ -114,10 +114,16 @@ export function SimpleSelect<T extends string>({
       </Label>
       <Select
         value={value}
-        onValueChange={(v) => onValueChange(v as T)}
+        onValueChange={(v) => {
+          onValueChange(v as T);
+        }}
         {...(disabled !== undefined ? { disabled } : {})}
       >
-        <SelectTrigger id={id} className={triggerClassName} aria-label={hideLabel ? label : undefined}>
+        <SelectTrigger
+          id={id}
+          className={triggerClassName}
+          aria-label={hideLabel ? label : undefined}
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

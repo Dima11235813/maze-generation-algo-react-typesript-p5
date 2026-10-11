@@ -4,7 +4,12 @@
  * the visible step log when it is open, so nothing is spoken twice) and exposes the log.
  */
 import { createGrid, describeGenStep, describeSolveStep } from '@maze/core';
-import { createNarrator, type Narrator, type NarratorLogEntry, type NarratorVerbosity } from '@maze/player';
+import {
+  createNarrator,
+  type Narrator,
+  type NarratorLogEntry,
+  type NarratorVerbosity,
+} from '@maze/player';
 import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import type { Politeness } from '../app/Announcer';
 import type { SessionSnapshot } from '../maze/session';
@@ -24,7 +29,12 @@ export interface NarratorBinding {
 
 const EMPTY_LOG: readonly NarratorLogEntry[] = [];
 
-export function useNarrator({ snap, verbosity, logIsLive, announce }: UseNarratorOptions): NarratorBinding {
+export function useNarrator({
+  snap,
+  verbosity,
+  logIsLive,
+  announce,
+}: UseNarratorOptions): NarratorBinding {
   const announceRef = useRef(announce);
   announceRef.current = announce;
   const logIsLiveRef = useRef(logIsLive);
@@ -49,15 +59,24 @@ export function useNarrator({ snap, verbosity, logIsLive, announce }: UseNarrato
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mazeKey]);
 
-  useEffect(() => () => narrator.dispose(), [narrator]);
+  useEffect(
+    () => () => {
+      narrator.dispose();
+    },
+    [narrator],
+  );
 
-  useEffect(() => narrator.setVerbosity(verbosity), [narrator, verbosity]);
+  useEffect(() => {
+    narrator.setVerbosity(verbosity);
+  }, [narrator, verbosity]);
 
   // Generation steps + flush on pause/done.
   useEffect(() => {
     const player = snap.genPlayer;
     if (!player) return;
-    const offSteps = player.subscribe((batch) => narrator.handleGenSteps(batch));
+    const offSteps = player.subscribe((batch) => {
+      narrator.handleGenSteps(batch);
+    });
     const offChange = player.onChange(() => {
       const status = player.getStatus();
       if (status === 'paused' || status === 'done') narrator.flush();
@@ -73,7 +92,9 @@ export function useNarrator({ snap, verbosity, logIsLive, announce }: UseNarrato
     const player = snap.solvePlayer;
     if (!player) return;
     narrator.beginSolve();
-    const offSteps = player.subscribe((batch) => narrator.handleSolveSteps(batch));
+    const offSteps = player.subscribe((batch) => {
+      narrator.handleSolveSteps(batch);
+    });
     const offChange = player.onChange(() => {
       const status = player.getStatus();
       if (status === 'paused' || status === 'done') narrator.flush();

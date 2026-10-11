@@ -13,7 +13,10 @@ import { Menu, Monitor, Moon, Sun } from 'lucide-react';
 import { useState } from 'react';
 import { usePrefs, type ThemePref } from '../state/prefs';
 
-const NAV: readonly { to: '/play' | '/watch' | '/race' | '/build' | '/learn' | '/explore'; label: string }[] = [
+const NAV: readonly {
+  to: '/play' | '/watch' | '/race' | '/build' | '/learn' | '/explore';
+  label: string;
+}[] = [
   { to: '/play', label: 'Play' },
   { to: '/watch', label: 'Watch' },
   { to: '/race', label: 'Race' },
@@ -32,7 +35,9 @@ function ThemeToggle() {
     <IconButton
       aria-label={`Theme: ${theme}. Switch to ${NEXT_THEME[theme]}`}
       title={`Theme: ${theme}`}
-      onClick={() => set('theme', NEXT_THEME[theme])}
+      onClick={() => {
+        set('theme', NEXT_THEME[theme]);
+      }}
     >
       <Icon className="h-4 w-4" aria-hidden="true" />
     </IconButton>
@@ -54,7 +59,9 @@ function MobileNav() {
         aria-label="Open navigation"
         aria-expanded={open}
         aria-controls="mobile-nav"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true);
+        }}
       >
         <Menu className="h-5 w-5" aria-hidden="true" />
       </IconButton>
@@ -68,13 +75,21 @@ function MobileNav() {
             <Link
               key={item.to}
               to={item.to}
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false);
+              }}
               className={cn(linkClass, 'min-h-11 text-base')}
             >
               {item.label}
             </Link>
           ))}
-          <Link to="/account" onClick={() => setOpen(false)} className={cn(linkClass, 'min-h-11 text-base')}>
+          <Link
+            to="/account"
+            onClick={() => {
+              setOpen(false);
+            }}
+            className={cn(linkClass, 'min-h-11 text-base')}
+          >
             Account
           </Link>
         </nav>

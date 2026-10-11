@@ -41,25 +41,25 @@ export function bestRun(runs: readonly SavedRun[] | undefined): SavedRun | null 
 
 export interface LibraryState {
   items: LibraryItem[];
-  add(input: { name: string; document: MazeDocument; thumbnail?: string }): LibraryItem;
+  add: (input: { name: string; document: MazeDocument; thumbnail?: string }) => LibraryItem;
   /** Saves a run with its maze: added to the item holding the same maze, or a new item. */
-  addRun(input: {
+  addRun: (input: {
     name: string;
     document: MazeDocument;
     thumbnail?: string;
     run: Omit<SavedRun, 'id' | 'at'>;
-  }): LibraryItem;
+  }) => LibraryItem;
   /**
    * Replaces an item's maze (Build editor "Save"). Saved runs belonged to the old maze, so they
    * are dropped. Returns the updated item, or null when the id is unknown.
    */
-  replace(
+  replace: (
     id: string,
     input: { name: string; document: MazeDocument; thumbnail?: string },
-  ): LibraryItem | null;
-  remove(id: string): void;
-  rename(id: string, name: string): void;
-  clear(): void;
+  ) => LibraryItem | null;
+  remove: (id: string) => void;
+  rename: (id: string, name: string) => void;
+  clear: () => void;
 }
 
 export const LIBRARY_STORAGE_KEY = 'maze-lab:library';

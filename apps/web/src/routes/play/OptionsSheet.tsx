@@ -25,7 +25,7 @@ import { VERBOSITY_OPTIONS } from './StepLogPanel';
 
 export interface OptionsSheetProps {
   open: boolean;
-  onOpenChange(open: boolean): void;
+  onOpenChange: (open: boolean) => void;
   /** Canvas host width, for the legacy cell-size upper bound (width / 9). */
   hostWidth: number;
   rows: number;

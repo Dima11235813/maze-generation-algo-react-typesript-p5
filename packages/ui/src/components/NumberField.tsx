@@ -36,7 +36,9 @@ export function NumberField({
   const autoId = useId();
   const id = idProp ?? autoId;
   const [text, setText] = useState(String(value));
-  useEffect(() => setText(String(value)), [value]);
+  useEffect(() => {
+    setText(String(value));
+  }, [value]);
 
   const commit = (raw: string) => {
     const n = Number(raw);
@@ -64,8 +66,12 @@ export function NumberField({
           max={max}
           step={step}
           {...(disabled !== undefined ? { disabled } : {})}
-          onChange={(e) => setText(e.target.value)}
-          onBlur={(e) => commit(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value);
+          }}
+          onBlur={(e) => {
+            commit(e.target.value);
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') commit((e.target as HTMLInputElement).value);
           }}

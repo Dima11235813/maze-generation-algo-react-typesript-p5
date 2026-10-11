@@ -2,8 +2,8 @@ import { useEffect, useRef } from 'react';
 
 export interface ShortcutHandlers {
   /** Called for keydown events that are safe to treat as global shortcuts. */
-  onKeyDown(e: KeyboardEvent): void;
-  onKeyUp?(e: KeyboardEvent): void;
+  onKeyDown: (e: KeyboardEvent) => void;
+  onKeyUp?: (e: KeyboardEvent) => void;
 }
 
 const TEXT_TARGETS = 'input, textarea, select, [contenteditable="true"], [role="dialog"]';
