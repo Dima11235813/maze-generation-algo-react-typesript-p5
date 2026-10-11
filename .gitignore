@@ -4,7 +4,10 @@ node_modules/
 
 # build outputs
 dist/
-build/
+# Anchored: a bare `build/` also matched apps/web/src/routes/build (the Build editor source).
+/build/
+apps/*/build/
+packages/*/build/
 coverage/
 .turbo/
 *.tsbuildinfo

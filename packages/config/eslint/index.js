@@ -15,7 +15,10 @@ import tseslint from 'typescript-eslint';
 export const ignores = [
   '**/node_modules/**',
   '**/dist/**',
-  '**/build/**',
+  // Build output folders only: `**/build/**` also hid apps/web/src/routes/build (the editor).
+  'build/**',
+  'apps/*/build/**',
+  'packages/*/build/**',
   '**/coverage/**',
   '**/.turbo/**',
   '**/playwright-report/**',
