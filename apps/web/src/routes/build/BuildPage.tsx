@@ -19,7 +19,7 @@ import {
 import type { Renderer } from '@maze/renderer';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { useAnnouncer } from '../../app/Announcer';
+import { useAnnouncer } from '../../app/useAnnouncer';
 import { useReducedMotion } from '../../app/documentPrefs';
 import { useBreakpoint } from '../../layout/breakpoints';
 import { Section } from '../../layout/Section';
