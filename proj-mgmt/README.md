@@ -73,6 +73,7 @@ Every document in this folder must be consistent with this table. Change a decis
 | D-17 | Accessibility | **WCAG 2.2 AA** is a release gate; canvas content has a DOM/ARIA equivalent; `prefers-reduced-motion` honoured | Best-effort only | [ADR-017](./adr/ADR-017-accessibility-baseline.md) |
 | D-18 | Maze format | Versioned **`MazeDocument v1`** (JSON envelope, 4-bit wall nibbles base64-packed, provenance `{algorithm, seed, params}`, content hash id) | Store full cell objects, store only seed | [ADR-018](./adr/ADR-018-maze-document-format.md) |
 | D-19 | Migration strategy | **Strangler fig**: legacy CRA app moved to `apps/legacy` read-only; new app built beside it; feature parity checklist gates the switch-over | Big-bang rewrite in place, incremental upgrade of CRA | [ADR-019](./adr/ADR-019-migration-strategy.md) |
+| D-20 | Lesson content | **Typed TSX lesson modules** (metadata + body component + demo blocks), curriculum as data, local progress for guests | MDX pipeline (deferred: tooling lags Vite 8 / TS 7) | [20-learn-mode.md](./20-learn-mode.md) |
 
 Status legend used in ADRs: `Proposed` -> `Accepted` -> `Superseded by ADR-xxx` / `Deprecated`.
 
