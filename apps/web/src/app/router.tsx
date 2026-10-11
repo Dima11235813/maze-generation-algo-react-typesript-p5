@@ -81,7 +81,7 @@ const accountRoute = createRoute({
   component: AccountPage,
 });
 
-export const routeTree = rootRoute.addChildren([
+const routeTree = rootRoute.addChildren([
   indexRoute,
   playRoute,
   watchRoute,
@@ -103,7 +103,7 @@ export function createAppRouter(history?: RouterHistory) {
   });
 }
 
-export type AppRouter = ReturnType<typeof createAppRouter>;
+type AppRouter = ReturnType<typeof createAppRouter>;
 
 declare module '@tanstack/react-router' {
   interface Register {

@@ -30,7 +30,7 @@ export interface TreeMeshSyncContext {
 }
 
 /** Tree height as a fraction of the maze's larger side. */
-export const TREE_HEIGHT_FACTOR = 0.9;
+const TREE_HEIGHT_FACTOR = 0.9;
 
 const UP = new THREE.Vector3(0, 1, 0);
 

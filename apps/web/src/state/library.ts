@@ -63,8 +63,8 @@ export interface LibraryState {
 }
 
 export const LIBRARY_STORAGE_KEY = 'maze-lab:library';
-export const LIBRARY_VERSION = 1;
-export const LIBRARY_MAX_ITEMS = 200;
+const LIBRARY_VERSION = 1;
+const LIBRARY_MAX_ITEMS = 200;
 
 function newId(): string {
   // Absent in old browsers and some test environments, whatever the DOM types say.

@@ -31,8 +31,13 @@ export function PanelContent({ className, ...props }: ComponentPropsWithRef<'div
   return <div className={cn('p-4 pt-2', className)} {...props} />;
 }
 
+/** @alias Panel (the app reads better with Card*). */
 export const Card = Panel;
+/** @alias */
 export const CardHeader = PanelHeader;
+/** @alias */
 export const CardTitle = PanelTitle;
+/** @alias */
 export const CardDescription = PanelDescription;
+/** @alias */
 export const CardContent = PanelContent;

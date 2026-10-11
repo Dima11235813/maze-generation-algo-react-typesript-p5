@@ -19,7 +19,7 @@
 import * as THREE from 'three';
 
 /** All tunables in one place (see the module comment for the reasoning). */
-export const LIGHT_PRESET = {
+const LIGHT_PRESET = {
   /** Flat fill so nothing is ever fully black. */
   ambient: { color: 0xffffff, intensity: 0.35, firstPerson: 0.25 },
   /** Sky (cool) / ground (warm dark) fill; shades vertical faces by their facing. */

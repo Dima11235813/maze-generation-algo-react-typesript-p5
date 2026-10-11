@@ -10,7 +10,7 @@ export interface RendererFactories {
   create3d(): Promise<RendererFactory>;
 }
 
-export const defaultRendererFactories: RendererFactories = {
+const defaultRendererFactories: RendererFactories = {
   create2d: () => import('@maze/renderer/canvas2d').then((m) => m.createCanvas2dRenderer),
   create3d: () => import('@maze/renderer/three').then((m) => m.createThreeRenderer),
 };

@@ -21,7 +21,7 @@ export interface FakeRenderer extends Renderer {
   events: RendererEvents;
 }
 
-export function createFakeRenderer(kind: '2d' | '3d', opts: RendererFactoryOptions): FakeRenderer {
+function createFakeRenderer(kind: '2d' | '3d', opts: RendererFactoryOptions): FakeRenderer {
   const r: FakeRenderer = {
     kind,
     calls: [],

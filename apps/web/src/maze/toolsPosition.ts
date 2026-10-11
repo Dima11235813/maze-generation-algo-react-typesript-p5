@@ -21,7 +21,7 @@ export const TOOLS_MARGIN = 8;
 const clamp01 = (v: number): number => (Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 1);
 
 /** Free space the widget can move in along each axis (never negative). */
-export function freeSpace(container: Box, widget: Box): Box {
+function freeSpace(container: Box, widget: Box): Box {
   return {
     width: Math.max(0, container.width - widget.width - 2 * TOOLS_MARGIN),
     height: Math.max(0, container.height - widget.height - 2 * TOOLS_MARGIN),

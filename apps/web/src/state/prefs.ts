@@ -61,7 +61,7 @@ export interface Prefs {
   algoParams: Record<string, Record<string, unknown>>;
 }
 
-export interface PrefsActions {
+interface PrefsActions {
   set: <K extends keyof Prefs>(key: K, value: Prefs[K]) => void;
   patch: (partial: Partial<Prefs>) => void;
   reset: () => void;
@@ -70,7 +70,7 @@ export interface PrefsActions {
 export type PrefsStore = Prefs & PrefsActions;
 
 export const PREFS_STORAGE_KEY = 'maze-lab:prefs';
-export const PREFS_VERSION = 1;
+const PREFS_VERSION = 1;
 
 export const LIMITS = {
   cellSize: { min: 3, max: 400 },
@@ -198,7 +198,7 @@ export function importLegacyPrefs(storage: Pick<Storage, 'getItem'>): Partial<Pr
  * One-time seed of the new store from legacy keys. Idempotent: does nothing once
  * `maze-lab:prefs` exists. Legacy keys are left untouched.
  */
-export function seedPrefsFromLegacy(storage: Storage): boolean {
+function seedPrefsFromLegacy(storage: Storage): boolean {
   try {
     if (storage.getItem(PREFS_STORAGE_KEY) !== null) return false;
     const imported = importLegacyPrefs(storage);

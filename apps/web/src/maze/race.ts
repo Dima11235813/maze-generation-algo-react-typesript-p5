@@ -42,7 +42,7 @@ export const SCORING_LABELS: Record<RaceScoring, string> = {
 };
 
 export const RACE_SIZE_DEFAULT = 20;
-export const RACE_SIZE_MIN = 5;
+const RACE_SIZE_MIN = 5;
 export const RACE_SIZE_MAX = 60;
 
 export interface RaceSetup {
@@ -122,7 +122,7 @@ export function runRaceToEnd(setup: RaceSetup): RaceResult {
   return runToEnd(runRace(raceConfig(setup, document)));
 }
 
-export type LaneStatus = 'running' | 'goal' | 'no-path' | 'out';
+type LaneStatus = 'running' | 'goal' | 'no-path' | 'out';
 
 export interface LaneStanding {
   readonly index: number;

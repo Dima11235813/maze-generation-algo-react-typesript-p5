@@ -32,7 +32,7 @@ export function treeOptionsFor(
 
 // ---- outline model --------------------------------------------------------------------------
 
-export type SegmentEnd = 'fork' | 'dead-end';
+type SegmentEnd = 'fork' | 'dead-end';
 
 /** A corridor of the tree: from a fork (or the root) to the next fork or dead end. */
 export interface TreeSegment {

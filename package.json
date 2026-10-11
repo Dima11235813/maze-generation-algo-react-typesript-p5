@@ -25,14 +25,12 @@
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
-    "@vitest/coverage-v8": "^5.0.2",
     "eslint": "^10.11.0",
     "fast-check": "^4.10.2",
     "knip": "^6.38.0",
     "lefthook": "^2.1.14",
     "prettier": "^3.9.9",
     "turbo": "^2.11.4",
-    "typescript": "^7.0.2",
-    "vitest": "^5.0.2"
+    "typescript": "^7.0.2"
   }
 }

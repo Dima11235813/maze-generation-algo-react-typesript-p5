@@ -19,7 +19,7 @@ function isElement(t: EventTarget | null): t is HTMLElement {
  * a dialog, pressing Space/Enter on a focused control, or using arrows in an arrow-driven
  * widget (slider, select, tabs). Escape is always allowed.
  */
-export function shouldIgnoreShortcut(e: KeyboardEvent): boolean {
+function shouldIgnoreShortcut(e: KeyboardEvent): boolean {
   if (e.key === 'Escape') return false;
   if (e.ctrlKey || e.metaKey || e.altKey) return true;
   const target = e.target;

@@ -10,7 +10,7 @@ import { test as base, expect, type Locator, type Page } from '@playwright/test'
 export const PREFS_KEY = 'maze-lab:prefs';
 export const LIBRARY_KEY = 'maze-lab:library';
 
-export const SEEDED_PREFS = {
+const SEEDED_PREFS = {
   state: { reducedMotion: 'on', speed: 100_000, theme: 'light' },
   version: 1,
 } as const;

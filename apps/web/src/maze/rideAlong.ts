@@ -9,8 +9,7 @@ import type { FirstPersonState } from '@maze/renderer';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { MazeSession } from './session';
 
-export type RidePhase =
-  'off' | 'start' | 'walking' | 'searching' | 'replaying' | 'arrived' | 'no-path';
+type RidePhase = 'off' | 'start' | 'walking' | 'searching' | 'replaying' | 'arrived' | 'no-path';
 
 export interface RideAlongOptions {
   readonly session: MazeSession;
