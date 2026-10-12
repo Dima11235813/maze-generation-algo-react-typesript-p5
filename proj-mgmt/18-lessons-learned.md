@@ -28,6 +28,7 @@ The one-line rules every session needs; the entries below keep the story behind 
 | Machine | Preflight exits 1 on standing breaches: judge by the transient rows, not the exit code | L-36 |
 | Git | Anchor ignore patterns (`/build/`); check new folders with `git status`, not just tests | L-37 |
 | Lint | Every rule is an error; relax in the config with a reason, widen untrusted input explicitly | L-38, L-39 |
+| Tests | RTL async timeout is 5 s for lazy routes; lesson modules keep components off the top level | L-41, L-42 |
 | Owner | Phone-first, small merged slices, protect the 3D views and the walkthrough | L-17 |
 
 ## Process and orchestration
@@ -241,3 +242,14 @@ initial JS from 233.7 to 157.4 kB gzip with no test changes: RTL journeys alread
 first element (`findBy...`), Playwright waits by default, and `defaultPreload: 'intent'` plus the
 service-worker precache keep navigation instant and offline-safe. *Rule:* new pages are lazy by
 default; tests start with an async query.
+
+**L-41 Lazy routes plus a heavier suite pushed first queries past RTL's 1 s default.** After WI-06a
+added Learn tests, the first test in four route files (play, race, tools, ride-along) failed at
+~1.3 s in the full run but passed alone: the first `findBy...` waits for Vite to transform the
+lazily imported page. *Rule:* `configure({ asyncUtilTimeout: 5_000 })` in `src/test/setup.ts`;
+a failure only in the full run, at about the timeout, is the async-util budget, not the code.
+
+**L-42 react-refresh rejects a module that defines a component and exports data.** A lesson
+module exports a `lesson` object holding its prose component; a top-level `function Body()`
+made `only-export-components` fail even with `lesson` allowed by name. *Rule:* lesson prose is
+written inline in the `lesson` object (`Body: () => (...)`), so no config change is needed.
