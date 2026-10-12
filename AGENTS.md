@@ -12,7 +12,7 @@ also apply (never delete files on Google Drive, secrets only via environment var
 | Plan, decisions, ADRs | `proj-mgmt/README.md` (decision register D-01..D-19), `proj-mgmt/adr/`                   |
 | **Next work**         | `proj-mgmt/17-work-queue.md` - the ordered queue; the item marked `NEXT` is the next one |
 | Lessons learned       | `proj-mgmt/18-lessons-learned.md` - read before planning; append after each work item    |
-| Owner-only actions    | `proj-mgmt/16-human-actions.md` (pushes, key rotation, cloud accounts)                   |
+| Owner-only actions    | `proj-mgmt/16-human-actions.md` (`develop` -> `main`, keys, cloud accounts)              |
 | Engine (pure TS)      | `packages/core` - grid, RNG, generators, solvers, trackers, metrics, editing, race       |
 | Playback              | `packages/player` - StepPlayer (play/pause/step/seek/stepBack/restart), narrator         |
 | Rendering             | `packages/renderer` - port + `canvas2d`, `three` (3D/first person), `dom` (a11y)         |
@@ -29,12 +29,13 @@ When the owner says this (or runs `/next-item`):
 1. Read `proj-mgmt/17-work-queue.md`, take the item marked `NEXT`. Read
    `proj-mgmt/18-lessons-learned.md`. Check the item's "Blocked by" against
    `proj-mgmt/16-human-actions.md`; if blocked, say so and take the next unblocked item.
-2. Branch `feat/<slug>` (or `fix/`, `chore/`) from `develop`.
+2. Branch `feat/<slug>` (or `fix/`, `chore/`) from `develop` - always `develop`, for every branch.
 3. Implement to the item's acceptance criteria. Keep the scope of the item.
 4. Pass the Definition of Done (section 4), including the phone-width check.
-5. Merge `--no-ff` into `develop`, then `git checkout main && git merge --ff-only develop`.
+5. Merge `--no-ff` into `develop` and push `develop` (`git push origin develop`). **Never touch
+   `main`**: the owner promotes `develop` -> `main` (owner's rule, 2026-10-12).
 6. Update the queue (item -> `DONE` with date and commit, next item -> `NEXT`), append lessons,
-   refresh the project-state memory, and report. Never push (the owner pushes).
+   refresh the project-state memory, push `develop` again, and report.
 
 ## 3. Commands
 
@@ -119,8 +120,9 @@ powershell -ExecutionPolicy Bypass -File D:\GDrive\proj-mgmt\inventory\scripts\p
 
 ## 5. Conventions
 
-- Branch model: `feat/*` -> `develop` (`--no-ff`) -> `main` (fast-forward). `master` is the old
-  default and stays untouched.
+- Branch model: every branch starts from `develop`; agents merge `feat/*`, `fix/*`, `chore/*`
+  into `develop` (`--no-ff`) and push `develop`; only the owner merges `develop` -> `main`.
+  `master` is the old default and stays untouched.
 - Conventional commits with a **lower-case subject** (`feat(play): run maze ...`, not `Run Maze`);
   body lines <= 120 chars (commitlint). End messages with the attribution trailer from the
   session's system instructions. Never skip hooks; fix what they report.
@@ -139,9 +141,9 @@ powershell -ExecutionPolicy Bypass -File D:\GDrive\proj-mgmt\inventory\scripts\p
 
 ## 6. Gotchas (details and causes in `proj-mgmt/18-lessons-learned.md`)
 
-- `git push` is blocked for agents, even with the owner's go-ahead in chat; the owner pushes
-  (`! git push -u origin develop main`). Google Drive sometimes locks `.git/objects`:
-  retry git writes after ~2 s.
+- Push only `develop` (never `main`, `master` or tags). If the auto-mode classifier blocks a
+  push, report it and leave it to the owner (L-03). Google Drive sometimes locks
+  `.git/objects`: retry git writes after ~2 s.
 - Commit hook runs `eslint --fix` + `prettier --check` on staged files. If it fails or reports
   "conflict while merging unstaged changes": `pnpm exec prettier --write <staged files>`,
   `git add` them fully, commit again.

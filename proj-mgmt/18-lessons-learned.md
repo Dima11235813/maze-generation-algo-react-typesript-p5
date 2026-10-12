@@ -11,7 +11,7 @@ The one-line rules every session needs; the entries below keep the story behind 
 | Area | Rule | From |
 |------|------|------|
 | Agents | At most two subagents; they commit after every fix; check their base commit | L-01, L-02 |
-| Git | Agents never push; retry git writes when Drive locks `.git/objects` | L-03, L-04 |
+| Git | Branch from and merge into `develop`, push only `develop`; the owner promotes to `main`; retry git writes on Drive locks | L-03, L-04 |
 | Git | Lower-case commit subjects, no `wip` type; never skip hooks; prettier only your files | L-27, L-28, L-33 |
 | Shell | Patch scripts as files in the scratchpad; no long heredocs; watch `\r`/`\f` escapes | L-25, L-30 |
 | Toolchain | Lint pins TS 6; no `baseUrl`; Vite 8 `codeSplitting`; don't trust timer return types | L-06, L-07, L-20 |
@@ -42,10 +42,11 @@ two agents at once; the coordinator commits a snapshot (`feat(...)`/`fix(...)`, 
 from the old default branch. *Rule:* briefs tell agents to check `git log -1` against the
 expected base and reset their branch before working.
 
-**L-03 Agents cannot push.** The auto-mode classifier blocks `git push`, also after the owner
-grants it in chat (2026-10-10). *Rule:* merge locally into `develop`/`main`; list the push in
-`16-human-actions.md` and the final report, and suggest `! git push -u origin develop main` or a
-Bash permission rule for `git push`.
+**L-03 Pushing.** Until 2026-10-11 the auto-mode classifier blocked agent pushes, even after the
+owner's go-ahead in chat. On 2026-10-12 the owner allowed it and the first push of `develop` and
+`main` went through, and changed the branch rule: agents merge into `develop` and push it; the
+owner promotes `develop` -> `main`. *Rule:* push only `develop`; if a push is blocked, report it
+and suggest `! git push origin develop`.
 
 **L-04 Google Drive locks `.git/objects` mid-write.** `git add`/`commit` fail with "Permission
 denied" intermittently. *Rule:* wrap git writes in a short retry loop.

@@ -16,6 +16,8 @@
 - Shared machine (AGENTS.md 3a): run the workspace preflight before heavy jobs; wait on transient
   breaches; run gate steps one at a time, never two heavy jobs at once.
 - After a work item: queue item DONE with the merge commit, next item NEXT, lessons appended,
-  `project-state` memory refreshed, and the report gives the LAN URL to try it.
+  `project-state` memory refreshed, `develop` pushed, and the report gives the LAN URL to try it.
+- Branches: all from `develop`; agents merge into `develop` and push it; `main` is the owner's
+  (they promote `develop` -> `main`). Never merge into or push `main`.
 - When the owner names a feature idea, log it as a queue item first (with a design note when it
   is large) and ask where it goes in the order unless they say "build it now".

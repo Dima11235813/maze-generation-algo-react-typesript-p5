@@ -14,7 +14,8 @@ Proceed to the next work item.
    against the always-on LAN dev server (http://127.0.0.1:41920; do not start another one).
    Commit subjects in lower case; never skip hooks. Shared machine (`AGENTS.md` 3a): run the
    workspace preflight before each heavy gate step and run those steps one at a time.
-5. Merge into `develop` (`--no-ff`) and fast-forward `main`. Do not push.
+5. Merge into `develop` (`--no-ff`) and push `develop`. Never touch `main` (the owner promotes
+   `develop` -> `main`).
 6. Mark the item `DONE` (date, merge commit), mark the following unblocked item `NEXT`, append any
    new lessons to `proj-mgmt/18-lessons-learned.md`, and update the `project-state` memory.
 7. Report: what shipped, how to try it (LAN URL), gate results, and what is `NEXT`.
