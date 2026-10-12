@@ -5,7 +5,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-export const LEARN_STORAGE_KEY = 'maze-lab:learn';
+const LEARN_STORAGE_KEY = 'maze-lab:learn';
 
 export interface LessonProgress {
   readonly startedAt: string;

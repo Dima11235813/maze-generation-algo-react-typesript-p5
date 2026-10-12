@@ -14,7 +14,7 @@ import { MazeSession } from '../maze/session';
 import { QueueModel, type QueueSnapshot } from './queueModel';
 
 /** A gentle default for reading along; the learner can change it. */
-export const LESSON_DEFAULT_SPEED = 5;
+const LESSON_DEFAULT_SPEED = 5;
 /** Any value works: the renderers fit the maze to the canvas. */
 const DEMO_CELL_SIZE = 24;
 

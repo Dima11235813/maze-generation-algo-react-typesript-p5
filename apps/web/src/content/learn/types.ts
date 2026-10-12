@@ -7,7 +7,7 @@
 import type { ComponentType } from 'react';
 
 /** Which data-structure view the demo shows next to the maze. */
-export type StructureKind = 'queue';
+type StructureKind = 'queue';
 
 export interface DemoSpec {
   readonly generatorId: string;
@@ -18,7 +18,7 @@ export interface DemoSpec {
   readonly structure: StructureKind;
 }
 
-export interface ComplexityNote {
+interface ComplexityNote {
   readonly time: string;
   readonly space: string;
   /** Why each term is what it is, in a sentence or two. */
