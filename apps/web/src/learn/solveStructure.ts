@@ -42,7 +42,7 @@ export function structureTitle(kind: SolveStructureKind): string {
   }
 }
 
-export type SolveStructureSnapshot =
+type SolveStructureSnapshot =
   | { readonly kind: 'queue'; readonly queue: QueueSnapshot }
   | { readonly kind: 'stack'; readonly stack: StackSnapshot }
   | { readonly kind: 'priority'; readonly pq: PriorityQueueSnapshot }
