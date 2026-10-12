@@ -10,7 +10,7 @@
 | # | Action | Why / what it unblocks | Notes |
 |---|--------|------------------------|-------|
 | H-1 | **Rotate and restrict the Google API key** that was committed in the legacy `src/.env` and `errorHandler.js` (project `devenv-259801`); delete the App Engine service account key named in `.gcloudignore` | Security P0 (proj-mgmt/07 section 12). The old key is in git history on GitHub already | The file is no longer tracked (`apps/legacy/src/.env.example` replaces it); history purge is optional after rotation |
-| H-2 | **Push branches**: `git push -u origin main develop` (feature branches optional: `git push origin 'refs/heads/feat/*'`) | Agents cannot push (blocked by policy). CI only runs on the remote | Run from the repo root; `master` stays untouched |
+| H-2 | ~~Push branches~~ **Done 2026-10-12** (agent pushed `develop` and `main` with the owner's go-ahead). Standing: **promote `develop` -> `main`** when you are happy with `develop` (agents never touch `main`) | Branch rule from 2026-10-12: agents merge into `develop` and push it | `main` on origin = what you released |
 | H-3 | GitHub repo settings: set **default branch to `main`**, add branch protection for `main` and `develop` (require the CI check, no force-push), enable **secret scanning + push protection** and Dependabot alerts | Branch model and safety net | Dependabot PR branches for the legacy app can be closed |
 | H-4 | Decide the **repository visibility and license** | Launch checklist; affects how aggressively we purge history | Plan assumes private until launch |
 
@@ -48,4 +48,5 @@
 
 - Feature branches: `feat/<scope>` from `develop`; conventional commits; merged with `--no-ff`.
 - `develop` is integration; `main` is fast-forwarded from `develop` when the full suite is green.
-- Agents never push. After you push, CI on GitHub is the source of truth for green.
+- Agents push only `develop`; you promote `develop` -> `main`. CI on GitHub is the source of truth
+  for green.
