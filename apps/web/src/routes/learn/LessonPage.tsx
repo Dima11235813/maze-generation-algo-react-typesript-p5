@@ -14,11 +14,12 @@ import type { LessonContent } from '../../content/learn/types';
 import { useBreakpoint } from '../../layout/breakpoints';
 import { Section } from '../../layout/Section';
 import { Workspace } from '../../layout/Workspace';
+import { solveStructureFor, structureTitle } from '../../learn/solveStructure';
 import { useLessonDemo } from '../../learn/useLessonDemo';
 import { lessonStatus, useLearnProgress } from '../../state/learnProgress';
 import { PseudocodePanel } from '../watch/PseudocodePanel';
 import { LessonDemo } from './LessonDemo';
-import { QueueView } from './QueueView';
+import { StructureView } from './StructureView';
 
 export function LessonPage() {
   const { lessonId } = useParams({ from: '/learn/$lessonId' });
@@ -122,8 +123,13 @@ function LessonView({ location, content }: { location: LessonLocation; content: 
         }
         side={
           <>
-            <Section id="lesson-structure" title="Queue" summary="the frontier" defaultOpen>
-              <QueueView grid={demo.snap.state?.grid ?? null} queue={demo.queue} />
+            <Section
+              id="lesson-structure"
+              title={structureTitle(solveStructureFor(content.demo.solverId))}
+              summary="the frontier"
+              defaultOpen
+            >
+              <StructureView grid={demo.snap.state?.grid ?? null} state={demo.structure} />
             </Section>
             <Section
               id="lesson-pseudocode"

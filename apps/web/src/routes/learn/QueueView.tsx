@@ -4,23 +4,22 @@
  * distances alternate in tint so the "ring" is visible without relying on colour alone (the
  * distance is printed too).
  */
-import { colOf, describePosition, rowOf, type Grid } from '@maze/core';
+import { describePosition, type Grid } from '@maze/core';
 import { cn } from '@maze/ui';
 import type { QueueSnapshot } from '../../learn/queueModel';
+import { shortCell } from './cellText';
 
 /** Longer queues show their front and a count: the head is what matters for reading along. */
 const MAX_SHOWN = 24;
 
-function shortCell(grid: Grid, cell: number): string {
-  return `(${String(rowOf(grid, cell) + 1)},${String(colOf(grid, cell) + 1)})`;
-}
-
 export interface QueueViewProps {
   grid: Grid | null;
   queue: QueueSnapshot | null;
+  /** Where the flood starts: the start cell, or the goal (flood fill). */
+  origin?: 'start' | 'goal';
 }
 
-export function QueueView({ grid, queue }: QueueViewProps) {
+export function QueueView({ grid, queue, origin = 'start' }: QueueViewProps) {
   if (!grid || !queue) return <p className="text-sm text-muted">Preparing the demo...</p>;
   const shown = queue.entries.slice(0, MAX_SHOWN);
   const hidden = queue.entries.length - shown.length;
@@ -49,7 +48,7 @@ export function QueueView({ grid, queue }: QueueViewProps) {
             {last.depth !== null ? `, distance ${String(last.depth)}` : ''}.
           </>
         ) : (
-          'Nothing expanded yet: the queue holds only the start cell.'
+          `Nothing expanded yet: the queue holds only the ${origin} cell.`
         )}
       </p>
       {queue.entries.length === 0 ? (
@@ -98,7 +97,7 @@ export function QueueView({ grid, queue }: QueueViewProps) {
       )}
       <p className="text-xs text-muted">
         New cells join at the back; the front is expanded next. Cells are shown as (row, column),
-        with d = distance from the start.
+        with d = distance from the {origin}.
       </p>
     </div>
   );

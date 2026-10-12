@@ -1,7 +1,8 @@
 /**
  * The BFS queue, rebuilt from solver steps alone (proj-mgmt/13 section 4.2, 20-learn-mode).
  *
- * BFS starts with the start cell queued (no `discover` step for it); every `discover` joins the
+ * BFS starts with its origin queued - the start, or the goal for flood fill - with no
+ * `discover` step for it; every `discover` joins the
  * back and every `expand` takes the front. The model never looks inside the solver, so what the
  * learner sees is exactly what the steps say. It is folded incrementally from the player's step
  * batches and rebuilt from scratch on a rewind (the player replays from the start).
@@ -10,7 +11,7 @@ import type { CellId, SolveStep } from '@maze/core';
 
 export interface QueueEntry {
   readonly cell: CellId;
-  /** Distance from the start (the `g` carried by `discover`; 0 for the start cell). */
+  /** Distance from the origin (the `g` carried by `discover`; 0 for the origin itself). */
   readonly depth: number | null;
 }
 

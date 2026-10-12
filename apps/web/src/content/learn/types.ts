@@ -6,16 +6,13 @@
  */
 import type { ComponentType } from 'react';
 
-/** Which data-structure view the demo shows next to the maze. */
-type StructureKind = 'queue';
-
+/** A solver demo; its data-structure view follows from the solver (`solveStructureFor`). */
 export interface DemoSpec {
   readonly generatorId: string;
   readonly seed: string;
   readonly width: number;
   readonly height: number;
   readonly solverId: string;
-  readonly structure: StructureKind;
 }
 
 interface ComplexityNote {

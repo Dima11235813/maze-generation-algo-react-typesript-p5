@@ -36,7 +36,6 @@ export const lesson: LessonContent = {
     width: 12,
     height: 9,
     solverId: 'bfs',
-    structure: 'queue',
   },
   complexity: {
     time: 'O(V + E)',

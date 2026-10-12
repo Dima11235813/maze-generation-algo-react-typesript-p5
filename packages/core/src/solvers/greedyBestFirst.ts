@@ -97,6 +97,8 @@ export const greedyBestFirst: MazeSolver<GreedyBestFirstParams> = {
           cell: nb,
           from: e.cell,
           g: depth[nb] ?? 0,
+          // Greedy's priority is f(n) = h(n): carried so a view can rebuild its heap (WI-06b).
+          f: hn,
         } satisfies SolveStep);
       }
     }
