@@ -11,6 +11,7 @@ import { useAnnouncer } from '../../app/useAnnouncer';
 import { useReducedMotion } from '../../app/documentPrefs';
 import { pseudocodeFor } from '../../content/pseudocode';
 import { computeGridDims } from '../../maze/gridSizing';
+import { drainGeneration } from '../../maze/drain';
 import { MazeSession } from '../../maze/session';
 import { buildCamera, buildRenderOptions, buildTheme } from '../../maze/theme';
 import { useCameraView } from '../../maze/view';
@@ -55,12 +56,6 @@ function useOwnedSession(): MazeSession {
     return () => s?.dispose();
   }, []);
   return ref.current;
-}
-
-/** Runs generation to completion synchronously (bounded; each call advances up to 50k steps). */
-function drainGeneration(session: MazeSession): void {
-  let guard = 0;
-  while (session.getSnapshot().phase === 'generating' && guard++ < 1_000) session.runToEnd();
 }
 
 /**

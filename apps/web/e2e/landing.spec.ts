@@ -11,9 +11,8 @@ test.describe('landing page', () => {
       await expect(page.getByRole('heading', { name: new RegExp(`^${title}`) })).toBeVisible();
     }
     await expect(page.getByRole('link', { name: 'Open Play' })).toBeVisible();
-    // Play, Watch, Race, Build and Explore are live; Learn is a preview.
-    await expect(page.getByRole('link', { name: /^Open/ })).toHaveCount(5);
-    await expect(page.getByRole('link', { name: /^Preview/ })).toHaveCount(1);
+    // All six pillars are live since Learn opened (WI-06a).
+    await expect(page.getByRole('link', { name: /^Preview/ })).toHaveCount(0);
 
     await page.getByRole('link', { name: 'Start playing' }).click();
     await expect(page).toHaveURL(/\/play$/);

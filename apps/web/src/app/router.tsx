@@ -6,7 +6,7 @@ import {
   type RouterHistory,
 } from '@tanstack/react-router';
 import { LandingPage } from '../routes/LandingPage';
-import { AccountPage, LearnPage, NotFoundPage } from '../routes/StubPage';
+import { AccountPage, NotFoundPage } from '../routes/StubPage';
 import type { BuildSearch } from '../routes/build/BuildPage';
 import type { CompareSearch } from '../routes/explore/ComparePage';
 import type { RaceSearch } from '../routes/race/RacePage';
@@ -25,6 +25,8 @@ const ExplorePage = lazyRouteComponent(
   () => import('../routes/explore/ExplorePage'),
   'ExplorePage',
 );
+const LearnIndex = lazyRouteComponent(() => import('../routes/learn/LearnIndex'), 'LearnIndex');
+const LessonPage = lazyRouteComponent(() => import('../routes/learn/LessonPage'), 'LessonPage');
 const ComparePage = lazyRouteComponent(
   () => import('../routes/explore/ComparePage'),
   'ComparePage',
@@ -77,7 +79,12 @@ const buildRoute = createRoute({
 const learnRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/learn',
-  component: LearnPage,
+  component: LearnIndex,
+});
+const lessonRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/learn/$lessonId',
+  component: LessonPage,
 });
 const exploreRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -104,6 +111,7 @@ const routeTree = rootRoute.addChildren([
   raceRoute,
   buildRoute,
   learnRoute,
+  lessonRoute,
   exploreRoute,
   compareRoute,
   accountRoute,
