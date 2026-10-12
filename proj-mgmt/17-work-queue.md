@@ -5,7 +5,7 @@
 > marked **NEXT**, follow `AGENTS.md` section 2, and update this file when it is done.
 > Status values: `NEXT`, `TODO`, `BLOCKED (H-x)`, `DONE yyyy-mm-dd (commit)`.
 
-## Where we are (2026-10-11, `develop` == `main`, WI-05 merged at a89409b, not pushed)
+## Where we are (2026-10-11, `develop` == `main`, WI-06a merged at 34bb6d0, not pushed)
 
 Shipped: monorepo foundation and legacy parity; 12 generators + braid; 12 solvers; race scheduler
 in core (no UI yet); Watch (pseudo-code, step log, stats); Explore catalogue + Compare; a11y grid
@@ -16,8 +16,9 @@ ranking, deep link); Tree view (maze as its spanning tree: upright, radial, 3D; 
 outline, Compare); maze tools widget (BUG-01); Ride along (watch a solver in first person).
 Run Maze as a game (WI-02); Build editor (WI-03); algorithm parameter forms, pseudo-code for all
 solvers and solver-relative stats (WI-04); quality debt paid (WI-05: every lint rule an error,
-knip and prettier clean, lazy-loaded pages, the Build editor source finally tracked in git).
-Gate: core 305, player 21, renderer 39, web 152 tests; lint 0 problems; e2e 28/28; initial JS
+knip and prettier clean, lazy-loaded pages, the Build editor source finally tracked in git);
+Learn opened (WI-06a: curriculum, lesson page, BFS queue view, pilot lesson M3.1).
+Gate: core 305, player 21, renderer 39, web 166 tests; lint 0 problems; e2e 29/29; initial JS
 157/250 kB gzip.
 
 ## Queue
@@ -237,7 +238,7 @@ M1-M5, M7 per `proj-mgmt/13-education-and-playground.md`. Planned into six slice
 note [20-learn-mode.md](./20-learn-mode.md) (decision D-20: lessons are typed TSX modules, not
 MDX). Each slice is merged and phone-checked on its own.
 
-### WI-06a Learn: lesson shell and pilot lesson - NEXT
+### WI-06a Learn: lesson shell and pilot lesson - DONE 2026-10-11 (34bb6d0)
 
 - Scope: content model and curriculum registry (all twelve modules; unwritten ones "planned");
   `/learn` index with local progress; `/learn/$lessonId` lesson page with concept, live demo
@@ -248,8 +249,18 @@ MDX). Each slice is merged and phone-checked on its own.
   queue model is FIFO-exact against BFS on real mazes; progress survives a reload; phone,
   tablet and desktop checked; e2e journey for the lesson.
 - Branch: `feat/learn-shell`. Blocked by: nothing.
+- Delivered: `content/learn/` (types, `curriculum.ts` with all twelve modules, lesson bodies
+  lazy-loaded), `/learn` index (modules, objectives, lessons, "N of M done", start/continue
+  link) and `/learn/$lessonId` (breadcrumb, Mark as done, concept, live 2D demo with the tools
+  row + speed + timeline below the maze, queue view, pseudo-code, try-this prompts, complexity,
+  previous/next). `learn/queueModel.ts` rebuilds the BFS queue from steps only; tests prove every
+  `expand` takes the front on four generators and that the queue never holds more than two
+  neighbouring distances (the lesson's claim). `state/learnProgress.ts` persists
+  `maze-lab:learn` with sanitised loading. Pilot lesson M3.1 "The frontier is a ring". Landing
+  Learn card live; the Learn stub page removed. RTL: 7 tests; e2e `learn.spec.ts`.
+- Not done (later slices): quizzes and try-it checks (WI-06c), other structures (WI-06b).
 
-### WI-06b Learn: data-structure views - TODO
+### WI-06b Learn: data-structure views - NEXT
 
 Stack (DFS, backtracker), priority queue with g/h/f (Dijkstra, A*, greedy), disjoint-set forest
 (Kruskal), distance map; also a "Data structure" section on Watch. Each model checked against
@@ -303,3 +314,4 @@ Tauri 2 builds; starts with the 2-day WKWebView WebGL spike (ADR-012).
 | WI-04 Algorithm parameters, pseudo-code, solver stats | 2026-10-10 | 8d2d10c |
 | Build editor source tracked (`.gitignore` fix) | 2026-10-11 | adc9a05 |
 | WI-05 Quality debt sweep | 2026-10-11 | a89409b |
+| WI-06a Learn shell + pilot lesson | 2026-10-11 | 34bb6d0 |
