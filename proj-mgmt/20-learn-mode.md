@@ -1,6 +1,6 @@
 # 20 - Learn Mode MVP: delivery plan
 
-> Status: In progress (WI-06a done, WI-06b next) | Last updated: 2026-10-11 | Owner: Dmitri Larionov
+> Status: In progress (WI-06a-b done, WI-06c next) | Last updated: 2026-10-11 | Owner: Dmitri Larionov
 > Queue items: WI-06a..WI-06f in [17-work-queue.md](./17-work-queue.md)
 > Design source: [13-education-and-playground.md](./13-education-and-playground.md) sections 4,
 > 7, 11, 12 and 14 (Phase 5 MVP scope). This note slices that scope into merged, phone-checked
