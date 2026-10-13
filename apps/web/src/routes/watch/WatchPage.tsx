@@ -36,6 +36,9 @@ import { useBreakpoint } from '../../layout/breakpoints';
 import { Section } from '../../layout/Section';
 import { Workspace } from '../../layout/Workspace';
 import { OverlayLegend } from './OverlayLegend';
+import { solveStructureFor, structureTitle } from '../../learn/solveStructure';
+import { useSolveStructure } from '../../learn/useSolveStructure';
+import { StructureView } from '../learn/StructureView';
 import { PseudocodePanel } from './PseudocodePanel';
 import { currentParams, useAlgoParams } from '../../maze/useAlgoParams';
 import { AlgorithmParams } from '../params/ParamFields';
@@ -97,6 +100,9 @@ export function WatchPage() {
   const bufferRef = useRef<LogEntry[]>([]);
 
   const playerSnap = useStepPlayer(snap.solvePlayer);
+  // The solver's own data structure (queue, stack, priority queue) rebuilt from its steps.
+  const structure = useSolveStructure(snap.solvePlayer, snap.state, snap.solverId);
+  const structureKind = solveStructureFor(snap.solverId ?? solverId);
   const listing = useMemo(
     () => pseudocodeFor(snap.solverId ?? solverId),
     [snap.solverId, solverId],
@@ -567,6 +573,14 @@ export function WatchPage() {
                 player={playerSnap}
                 hideHeading
               />
+            </Section>
+            <Section
+              id="watch-structure"
+              title={structureTitle(structureKind)}
+              summary={structureKind === 'none' ? 'none kept' : 'the frontier'}
+              defaultOpen={bp !== 'mobile'}
+            >
+              <StructureView grid={snap.state?.grid ?? null} state={structure} />
             </Section>
             <Section id="watch-pseudocode" title="Pseudo-code" summary={listing.title}>
               <PseudocodePanel listing={listing} currentLine={currentLine} hideHeading />

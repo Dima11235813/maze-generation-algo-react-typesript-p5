@@ -1,7 +1,7 @@
 /**
  * Drives a lesson's demo (proj-mgmt/20-learn-mode.md section 4): owns a `MazeSession`, builds the
  * demo maze synchronously from its fixed spec, arms the solver paused, and folds the solver's
- * steps into the pseudo-code line and the data-structure model. A rewind resets both, because
+ * steps into the pseudo-code line and its data structure (`useSolveStructure`). A rewind resets both, because
  * the player replays from the start, so step back and seek stay exact.
  */
 import type { SolveStep } from '@maze/core';
@@ -11,7 +11,7 @@ import { pseudocodeFor } from '../content/pseudocode';
 import type { DemoSpec } from '../content/learn/types';
 import { drainGeneration } from '../maze/drain';
 import { MazeSession } from '../maze/session';
-import { QueueModel, type QueueSnapshot } from './queueModel';
+import { useSolveStructure } from './useSolveStructure';
 
 /** A gentle default for reading along; the learner can change it. */
 const LESSON_DEFAULT_SPEED = 5;
@@ -32,7 +32,6 @@ export function useLessonDemo(demo: DemoSpec) {
   const playerSnap = useStepPlayer(snap.solvePlayer);
   const [speed, setSpeedState] = useState(LESSON_DEFAULT_SPEED);
   const [currentLine, setCurrentLine] = useState<number | null>(null);
-  const [queue, setQueue] = useState<QueueSnapshot | null>(null);
 
   const { generatorId, seed, width, height, solverId } = demo;
 
@@ -54,23 +53,16 @@ export function useLessonDemo(demo: DemoSpec) {
     if (snap.phase === 'ready' && !snap.solvePlayer) session.startSolve(solverId, false);
   }, [session, snap.phase, snap.solvePlayer, solverId]);
 
-  // Fold steps into the pseudo-code line and the queue; a rewind starts both over.
+  // Follow the executing pseudo-code line; a rewind clears it (the player replays from 0).
   useEffect(() => {
     const player = snap.solvePlayer;
-    const maze = snap.state;
-    if (!player || !maze) return;
+    if (!player) return;
     const listing = pseudocodeFor(solverId);
-    const model = new QueueModel(maze.start);
-    setQueue(model.snapshot());
     setCurrentLine(null);
     const offReset = player.onReset(() => {
-      model.reset();
-      setQueue(model.snapshot());
       setCurrentLine(null);
     });
     const offSteps = player.subscribe((batch: readonly SolveStep[]) => {
-      model.applyBatch(batch);
-      setQueue(model.snapshot());
       const last = batch[batch.length - 1];
       if (last) setCurrentLine(listing.stepToLine(last));
     });
@@ -78,7 +70,9 @@ export function useLessonDemo(demo: DemoSpec) {
       offReset();
       offSteps();
     };
-  }, [snap.solvePlayer, snap.state, solverId]);
+  }, [snap.solvePlayer, solverId]);
+
+  const structure = useSolveStructure(snap.solvePlayer, snap.state, solverId);
 
   const setSpeed = useCallback(
     (s: number) => {
@@ -94,7 +88,7 @@ export function useLessonDemo(demo: DemoSpec) {
     snap,
     playerSnap,
     armed,
-    queue,
+    structure,
     currentLine,
     listing: pseudocodeFor(solverId),
     speed,

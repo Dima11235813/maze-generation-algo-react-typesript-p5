@@ -62,6 +62,7 @@ export type SolveStep =
       readonly cell: CellId;
       readonly from: CellId;
       readonly g?: number;
+      /** The priority the cell joined the open set with (A*: g + h; greedy best-first: h). */
       readonly f?: number;
     }
   | {
