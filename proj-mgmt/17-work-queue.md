@@ -1,11 +1,11 @@
 # 17 - Work Queue
 
-> Status: Live | Last updated: 2026-10-11 | Owner: Dmitri Larionov
+> Status: Live | Last updated: 2026-10-12 | Owner: Dmitri Larionov
 > The ordered list of what to build next. "Proceed to the next work item" means: take the item
 > marked **NEXT**, follow `AGENTS.md` section 2, and update this file when it is done.
 > Status values: `NEXT`, `TODO`, `BLOCKED (H-x)`, `DONE yyyy-mm-dd (commit)`.
 
-## Where we are (2026-10-11, `develop` == `main`, WI-06a merged at 34bb6d0, not pushed)
+## Where we are (2026-10-12, `develop` at 1c7f087 and pushed; `main` is promoted by the owner)
 
 Shipped: monorepo foundation and legacy parity; 12 generators + braid; 12 solvers; race scheduler
 in core (no UI yet); Watch (pseudo-code, step log, stats); Explore catalogue + Compare; a11y grid
@@ -17,9 +17,10 @@ outline, Compare); maze tools widget (BUG-01); Ride along (watch a solver in fir
 Run Maze as a game (WI-02); Build editor (WI-03); algorithm parameter forms, pseudo-code for all
 solvers and solver-relative stats (WI-04); quality debt paid (WI-05: every lint rule an error,
 knip and prettier clean, lazy-loaded pages, the Build editor source finally tracked in git);
-Learn opened (WI-06a: curriculum, lesson page, BFS queue view, pilot lesson M3.1).
-Gate: core 305, player 21, renderer 39, web 166 tests; lint 0 problems; e2e 29/29; initial JS
-157/250 kB gzip.
+Learn opened (WI-06a: curriculum, lesson page, BFS queue view, pilot lesson M3.1); data-structure
+views for every frontier solver, also on Watch (WI-06b).
+Gate: core 305, player 21, renderer 39, web 205 tests; lint 0 problems; e2e 29/29; initial JS
+158/250 kB gzip.
 
 ## Queue
 
@@ -260,13 +261,25 @@ MDX). Each slice is merged and phone-checked on its own.
   Learn card live; the Learn stub page removed. RTL: 7 tests; e2e `learn.spec.ts`.
 - Not done (later slices): quizzes and try-it checks (WI-06c), other structures (WI-06b).
 
-### WI-06b Learn: data-structure views - NEXT
+### WI-06b Learn: data-structure views - DONE 2026-10-12 (1c7f087)
 
 Stack (DFS, backtracker), priority queue with g/h/f (Dijkstra, A*, greedy), disjoint-set forest
 (Kruskal), distance map; also a "Data structure" section on Watch. Each model checked against
 its algorithm on real mazes. Design: [20-learn-mode.md](./20-learn-mode.md) section 3.
 
-### WI-06c Learn: breakpoints, quizzes, try-it checks - TODO
+- Delivered: `learn/stackModel.ts` (DFS stack; recursive backtracker path stack),
+  `priorityQueueModel.ts` (one entry per open cell with its best key: Dijkstra g, A* f = g + h,
+  greedy h; relaxations lower the key), `disjointSetModel.ts` (Kruskal components),
+  `distanceModel.ts`; `solveStructure.ts` + `useSolveStructure.ts` choose and fold the solver's
+  structure (flood fill floods from the goal). Views (`routes/learn/*View.tsx`) are DOM lists with
+  the next cell marked and keys printed, plus a distance grid for small mazes. Watch has a new
+  data-structure section; lesson demos use the same views. Core: greedy best-first `discover`
+  now carries its priority as `f`. Tests: every model checked against its algorithm on real and
+  braided mazes (stack LIFO, smallest key expanded, unions only across components, rings).
+- Not done: generator demos in lessons (the backtracker stack and Kruskal views are ready for
+  WI-06d/e); a heap-tree drawing (the sorted list carries the same facts).
+
+### WI-06c Learn: breakpoints, quizzes, try-it checks - NEXT
 
 `StepPlayer.runUntil(predicate)` with a breakpoint picker; data-driven `<Quiz>` and `<TryIt>`;
 a passed quiz completes the lesson. Keyboard-operable, results announced.
@@ -314,4 +327,5 @@ Tauri 2 builds; starts with the 2-day WKWebView WebGL spike (ADR-012).
 | WI-04 Algorithm parameters, pseudo-code, solver stats | 2026-10-10 | 8d2d10c |
 | Build editor source tracked (`.gitignore` fix) | 2026-10-11 | adc9a05 |
 | WI-05 Quality debt sweep | 2026-10-11 | a89409b |
+| WI-06b Learn data-structure views | 2026-10-12 | 1c7f087 |
 | WI-06a Learn shell + pilot lesson | 2026-10-11 | 34bb6d0 |

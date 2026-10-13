@@ -1,6 +1,6 @@
 # 18 - Lessons Learned
 
-> Status: Live | Last updated: 2026-10-11
+> Status: Live | Last updated: 2026-10-12
 > Append-only log. Each entry: what happened, why, and the rule we now follow. Rules that every
 > session needs are mirrored in `AGENTS.md` section 6; this file keeps the reasoning.
 
@@ -29,6 +29,8 @@ The one-line rules every session needs; the entries below keep the story behind 
 | Git | Anchor ignore patterns (`/build/`); check new folders with `git status`, not just tests | L-37 |
 | Lint | Every rule is an error; relax in the config with a reason, widen untrusted input explicitly | L-38, L-39 |
 | Tests | RTL async timeout is 5 s for lazy routes; lesson modules keep components off the top level | L-41, L-42 |
+| Learn | Views read steps only: when a view needs a value, add it to the step; test each model against its algorithm | L-43 |
+| Checks | Interaction scripts live in `apps/web/.local/` (ignored); open collapsed phone sections first | L-44 |
 | Owner | Phone-first, small merged slices, protect the 3D views and the walkthrough | L-17 |
 
 ## Process and orchestration
@@ -254,3 +256,17 @@ a failure only in the full run, at about the timeout, is the async-util budget, 
 module exports a `lesson` object holding its prose component; a top-level `function Body()`
 made `only-export-components` fail even with `lesson` allowed by name. *Rule:* lesson prose is
 written inline in the `lesson` object (`Body: () => (...)`), so no config change is needed.
+
+**L-43 Rebuilding structures from steps finds gaps in the steps and in our assumptions.** Two
+surprises in WI-06b: greedy best-first's `discover` did not carry its priority, so its heap could
+not be rebuilt (fixed in core: `f = h` on `discover`); and flood fill floods from the *goal*, which
+the "every expand takes the front" test caught at once (119 out-of-order expansions) before any
+view showed wrong data. *Rule:* a view reads steps only; when it needs a value, the step gets it;
+every model is tested against its algorithm on real and braided mazes, in batches and at once.
+
+**L-44 Interaction scripts: where they live and what phones hide.** A Playwright screenshot script
+must run from `apps/web` (it imports `@playwright/test`), so a copy landed in the repo as an
+untracked file that the Drive rule then forbids deleting (kept out of git via
+`.git/info/exclude`). On phones Watch's sections start collapsed, so the script timed out until it
+opened the section. *Rule:* put interaction scripts in `apps/web/.local/` (ignored by `.local/`) and
+open collapsed sections before waiting on their content.
