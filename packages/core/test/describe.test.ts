@@ -22,6 +22,9 @@ describe('describe', () => {
     expect(describeGenStep(g, { t: 'backtrack', from: 1, to: 0 })).toContain('Backtracking');
     expect(describeGenStep(g, { t: 'frontier', add: [1, 2] })).toContain('2 added');
     expect(describeGenStep(g, { t: 'union', a: 0, b: 1 })).toContain('Joining');
+    expect(describeGenStep(g, { t: 'reject', a: 0, b: 1 })).toBe(
+      'Keeping the wall between row 1, column 1 and row 1, column 2: they are already connected.',
+    );
     expect(describeGenStep(g, { t: 'walk', cell: 2 })).toContain('Random walk');
     expect(describeGenStep(g, { t: 'divide', cells: [0, 1], wallDir: 1, gap: 0 })).toContain(
       'Dividing 2',

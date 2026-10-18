@@ -65,6 +65,9 @@ export class GenerationTracker {
       case 'done':
         this.done = true;
         break;
+      case 'reject':
+        // Informational: nothing new is reached or carved.
+        break;
       case 'frontier':
       case 'union':
       case 'walk':

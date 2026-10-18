@@ -13,6 +13,7 @@ import {
 import { describe, expect, it } from 'vitest';
 import { DisjointSetModel } from './disjointSetModel';
 import { DistanceModel } from './distanceModel';
+import { FrontierSetModel } from './frontierSetModel';
 import { PriorityQueueModel } from './priorityQueueModel';
 import { SolveStructureTracker, solveStructureFor } from './solveStructure';
 import { BacktrackerStackModel, DfsStackModel } from './stackModel';
@@ -165,6 +166,58 @@ describe('disjoint sets (Kruskal)', () => {
     expect(snap.sets).toBe(1);
     expect(snap.unions).toBe(w * h - 1);
     expect(snap.largest[0]?.size).toBe(w * h);
+  });
+
+  it('counts the walls kept, and makes two finds per wall looked at', () => {
+    const steps = genSteps('kruskals', 'ds-10', 12, 9);
+    const model = new DisjointSetModel(12 * 9);
+    for (const step of steps) {
+      model.apply(step);
+      const snap = model.snapshot();
+      // Path compression: on average a find follows few links.
+      expect(snap.hops).toBeLessThanOrEqual(snap.finds * 3);
+    }
+    const snap = model.snapshot();
+    const rejects = steps.filter((s) => s.t === 'reject').length;
+    expect(snap.rejected).toBe(rejects);
+    expect(rejects).toBeGreaterThan(0);
+    expect(snap.finds).toBe(2 * (snap.unions + snap.rejected));
+    model.reset();
+    expect(model.snapshot()).toMatchObject({ rejected: 0, finds: 0, hops: 0, sets: 12 * 9 });
+  });
+});
+
+describe("Prim's frontier", () => {
+  it.each([
+    ['pf-1', 10, 7],
+    ['pf-2', 18, 12],
+  ] as const)('holds exactly the cells next to the tree and not in it (%s %ix%i)', (seed, w, h) => {
+    const grid = createGrid(w, h);
+    const steps = genSteps('prims', seed, w, h);
+    const model = new FrontierSetModel();
+    const inTree = new Set<number>();
+    for (const step of steps) {
+      if (step.t === 'visit') {
+        // Every cell after the start joins from the frontier.
+        if (inTree.size > 0) expect(model.snapshot().cells).toContain(step.cell);
+        inTree.add(step.cell);
+      }
+      model.apply(step);
+      if (step.t !== 'frontier') continue;
+      const want = new Set<number>();
+      for (const c of inTree) {
+        for (const nb of [c - 1, c + 1, c - w, c + w]) {
+          const sameRow = Math.floor(nb / w) === Math.floor(c / w);
+          const adjacent = nb === c - w || nb === c + w || sameRow;
+          if (nb >= 0 && nb < w * h && adjacent && !inTree.has(nb)) want.add(nb);
+        }
+      }
+      expect(new Set(model.snapshot().cells)).toEqual(want);
+    }
+    const snap = model.snapshot();
+    expect(snap.cells).toEqual([]);
+    expect(snap.inTree).toBe(cellCount(grid));
+    expect(snap.peak).toBeGreaterThan(0);
   });
 });
 

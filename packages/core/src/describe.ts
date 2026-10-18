@@ -48,6 +48,8 @@ export function describeGenStep(grid: Grid, step: GenStep): string {
       return `Frontier: ${step.add?.length ?? 0} added, ${step.remove?.length ?? 0} removed.`;
     case 'union':
       return `Joining ${describePosition(grid, step.a)} with ${describePosition(grid, step.b)}.`;
+    case 'reject':
+      return `Keeping the wall between ${describePosition(grid, step.a)} and ${describePosition(grid, step.b)}: they are already connected.`;
     case 'walk':
       return `Random walk reaches ${describePosition(grid, step.cell)}.`;
     case 'divide':

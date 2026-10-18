@@ -155,6 +155,29 @@ describe("kruskal's", () => {
     }
   });
 
+  it('reports every edge it keeps as a wall, and those edges join cells already connected', () => {
+    const grid = createGrid(9, 7);
+    const { steps, result } = collect(kruskals.run(grid, createRng('k')));
+    const rejects = steps.filter((s) => s.t === 'reject');
+    expect(rejects.length).toBeGreaterThan(0);
+    // A rejected edge is still a wall in the finished maze...
+    for (const r of rejects) {
+      if (r.t !== 'reject') continue;
+      const d = r.b - r.a === 1 ? 1 : 2;
+      expect(((result.walls[r.a] ?? 0) >> d) & 1).toBe(1);
+    }
+    // ...and at the moment it was looked at, its ends were already joined by earlier unions.
+    const parent = Array.from({ length: cellCount(grid) }, (_, i) => i);
+    const find = (c: number): number => {
+      while (parent[c] !== c) c = parent[c]!;
+      return c;
+    };
+    for (const s of steps) {
+      if (s.t === 'union') parent[find(s.a)] = find(s.b);
+      if (s.t === 'reject') expect(find(s.a)).toBe(find(s.b));
+    }
+  });
+
   it('disjoint set merges and reports connectivity', () => {
     const ds = new DisjointSet(6);
     expect(ds.count).toBe(6);

@@ -403,6 +403,45 @@ describe('Learn', () => {
     );
   });
 
+  it("plays Kruskal's until it keeps a wall, with union-find counts and the pseudo-code line", async () => {
+    const user = userEvent.setup();
+    renderAt('/learn/m4-kruskal-joins');
+    expect(
+      await screen.findByRole(
+        'heading',
+        { level: 1, name: "Kruskal's joins a forest" },
+        { timeout: 10_000 },
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText('No unions yet: every cell is its own component.')).toBeInTheDocument();
+    const bar = screen.getByRole('group', { name: 'Breakpoint' });
+    expect(within(bar).getByRole('combobox', { name: 'Run until' })).toHaveTextContent(
+      'the next union',
+    );
+    await user.click(within(bar).getByRole('combobox', { name: 'Run until' }));
+    await user.click(screen.getByRole('option', { name: 'the next wall kept to avoid a loop' }));
+    screen.getByRole('slider', { name: 'Demo speed' }).focus();
+    await user.keyboard('{End}');
+    await user.click(
+      within(bar).getByRole('button', { name: 'Run until the next wall kept to avoid a loop' }),
+    );
+    expect(await within(bar).findByTestId('breakpoint-message')).toHaveTextContent(
+      /^Stopped at step \d+: the wall between row \d+, column \d+ and row \d+, column \d+ stays: they are already in one piece\.$/,
+    );
+    await waitFor(() =>
+      expect(useLearnProgress.getState().lessons['m4-kruskal-joins']?.tryIts).toEqual([
+        'first-kept',
+      ]),
+    );
+    expect(
+      within(screen.getByRole('list', { name: /pseudo-code/i })).getByText('(executing)')
+        .parentElement,
+    ).toHaveTextContent('keep the wall');
+    expect(screen.getByTestId('union-find-counts')).toHaveTextContent(
+      /^\d+ finds followed \d+ parent links/,
+    );
+  });
+
   it('shows a friendly page for an unknown lesson', async () => {
     renderAt('/learn/no-such-lesson');
     expect(await screen.findByRole('heading', { name: 'Lesson not found' })).toBeInTheDocument();

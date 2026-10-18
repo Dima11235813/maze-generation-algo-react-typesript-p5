@@ -120,7 +120,14 @@ describe('generator structure view', () => {
     back.unmount();
     const kruskal = views('kruskals', 30);
     expect(screen.getByRole('list', { name: 'Largest components' })).toBeInTheDocument();
+    expect(screen.getByTestId('union-find-counts')).toHaveTextContent(
+      /^\d+ finds followed \d+ parent links/,
+    );
     kruskal.unmount();
+    const prim = views('prims', 20);
+    expect(screen.getByRole('list', { name: 'Frontier cells' })).toBeInTheDocument();
+    expect(screen.getByText(/^Last taken into the tree:/)).toBeInTheDocument();
+    prim.unmount();
     views('binary-tree', 10);
     expect(screen.getByText(/keeps no stack or sets worth showing/)).toBeInTheDocument();
   });

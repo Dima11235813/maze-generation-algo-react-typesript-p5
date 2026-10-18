@@ -44,30 +44,51 @@ function expected(
   steps: readonly GenStep[],
   from: number,
   count: number,
+  cells: number,
 ): number | null {
-  const sizes = new GenStructureTracker('recursive-backtracker', 1_000);
+  const sizes = new GenStructureTracker('recursive-backtracker', cells);
+  // Prim's frontier and Kruskal's pieces, counted here without the models.
+  const frontier = new Set<number>();
+  let unions = 0;
   let lastMove: GenStep | null = null;
   for (let i = 0; i < steps.length; i++) {
     const s = steps[i] as GenStep;
     sizes.apply(s);
+    if (s.t === 'frontier') {
+      for (const c of s.remove ?? []) frontier.delete(c);
+      for (const c of s.add ?? []) frontier.add(c);
+    }
+    if (s.t === 'union') unions++;
     const previous = lastMove;
     if (s.t !== 'visit') lastMove = s;
     if (i < from) continue;
     const hit =
       id === 'stack'
         ? sizes.stackSize() > count
-        : id === 'deadend'
-          ? s.t === 'backtrack' && previous?.t === 'carve'
-          : s.t === id;
+        : id === 'frontier'
+          ? frontier.size > count
+          : id === 'pieces'
+            ? cells - unions <= count
+            : id === 'deadend'
+              ? s.t === 'backtrack' && previous?.t === 'carve'
+              : s.t === id;
     if (hit) return i + 1;
   }
   return null;
 }
 
+const COUNTS: Partial<Record<GenBreakpointId, readonly number[]>> = {
+  stack: [5, 15],
+  frontier: [4, 10],
+  pieces: [30, 5],
+};
+
 describe('generator breakpoints', () => {
   it('offers what each generator can actually hit', () => {
     expect(ids('recursive-backtracker')).toEqual(['backtrack', 'deadend', 'stack', 'done']);
-    expect(ids('kruskals')).toEqual(['done']);
+    expect(ids('prims')).toEqual(['frontier', 'done']);
+    expect(ids('kruskals')).toEqual(['union', 'reject', 'pieces', 'done']);
+    expect(ids('aldous-broder')).toEqual(['done']);
     for (const id of generators.ids) expect(ids(id), id).toContain('done');
     expect(genBreakpointsFor('recursive-backtracker').find((c) => c.id === 'stack')?.label).toBe(
       'the stack holds more than N cells',
@@ -75,32 +96,34 @@ describe('generator breakpoints', () => {
     expect(genBreakpointsFor('no-such-generator')).toEqual([]);
   });
 
-  it('the recursive backtracker: every breakpoint stops exactly on its first match', () => {
-    for (const [seed, w, h, params] of RUNS) {
-      const grid = createGrid(w, h);
-      const steps = [
-        ...generators.require('recursive-backtracker').run(grid, createRng(seed), params),
-      ];
-      for (const choice of genBreakpointsFor('recursive-backtracker')) {
-        const id = choice.id as GenBreakpointId;
-        for (const from of [0, 9, Math.floor(steps.length / 2)]) {
-          for (const count of id === 'stack' ? [5, 15] : [0]) {
-            const { player, tracker } = playerFor('recursive-backtracker', grid, seed, params);
-            player.seek(from);
-            const bp = makeGenBreakpoint(id, { grid, tracker, count });
-            const hit = player.runUntil(bp.predicate);
-            const want = expected(id, steps, from, count);
-            const where = `${seed} ${id} from ${String(from)} N=${String(count)}`;
-            expect(hit?.index ?? null, where).toBe(want);
-            expect(player.getSnapshot().stepCount, where).toBe(want ?? steps.length);
-            expect(bp.describe(hit), where).toMatch(
-              want ? /^Stopped at step \d+: / : /^Ran to the end: /,
-            );
+  it.each(['recursive-backtracker', 'prims', 'kruskals'])(
+    '%s: every breakpoint stops exactly on its first match',
+    (generatorId) => {
+      for (const [seed, w, h, rawParams] of RUNS) {
+        const grid = createGrid(w, h);
+        const params = generatorId === 'recursive-backtracker' ? rawParams : {};
+        const steps = [...generators.require(generatorId).run(grid, createRng(seed), params)];
+        for (const choice of genBreakpointsFor(generatorId)) {
+          const id = choice.id as GenBreakpointId;
+          for (const from of [0, 9, Math.floor(steps.length / 2)]) {
+            for (const count of COUNTS[id] ?? [0]) {
+              const { player, tracker } = playerFor(generatorId, grid, seed, params);
+              player.seek(from);
+              const bp = makeGenBreakpoint(id, { grid, tracker, count });
+              const hit = player.runUntil(bp.predicate);
+              const want = expected(id, steps, from, count, cellCount(grid));
+              const where = `${generatorId} ${seed} ${id} from ${String(from)} N=${String(count)}`;
+              expect(hit?.index ?? null, where).toBe(want);
+              expect(player.getSnapshot().stepCount, where).toBe(want ?? steps.length);
+              expect(bp.describe(hit), where).toMatch(
+                want ? /^Stopped at step \d+: / : /^Ran to the end: /,
+              );
+            }
           }
         }
       }
-    }
-  });
+    },
+  );
 
   it('"stuck in a new dead end" finds every dead end of the finished maze but the start', () => {
     for (const [seed, w, h, params] of RUNS) {
@@ -156,5 +179,27 @@ describe('generator breakpoints', () => {
     ];
     for (const s of steps.slice(30, 60)) fork.apply(s);
     expect(tracker.snapshot()).toEqual(before);
+  });
+
+  it('says what Kruskal and Prim stopped on', () => {
+    const grid = createGrid(10, 7);
+    const k = playerFor('kruskals', grid, 'gbp-1', {});
+    const union = makeGenBreakpoint('union', { grid, tracker: k.tracker, count: 0 });
+    expect(union.describe(k.player.runUntil(union.predicate))).toMatch(
+      /^Stopped at step 1: row \d+, column \d+ and row \d+, column \d+ were in different pieces, so they are joined; 69 pieces left\.$/,
+    );
+    const kept = makeGenBreakpoint('reject', { grid, tracker: k.tracker, count: 0 });
+    expect(kept.describe(k.player.runUntil(kept.predicate))).toMatch(
+      /^Stopped at step \d+: the wall between row \d+, column \d+ and row \d+, column \d+ stays: they are already in one piece\.$/,
+    );
+    const ten = makeGenBreakpoint('pieces', { grid, tracker: k.tracker, count: 10 });
+    expect(ten.describe(k.player.runUntil(ten.predicate))).toMatch(
+      /^Stopped at step \d+: 10 pieces are left\.$/,
+    );
+    const p = playerFor('prims', grid, 'gbp-1', {});
+    const wide = makeGenBreakpoint('frontier', { grid, tracker: p.tracker, count: 8 });
+    expect(wide.describe(p.player.runUntil(wide.predicate))).toMatch(
+      /^Stopped at step \d+: the frontier holds 9 cells\.$/,
+    );
   });
 });

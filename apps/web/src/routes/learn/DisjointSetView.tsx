@@ -19,9 +19,13 @@ export function DisjointSetView({ grid, sets }: DisjointSetViewProps) {
         stats={[
           ['Components', sets.sets],
           ['Unions', sets.unions],
-          ['Cells', sets.cells],
+          ['Walls kept', sets.rejected],
         ]}
       />
+      <p className="text-sm" data-testid="union-find-counts">
+        {sets.finds} finds followed {sets.hops} parent links: path compression keeps every
+        representative close.
+      </p>
       <p className="text-sm">
         {sets.lastUnion ? (
           <>

@@ -24,6 +24,11 @@ export type GenStep =
       readonly remove?: readonly CellId[];
     }
   | { readonly t: 'union'; readonly a: CellId; readonly b: CellId }
+  /**
+   * An edge looked at and left as a wall because its ends are already connected (Kruskal's):
+   * carving it would close a loop. Informational; the walls do not change.
+   */
+  | { readonly t: 'reject'; readonly a: CellId; readonly b: CellId }
   | { readonly t: 'walk'; readonly cell: CellId; readonly erased?: readonly CellId[] }
   | {
       readonly t: 'divide';
