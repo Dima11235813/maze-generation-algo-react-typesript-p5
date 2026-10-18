@@ -1,6 +1,6 @@
 # 20 - Learn Mode MVP: delivery plan
 
-> Status: In progress (WI-06a-c done, WI-06d next) | Last updated: 2026-10-18 | Owner: Dmitri Larionov
+> Status: In progress (WI-06a-d done, WI-06e next) | Last updated: 2026-10-18 | Owner: Dmitri Larionov
 > Queue items: WI-06a..WI-06f in [17-work-queue.md](./17-work-queue.md)
 > Design source: [13-education-and-playground.md](./13-education-and-playground.md) sections 4,
 > 7, 11, 12 and 14 (Phase 5 MVP scope). This note slices that scope into merged, phone-checked
@@ -43,6 +43,13 @@
 - **Breakpoints are step predicates run by the player** (`StepPlayer.playUntil`), offered per
   algorithm by a probe run rather than a hand-kept table, so a new solver gets the right choices
   with no UI change. A stateful one ("frontier > N") forks the live structure tracker.
+- **Four demo kinds, one lesson frame** (WI-06d). `DemoSpec.kind` is `solve` (a solver on a
+  finished maze), `generate` (the generator itself), `graph` (a maze edited by hand, read as a
+  graph) or `pair` (two solvers in lockstep). The page around the demo (`LessonFrame`: concept,
+  structure section, optional pseudo-code, try-its, complexity, quiz, navigation) is shared;
+  each kind brings its stage, its structure section and the fields of `DemoState` its try-its
+  read. Anything that plays is a `StepPlayer` (a pair plays lockstep ticks), so the transport,
+  timeline and "Run until" row are the same everywhere.
 
 ## 3. Slices
 

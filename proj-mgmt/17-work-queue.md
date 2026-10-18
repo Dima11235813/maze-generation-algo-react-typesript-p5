@@ -5,7 +5,7 @@
 > marked **NEXT**, follow `AGENTS.md` section 2, and update this file when it is done.
 > Status values: `NEXT`, `TODO`, `BLOCKED (H-x)`, `DONE yyyy-mm-dd (commit)`.
 
-## Where we are (2026-10-18, `develop` at b1a61ea and pushed; `main` is promoted by the owner)
+## Where we are (2026-10-18, `develop` at a1464ef and pushed; `main` is promoted by the owner)
 
 Shipped: monorepo foundation and legacy parity; 12 generators + braid; 12 solvers; race scheduler
 in core (no UI yet); Watch (pseudo-code, step log, stats); Explore catalogue + Compare; a11y grid
@@ -19,8 +19,8 @@ solvers and solver-relative stats (WI-04); quality debt paid (WI-05: every lint 
 knip and prettier clean, lazy-loaded pages, the Build editor source finally tracked in git);
 Learn opened (WI-06a: curriculum, lesson page, BFS queue view, pilot lesson M3.1); data-structure
 views for every frontier solver, also on Watch (WI-06b); run-until breakpoints, quizzes and
-try-it checks (WI-06c).
-Gate: core 305, player 26, renderer 39, web 232 tests; lint 0 problems; e2e 29/29; initial JS
+try-it checks (WI-06c); modules M1-M3 complete with seven lessons (WI-06d).
+Gate: core 305, player 26, renderer 39, web 267 tests; lint 0 problems; e2e 30/30; initial JS
 158/250 kB gzip.
 
 ## Queue
@@ -300,12 +300,34 @@ a passed quiz completes the lesson. Keyboard-operable, results announced.
   picker on the canvas); generator breakpoints (`backtrack`, with the M2 generator demo,
   WI-06d).
 
-### WI-06d Learn: modules M1-M3 - NEXT
+### WI-06d Learn: modules M1-M3 - DONE 2026-10-18 (a1464ef)
 
 Grids & graphs (Build-style demo), DFS & the backtracker (stack view, breakpoint on backtrack),
 BFS & shortest paths completed (rings, DFS vs BFS). Playwright smoke per lesson demo.
 
-### WI-06e Learn: modules M4, M5, M7 - TODO
+Delivered in three merged slices (each phone-checked): d.1 M2 (1e74267), d.2 M1 (20e66d4),
+d.3 M3 (a1464ef).
+
+- Delivered: lesson demos come in four kinds (`DemoSpec.kind`): `solve`, `generate` (the
+  generator plays step by step: `learn/genStructure.ts` folds the backtracker's path stack or
+  Kruskal's sets, generator pseudo-code, generator breakpoints: next backtrack, stuck in a new
+  dead end, stack past N, maze complete), `graph` (a small maze edited by hand: tap near a wall,
+  arrows and Shift+arrow on the focused maze, an edit row below it; a Graph section with cells,
+  passages, pieces, loops = E - V + pieces, dead ends, the tree verdict and the selected cell's
+  degree; loop cells tinted via bridges, cut-off cells shaded) and `pair` (two solvers in
+  lockstep on a braided maze, one `StepPlayer` over the ticks, a canvas each and a scoreboard).
+  The "Run until" row is generic over a breakpoint catalogue. Seven lessons: M1.1 A maze is a
+  graph, M1.2 Perfect mazes are trees, M2.1 The backtracker carves a tree, M2.2 Depth-first
+  search dives deep, M3.1 (pilot), M3.2 Reading a distance map, M3.3 DFS or BFS?; each with
+  live try-its and a 4-question quiz. Tests check every try-it is achievable in its demo. E2E
+  `lessons.spec.ts` opens every lesson from the index, works its demo and runs axe. Long
+  pseudo-code lines now wrap under their indent (axe flagged the sideways-scrolling list).
+- Not done: "Predict the next 3 cells" quiz on a paused run and the recursive-dfs overflow
+  demo on 200x200 (M2 ideas in proj-mgmt/13 section 7); "move the goal so BFS expands fewer than
+  N cells" (needs goal editing in a solve demo); a separate isolated-region colour per piece
+  (all cut-off pieces share one shade).
+
+### WI-06e Learn: modules M4, M5, M7 - NEXT
 
 Prim/Kruskal with disjoint sets; Aldous-Broder & Wilson with a dead-end histogram; A* and
 heuristics with Compare and the weight slider.
@@ -343,6 +365,7 @@ Tauri 2 builds; starts with the 2-day WKWebView WebGL spike (ADR-012).
 | WI-04 Algorithm parameters, pseudo-code, solver stats | 2026-10-10 | 8d2d10c |
 | Build editor source tracked (`.gitignore` fix) | 2026-10-11 | adc9a05 |
 | WI-05 Quality debt sweep | 2026-10-11 | a89409b |
+| WI-06d Learn modules M1-M3 | 2026-10-18 | 1e74267, 20e66d4, a1464ef |
 | WI-06c Learn breakpoints, quizzes, try-it | 2026-10-18 | b1a61ea |
 | WI-06b Learn data-structure views | 2026-10-12 | 1c7f087 |
 | WI-06a Learn shell + pilot lesson | 2026-10-11 | 34bb6d0 |
