@@ -38,6 +38,7 @@ import { Workspace } from '../../layout/Workspace';
 import { OverlayLegend } from './OverlayLegend';
 import { solveStructureFor, structureTitle } from '../../learn/solveStructure';
 import { useSolveStructure } from '../../learn/useSolveStructure';
+import { solveBreakpointCatalogue } from '../../learn/breakpoints';
 import { useBreakpointRun } from '../../learn/useBreakpointRun';
 import { BreakpointBar } from '../learn/BreakpointBar';
 import { StructureView } from '../learn/StructureView';
@@ -295,11 +296,16 @@ export function WatchPage() {
   }, [solverId, solverParamsKey, resetSolver]);
 
   const armed = snap.phase === 'ready' && snap.solvePlayer !== null;
+  const breakpoints = useMemo(
+    () =>
+      armed && snap.state && snap.solverId
+        ? solveBreakpointCatalogue(snap.solverId, snap.state, structure.tracker)
+        : null,
+    [armed, snap.state, snap.solverId, structure.tracker],
+  );
   const breakpointRun = useBreakpointRun({
     player: armed ? snap.solvePlayer : null,
-    maze: snap.state,
-    solverId: snap.solverId,
-    tracker: structure.tracker,
+    catalogue: breakpoints,
     running: playerSnap?.breakpointArmed ?? false,
     done: playerSnap?.status === 'done',
   });

@@ -91,8 +91,13 @@ describe('recursive backtracker stack', () => {
     expect(snap.outOfOrder).toBe(0);
     // Every cell was pushed exactly once (the start by its first visit, the rest by carving).
     expect(snap.pushes).toBe(w * h);
-    // At the end the stack has unwound to the start cell.
-    expect(snap.cells).toHaveLength(1);
+    // The stack unwinds to the start cell, which leaves it when the generator is done.
+    const last = steps[steps.length - 1];
+    expect(last?.t).toBe('done');
+    expect(snap.cells).toHaveLength(0);
+    const beforeDone = new BacktrackerStackModel();
+    beforeDone.applyBatch(steps.slice(0, -1));
+    expect(beforeDone.snapshot().cells).toHaveLength(1);
   });
 });
 

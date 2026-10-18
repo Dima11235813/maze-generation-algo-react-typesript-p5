@@ -17,13 +17,14 @@ import {
   type MazeState,
   type SolveStep,
 } from '@maze/core';
-import type { BreakHit, StepPredicate } from '@maze/player';
+import type { BreakHit } from '@maze/player';
 import {
   solveOrigin,
   solveStructureFor,
   structureTitle,
   type SolveStructureTracker,
 } from './solveStructure';
+import type { Breakpoint, BreakpointCatalogue } from './useBreakpointRun';
 
 export type SolveBreakpointId = 'deadend' | 'goal' | 'frontier' | 'path';
 
@@ -42,11 +43,7 @@ export interface SolveBreakpointContext {
   readonly count: number;
 }
 
-export interface SolveBreakpoint {
-  readonly predicate: StepPredicate<SolveStep>;
-  /** What the learner hears when the run stops (or ends without a match). */
-  describe(hit: BreakHit<SolveStep> | null): string;
-}
+type SolveBreakpoint = Breakpoint<SolveStep>;
 
 /** The cell the run is heading for: the goal, or the start for solvers that flood from the goal. */
 function targetOf(solverId: string, maze: MazeState): CellId {
@@ -192,4 +189,26 @@ export function makeSolveBreakpoint(
   }
   const test = stepMatcher(id, targetOf(ctx.solverId, ctx.maze));
   return { predicate: (step) => test(step), describe: (hit) => describe(hit) };
+}
+
+const isSolveBreakpointId = (id: string): id is SolveBreakpointId =>
+  (ORDER as readonly string[]).includes(id);
+
+/** The breakpoints `solverId` offers on `maze`; `tracker` is read when a run starts. */
+export function solveBreakpointCatalogue(
+  solverId: string,
+  maze: MazeState,
+  tracker: () => SolveStructureTracker | null,
+): BreakpointCatalogue<SolveStep> {
+  return {
+    choices: solveBreakpointsFor(solverId),
+    needsCount: (id) => id === 'frontier',
+    make: (id, count) =>
+      makeSolveBreakpoint(isSolveBreakpointId(id) ? id : 'path', {
+        solverId,
+        maze,
+        tracker: tracker(),
+        count,
+      }),
+  };
 }

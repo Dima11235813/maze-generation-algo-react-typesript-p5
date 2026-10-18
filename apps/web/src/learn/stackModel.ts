@@ -4,7 +4,8 @@
  * - DFS (solver): the start cell is on the stack before the first step; every `discover` is
  *   pushed and every `expand` pops the top.
  * - Recursive backtracker (generator): the stack is the path from the start to the current cell;
- *   every `carve` pushes the new cell and every `backtrack` pops back to the previous one.
+ *   every `carve` pushes the new cell and every `backtrack` pops back to the previous one. Once
+ *   the walk is back at the start with nothing left to carve, `done` pops the start: empty.
  *
  * Both fold incrementally from the player's step batches and are rebuilt on a rewind.
  */
@@ -133,6 +134,10 @@ export class BacktrackerStackModel extends StackCore {
         break;
       case 'backtrack':
         this.pop(step.from);
+        break;
+      case 'done':
+        // The loop ends by popping the start; it is not a backtrack, so pops stay as they are.
+        this.cells = [];
         break;
       default:
         break;

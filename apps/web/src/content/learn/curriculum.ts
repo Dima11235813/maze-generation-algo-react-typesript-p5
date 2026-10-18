@@ -28,7 +28,24 @@ export const CURRICULUM: Curriculum = [
       'Explain why the result is a tree',
     ],
     prerequisites: ['m1'],
-    lessons: [],
+    lessons: [
+      {
+        id: 'm2-backtracker',
+        title: 'The backtracker carves a tree',
+        summary:
+          'The recursive backtracker walks into unvisited cells and backs up when stuck; its stack is the path back to the start.',
+        minutes: 12,
+        load: () => import('./m2/backtracker').then((m) => m.lesson),
+      },
+      {
+        id: 'm2-dfs-dives',
+        title: 'Depth-first search dives deep',
+        summary:
+          'Depth-first search always explores the newest cell on its stack, so it follows one corridor to the end before trying a branch.',
+        minutes: 10,
+        load: () => import('./m2/dfsDives').then((m) => m.lesson),
+      },
+    ],
   },
   {
     id: 'm3',

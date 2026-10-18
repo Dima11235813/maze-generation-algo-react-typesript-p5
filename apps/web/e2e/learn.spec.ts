@@ -10,7 +10,11 @@ test.describe('learn', () => {
     const modules = page.getByRole('list', { name: 'Modules' });
     await expect(modules.getByRole('heading', { level: 2 })).toHaveCount(12, { timeout: 30_000 });
 
-    await page.getByRole('link', { name: /^Start with/ }).click();
+    await expect(page.getByRole('link', { name: /^Start with/ })).toHaveAttribute(
+      'href',
+      '/learn/m2-backtracker',
+    );
+    await modules.getByRole('link', { name: /The frontier is a ring/ }).click();
     await expect(page).toHaveURL(/\/learn\/m3-frontier-ring$/);
     await expect(
       page.getByRole('heading', { level: 1, name: 'The frontier is a ring' }),
@@ -59,8 +63,9 @@ test.describe('learn', () => {
       .getByRole('navigation', { name: 'Breadcrumb' })
       .getByRole('link', { name: 'Learn' })
       .click();
-    await expect(page.getByText('1 of 1 lessons done.')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText(/^1 of \d+ lessons done\./)).toBeVisible({ timeout: 30_000 });
     await page.reload();
-    await expect(page.getByText('1 of 1 lessons done.')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText(/^1 of \d+ lessons done\./)).toBeVisible({ timeout: 30_000 });
+    await expect(modules.getByRole('link', { name: /The frontier is a ring.*done/ })).toBeVisible();
   });
 });

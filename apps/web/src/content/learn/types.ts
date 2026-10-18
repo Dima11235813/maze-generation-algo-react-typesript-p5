@@ -4,19 +4,31 @@
  * A lesson is a typed module: metadata in the curriculum (so the index never loads lesson
  * bodies) plus a lazily loaded `LessonContent` with the prose component and the demo it drives.
  */
-import type { MazeState, SolveStep } from '@maze/core';
+import type { MazeState, Step } from '@maze/core';
 import type { PlayerStatus } from '@maze/player';
 import type { ComponentType } from 'react';
+import type { GenStructureState } from '../../learn/genStructure';
 import type { SolveStructureState } from '../../learn/solveStructure';
 
-/** A solver demo; its data-structure view follows from the solver (`solveStructureFor`). */
-export interface DemoSpec {
+interface DemoMaze {
   readonly generatorId: string;
   readonly seed: string;
   readonly width: number;
   readonly height: number;
+}
+
+/** A solver run on a finished maze; its data structure follows from the solver. */
+export interface SolveDemoSpec extends DemoMaze {
+  readonly kind: 'solve';
   readonly solverId: string;
 }
+
+/** The generator itself, step by step; its data structure follows from the generator. */
+export interface GenerateDemoSpec extends DemoMaze {
+  readonly kind: 'generate';
+}
+
+export type DemoSpec = SolveDemoSpec | GenerateDemoSpec;
 
 interface ComplexityNote {
   readonly time: string;
@@ -45,9 +57,14 @@ export interface QuizSpec {
 export interface DemoState {
   readonly status: PlayerStatus | null;
   readonly stepCount: number;
-  readonly lastStep: SolveStep | null;
+  /** A solver step in solve demos, a generator step in generate demos. */
+  readonly lastStep: Step | null;
+  /** The maze as it stands (while generating, the walls carved so far). */
   readonly maze: MazeState | null;
+  /** Solve demos: the solver's frontier and distances. */
   readonly structure: SolveStructureState | null;
+  /** Generate demos: the generator's stack or sets. */
+  readonly genStructure: GenStructureState | null;
 }
 
 /** A task done in the demo, verified live by a predicate over its state (13 section 11). */
