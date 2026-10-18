@@ -1,6 +1,6 @@
 # 20 - Learn Mode MVP: delivery plan
 
-> Status: In progress (WI-06a-b done, WI-06c next) | Last updated: 2026-10-11 | Owner: Dmitri Larionov
+> Status: In progress (WI-06a-c done, WI-06d next) | Last updated: 2026-10-18 | Owner: Dmitri Larionov
 > Queue items: WI-06a..WI-06f in [17-work-queue.md](./17-work-queue.md)
 > Design source: [13-education-and-playground.md](./13-education-and-playground.md) sections 4,
 > 7, 11, 12 and 14 (Phase 5 MVP scope). This note slices that scope into merged, phone-checked
@@ -38,7 +38,11 @@
   player's step batches and resets on rewind (`player.onReset`), so step back and seek stay
   exact. Views are DOM lists (screen-reader readable), never canvas.
 - **Progress is local** (guest) in a persisted store `maze-lab:learn`: lesson started /
-  completed timestamps. Completion is a button until quizzes land (WI-06c), then a passed quiz.
+  completed timestamps, quiz best score and attempts, try-its done. A passed quiz completes a
+  lesson that has one (WI-06c); lessons without a quiz keep the "Mark as done" button.
+- **Breakpoints are step predicates run by the player** (`StepPlayer.playUntil`), offered per
+  algorithm by a probe run rather than a hand-kept table, so a new solver gets the right choices
+  with no UI change. A stateful one ("frontier > N") forks the live structure tracker.
 
 ## 3. Slices
 

@@ -1,11 +1,11 @@
 # 17 - Work Queue
 
-> Status: Live | Last updated: 2026-10-12 | Owner: Dmitri Larionov
+> Status: Live | Last updated: 2026-10-18 | Owner: Dmitri Larionov
 > The ordered list of what to build next. "Proceed to the next work item" means: take the item
 > marked **NEXT**, follow `AGENTS.md` section 2, and update this file when it is done.
 > Status values: `NEXT`, `TODO`, `BLOCKED (H-x)`, `DONE yyyy-mm-dd (commit)`.
 
-## Where we are (2026-10-12, `develop` at 1c7f087 and pushed; `main` is promoted by the owner)
+## Where we are (2026-10-18, `develop` at b1a61ea and pushed; `main` is promoted by the owner)
 
 Shipped: monorepo foundation and legacy parity; 12 generators + braid; 12 solvers; race scheduler
 in core (no UI yet); Watch (pseudo-code, step log, stats); Explore catalogue + Compare; a11y grid
@@ -18,8 +18,9 @@ Run Maze as a game (WI-02); Build editor (WI-03); algorithm parameter forms, pse
 solvers and solver-relative stats (WI-04); quality debt paid (WI-05: every lint rule an error,
 knip and prettier clean, lazy-loaded pages, the Build editor source finally tracked in git);
 Learn opened (WI-06a: curriculum, lesson page, BFS queue view, pilot lesson M3.1); data-structure
-views for every frontier solver, also on Watch (WI-06b).
-Gate: core 305, player 21, renderer 39, web 205 tests; lint 0 problems; e2e 29/29; initial JS
+views for every frontier solver, also on Watch (WI-06b); run-until breakpoints, quizzes and
+try-it checks (WI-06c).
+Gate: core 305, player 26, renderer 39, web 232 tests; lint 0 problems; e2e 29/29; initial JS
 158/250 kB gzip.
 
 ## Queue
@@ -279,12 +280,27 @@ its algorithm on real mazes. Design: [20-learn-mode.md](./20-learn-mode.md) sect
 - Not done: generator demos in lessons (the backtracker stack and Kruskal views are ready for
   WI-06d/e); a heap-tree drawing (the sorted list carries the same facts).
 
-### WI-06c Learn: breakpoints, quizzes, try-it checks - NEXT
+### WI-06c Learn: breakpoints, quizzes, try-it checks - DONE 2026-10-18 (b1a61ea)
 
 `StepPlayer.runUntil(predicate)` with a breakpoint picker; data-driven `<Quiz>` and `<TryIt>`;
 a passed quiz completes the lesson. Keyboard-operable, results announced.
 
-### WI-06d Learn: modules M1-M3 - TODO
+- Delivered: `StepPlayer.runUntil` (sync) and `playUntil` (plays at the current speed, pauses
+  right after the first matching step; any other command disarms it) with `onBreak`; fast-check
+  properties prove the stop is the first match whatever the speed and frame size.
+  `learn/breakpoints.ts`: next dead end, reaching the goal (the start for flood fill), frontier
+  past N cells (forks the live structure tracker), path found; a solver is offered the ones that
+  fire on two probe mazes. "Run until" row below the maze on lessons and Watch, with the stop
+  spoken. Data-driven `<Quiz>` (radio groups, pass mark, notes per answer, live-region result;
+  a pass completes the lesson and the header button goes) and `<TryItList>` (predicates over
+  the demo state, remembered in progress, one message per moment). Progress keeps quiz best and
+  attempts and the try-its done. M3.1: 3 try-its and a 4-question quiz (3 to pass).
+- Not done: "a cost is lowered" (no solver relaxes on unit-cost mazes with default
+  parameters; back with M7's weighted runs in WI-06e); "until cell X expanded" (needs a cell
+  picker on the canvas); generator breakpoints (`backtrack`, with the M2 generator demo,
+  WI-06d).
+
+### WI-06d Learn: modules M1-M3 - NEXT
 
 Grids & graphs (Build-style demo), DFS & the backtracker (stack view, breakpoint on backtrack),
 BFS & shortest paths completed (rings, DFS vs BFS). Playwright smoke per lesson demo.
@@ -327,5 +343,6 @@ Tauri 2 builds; starts with the 2-day WKWebView WebGL spike (ADR-012).
 | WI-04 Algorithm parameters, pseudo-code, solver stats | 2026-10-10 | 8d2d10c |
 | Build editor source tracked (`.gitignore` fix) | 2026-10-11 | adc9a05 |
 | WI-05 Quality debt sweep | 2026-10-11 | a89409b |
+| WI-06c Learn breakpoints, quizzes, try-it | 2026-10-18 | b1a61ea |
 | WI-06b Learn data-structure views | 2026-10-12 | 1c7f087 |
 | WI-06a Learn shell + pilot lesson | 2026-10-11 | 34bb6d0 |

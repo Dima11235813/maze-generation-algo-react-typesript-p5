@@ -1,6 +1,6 @@
 # 18 - Lessons Learned
 
-> Status: Live | Last updated: 2026-10-12
+> Status: Live | Last updated: 2026-10-18
 > Append-only log. Each entry: what happened, why, and the rule we now follow. Rules that every
 > session needs are mirrored in `AGENTS.md` section 6; this file keeps the reasoning.
 
@@ -31,6 +31,8 @@ The one-line rules every session needs; the entries below keep the story behind 
 | Tests | RTL async timeout is 5 s for lazy routes; lesson modules keep components off the top level | L-41, L-42 |
 | Learn | Views read steps only: when a view needs a value, add it to the step; test each model against its algorithm | L-43 |
 | Checks | Interaction scripts live in `apps/web/.local/` (ignored); open collapsed phone sections first | L-44 |
+| Learn | Offer only what an algorithm can do (probe it); stateful breakpoints fork the live state | L-45 |
+| Tests | Radio groups: tab in forwards; checks met together share one live message | L-46 |
 | Owner | Phone-first, small merged slices, protect the 3D views and the walkthrough | L-17 |
 
 ## Process and orchestration
@@ -270,3 +272,22 @@ untracked file that the Drive rule then forbids deleting (kept out of git via
 `.git/info/exclude`). On phones Watch's sections start collapsed, so the script timed out until it
 opened the section. *Rule:* put interaction scripts in `apps/web/.local/` (ignored by `.local/`) and
 open collapsed sections before waiting on their content.
+
+**L-45 Offer what the algorithm actually does, found by running it.** The plan listed "a cost is
+lowered" as a breakpoint for Dijkstra and A*, but on unit-cost mazes with default parameters no
+solver ever relaxes: the first discovery is already the cheapest (the Dijkstra source says so).
+A probe run of each solver on two small mazes (one perfect, one braided) decides which
+breakpoints it is offered, so the picker never offers a run that cannot stop, and a new solver
+needs no table entry. The "frontier > N" breakpoint needs the frontier as it is now, so it forks
+the live structure tracker (which keeps its step history) instead of guessing size deltas per
+model. *Rule:* derive UI choices from what the code does on a probe, test every offered choice
+against a brute-force scan of real step lists, and give stateful predicates a fork of the live
+state.
+
+**L-46 Keyboard tests and live messages: two small traps.** user-event enters an unanswered
+radio group from its *last* option when tabbing backwards (as browsers do), so arrow keys wrap
+and pick the wrong answer; tab in forwards. In a lesson, one pause can satisfy two try-it checks
+at once; announcing them one by one let the second message replace the first before it was read.
+*Rule:* tab into radio groups forwards in tests; combine everything that passed at one moment into
+one live message. Also: ESLint now ignores `**/.local/**` and `**/*.tmp.*`, so local scratch
+scripts no longer fail `pnpm lint`.

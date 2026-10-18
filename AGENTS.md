@@ -9,7 +9,7 @@ also apply (never delete files on Google Drive, secrets only via environment var
 
 | What                  | Where                                                                                    |
 | --------------------- | ---------------------------------------------------------------------------------------- |
-| Plan, decisions, ADRs | `proj-mgmt/README.md` (decision register D-01..D-19), `proj-mgmt/adr/`                   |
+| Plan, decisions, ADRs | `proj-mgmt/README.md` (decision register D-01..D-20), `proj-mgmt/adr/`                   |
 | **Next work**         | `proj-mgmt/17-work-queue.md` - the ordered queue; the item marked `NEXT` is the next one |
 | Lessons learned       | `proj-mgmt/18-lessons-learned.md` - read before planning; append after each work item    |
 | Owner-only actions    | `proj-mgmt/16-human-actions.md` (`develop` -> `main`, keys, cloud accounts)              |
@@ -17,7 +17,7 @@ also apply (never delete files on Google Drive, secrets only via environment var
 | Playback              | `packages/player` - StepPlayer (play/pause/step/seek/stepBack/restart), narrator         |
 | Rendering             | `packages/renderer` - port + `canvas2d`, `three` (3D/first person), `dom` (a11y)         |
 | UI kit                | `packages/ui` (Radix + Tailwind v4)                                                      |
-| App                   | `apps/web` - `/play /watch /race /build /explore /explore/compare` (+ `/learn` stub)     |
+| App                   | `apps/web` - `/play /watch /race /build /learn /explore /explore/compare`                |
 | Original app          | `apps/legacy` - frozen, read-only, not in the workspace                                  |
 | Original brief        | `next.md` (historical; the live queue is `proj-mgmt/17-work-queue.md`)                   |
 | Local ports           | block 41920-41939 in `D:\GDrive\proj-mgmt\inventory\local-ports.md` (see section 3)      |
