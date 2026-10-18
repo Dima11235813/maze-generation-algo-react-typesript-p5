@@ -25,6 +25,9 @@ export const ignores = [
   '**/test-results/**',
   'apps/legacy/**',
   '.claude/**',
+  // Local scratch (git-ignored or excluded): interaction scripts and temp probes (L-44).
+  '**/.local/**',
+  '**/*.tmp.*',
   '**/*.d.ts',
   '**/*.snap',
   'pnpm-lock.yaml',

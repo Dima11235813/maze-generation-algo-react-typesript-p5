@@ -33,6 +33,11 @@ class StackCore {
   protected peak = 0;
   protected outOfOrder = 0;
 
+  /** Cells on the stack now. */
+  get size(): number {
+    return this.cells.length;
+  }
+
   protected clear(initial: readonly CellId[]): void {
     this.cells = [...initial];
     this.lastPopped = null;

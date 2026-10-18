@@ -54,6 +54,11 @@ export class QueueModel {
     this.outOfOrder = 0;
   }
 
+  /** Cells waiting in the queue now. */
+  get size(): number {
+    return this.queue.length - this.head;
+  }
+
   /** Folds one batch of steps (as delivered by `StepPlayer.subscribe`). */
   applyBatch(steps: readonly SolveStep[]): void {
     this.justAdded = [];

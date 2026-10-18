@@ -15,6 +15,7 @@ import { MazeCanvas } from '../play/MazeCanvas';
 import { TimelineBar } from '../play/TimelineBar';
 import { playbackActions } from '../tools/actions';
 import { MazeTools, type ToolGroup } from '../tools/MazeTools';
+import { BreakpointBar } from './BreakpointBar';
 
 const noop = (): void => undefined;
 
@@ -112,6 +113,7 @@ export function LessonDemo({ demo, solverName, pageScroll }: LessonDemoProps) {
         />
       </div>
       <MazeTools variant="row" groups={groups} />
+      <BreakpointBar run={demo.breakpoint} />
       <div className="flex items-center gap-3 border-t border-border bg-panel px-3 py-2">
         <Slider
           className="min-w-0 flex-1"

@@ -28,6 +28,8 @@ export interface StepPlayerSnapshot<R> {
   readonly highWater: number;
   /** Total steps of the source once it has run to completion at least once; null until known. */
   readonly total: number | null;
+  /** True while `playUntil` is playing towards a breakpoint. */
+  readonly breakpointArmed: boolean;
 }
 
 export type StepListener<S> = (steps: readonly S[]) => void;
@@ -37,6 +39,22 @@ export type StepListener<S> = (steps: readonly S[]) => void;
  * (trackers, live wall arrays, logs). The steps up to the new position follow as normal batches.
  */
 export type ResetListener = () => void;
+
+/**
+ * A breakpoint: tested on every step after the current position, with `index` the step count
+ * once that step is taken (1-based). It may keep state (frontier sizes): it sees every step
+ * exactly once, in order, until the run stops.
+ */
+export type StepPredicate<S> = (step: S, index: number) => boolean;
+
+/** The step a breakpoint stopped on; `index` is the step count after it. */
+export interface BreakHit<S> {
+  readonly step: S;
+  readonly index: number;
+}
+
+/** Fired when a breakpoint run ends: with the matching step, or null if the source ended first. */
+export type BreakListener<S> = (hit: BreakHit<S> | null) => void;
 
 const defaultNow = (): number =>
   typeof performance !== 'undefined' ? performance.now() : Date.now();
@@ -79,6 +97,11 @@ export class StepPlayer<S, R = unknown> {
   private readonly stepListeners = new Set<StepListener<S>>();
   private readonly changeListeners = new Set<() => void>();
   private readonly resetListeners = new Set<ResetListener>();
+  private readonly breakListeners = new Set<BreakListener<S>>();
+  /** Armed by `playUntil`; any other command disarms it. */
+  private breakpoint: StepPredicate<S> | null = null;
+  /** Set by `advance` when its stop predicate matched. */
+  private hit: BreakHit<S> | null = null;
   private highWater = 0;
   private total: number | null = null;
   private snapshot: StepPlayerSnapshot<R>;
@@ -118,6 +141,12 @@ export class StepPlayer<S, R = unknown> {
     return () => this.resetListeners.delete(listener);
   }
 
+  /** Fires when a `runUntil` / `playUntil` run ends (see {@link BreakListener}). */
+  onBreak(listener: BreakListener<S>): () => void {
+    this.breakListeners.add(listener);
+    return () => this.breakListeners.delete(listener);
+  }
+
   /**
    * Moves to an absolute step index. Rewinding re-creates the source and replays it from the
    * start, so sources MUST be deterministic (seeded); that is what makes rewind exact. Forward
@@ -126,6 +155,7 @@ export class StepPlayer<S, R = unknown> {
    */
   seek(target: number): readonly S[] {
     if (this.disposed) return [];
+    this.breakpoint = null;
     const to = Math.max(0, Math.floor(Number.isFinite(target) ? target : 0));
     const wasPlaying = this.status === 'playing';
     if (to < this.stepCount) {
@@ -177,6 +207,7 @@ export class StepPlayer<S, R = unknown> {
   }
 
   pause(): void {
+    this.disarm();
     if (this.status !== 'playing') return;
     this.status = 'paused';
     this.cancelTick();
@@ -190,6 +221,7 @@ export class StepPlayer<S, R = unknown> {
 
   /** Advances `n` steps immediately (works while paused). */
   step(n = 1): readonly S[] {
+    this.disarm();
     if (this.disposed || this.status === 'done') return [];
     if (this.status === 'idle') {
       this.status = 'paused';
@@ -201,6 +233,7 @@ export class StepPlayer<S, R = unknown> {
 
   /** Drains the generator synchronously (bounded by `maxSteps`). */
   runToEnd(maxSteps = 50_000_000): readonly S[] {
+    this.disarm();
     if (this.disposed || this.status === 'done') return [];
     this.cancelTick();
     const batch = this.advance(maxSteps);
@@ -208,6 +241,47 @@ export class StepPlayer<S, R = unknown> {
     if (this.getStatus() !== 'done') this.status = 'paused';
     this.emitChange();
     return batch;
+  }
+
+  /**
+   * Advances synchronously until `predicate` matches a step - that step is the last one
+   * delivered - or the source ends (bounded by `maxSteps`). Leaves the player paused (or done).
+   * Returns the hit, or null when nothing matched; break listeners hear the same.
+   */
+  runUntil(predicate: StepPredicate<S>, maxSteps = 50_000_000): BreakHit<S> | null {
+    this.disarm();
+    if (this.disposed || this.status === 'done') return null;
+    this.cancelTick();
+    this.hit = null;
+    let remaining = Math.max(0, Math.floor(maxSteps));
+    while (remaining > 0 && this.getStatus() !== 'done') {
+      const batch = this.advance(Math.min(remaining, this.maxStepsPerFrame), predicate);
+      remaining -= batch.length;
+      if (this.hitPending() || batch.length === 0) break;
+    }
+    if (this.getStatus() !== 'done') this.status = 'paused';
+    const hit = this.takeHit();
+    this.emitChange();
+    for (const l of this.breakListeners) l(hit);
+    return hit;
+  }
+
+  /**
+   * Plays at the current speed and pauses right after the first step that matches `predicate`
+   * (a debugger's "continue to breakpoint"). Pausing, stepping, seeking or any other command
+   * disarms it silently; break listeners hear the hit, or null if the source ends first.
+   */
+  playUntil(predicate: StepPredicate<S>): void {
+    if (this.disposed || this.status === 'done') return;
+    this.breakpoint = predicate;
+    this.hit = null;
+    if (this.status !== 'playing') {
+      this.status = 'playing';
+      this.lastTick = null;
+      this.accumulator = 0;
+      this.requestTick();
+    }
+    this.emitChange();
   }
 
   setSpeed(stepsPerSecond: number): void {
@@ -223,6 +297,7 @@ export class StepPlayer<S, R = unknown> {
 
   /** New generator from `source`; keeps speed; status becomes `idle`. */
   reset(): void {
+    this.breakpoint = null;
     this.cancelTick();
     this.gen = this.source();
     this.status = 'idle';
@@ -243,6 +318,8 @@ export class StepPlayer<S, R = unknown> {
     this.stepListeners.clear();
     this.changeListeners.clear();
     this.resetListeners.clear();
+    this.breakListeners.clear();
+    this.breakpoint = null;
   }
 
   // ---- internals -----------------------------------------------------------------------
@@ -260,7 +337,26 @@ export class StepPlayer<S, R = unknown> {
     return out;
   }
 
-  private advance(n: number): readonly S[] {
+  /** Clears an armed breakpoint without telling break listeners (another command took over). */
+  private disarm(): void {
+    if (this.breakpoint === null) return;
+    this.breakpoint = null;
+    this.emitChange();
+  }
+
+  /** Read through a method: `advance` sets `hit`, which TypeScript cannot see from here. */
+  private hitPending(): boolean {
+    return this.hit !== null;
+  }
+
+  private takeHit(): BreakHit<S> | null {
+    const hit = this.hit;
+    this.hit = null;
+    return hit;
+  }
+
+  /** Advances up to `n` steps; with `stop`, ends the batch right after the first matching step. */
+  private advance(n: number, stop?: StepPredicate<S>): readonly S[] {
     const limit = Math.min(n, this.maxStepsPerFrame);
     const batch: S[] = [];
     for (let i = 0; i < limit; i++) {
@@ -274,6 +370,10 @@ export class StepPlayer<S, R = unknown> {
       }
       batch.push(next.value);
       this.stepCount++;
+      if (stop?.(next.value, this.stepCount)) {
+        this.hit = { step: next.value, index: this.stepCount };
+        break;
+      }
     }
     if (this.stepCount > this.highWater) this.highWater = this.stepCount;
     if (batch.length > 0) {
@@ -310,7 +410,19 @@ export class StepPlayer<S, R = unknown> {
     const whole = Math.floor(this.accumulator);
     if (whole > 0) {
       this.accumulator -= whole;
-      this.advance(whole);
+      const breakpoint = this.breakpoint;
+      this.advance(whole, breakpoint ?? undefined);
+      const hit = this.takeHit();
+      if (breakpoint && (hit || this.getStatus() === 'done')) {
+        this.breakpoint = null;
+        if (hit) {
+          this.status = 'paused';
+          this.cancelTick();
+        }
+        this.emitChange();
+        for (const l of this.breakListeners) l(hit);
+        return;
+      }
       this.emitChange();
     }
     if (this.getStatus() === 'playing') this.requestTick();
@@ -325,6 +437,7 @@ export class StepPlayer<S, R = unknown> {
       highWater: this.highWater,
       total: this.total,
       result: this.result,
+      breakpointArmed: this.breakpoint !== null,
     };
   }
 
