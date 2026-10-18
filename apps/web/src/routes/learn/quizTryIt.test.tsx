@@ -85,6 +85,7 @@ const demo = (stepCount: number): DemoState => ({
   structure: null,
   genStructure: null,
   graph: null,
+  pair: null,
 });
 
 const CHECKS: TryItCheck[] = [

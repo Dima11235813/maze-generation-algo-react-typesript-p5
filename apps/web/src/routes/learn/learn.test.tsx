@@ -366,6 +366,43 @@ describe('Learn', () => {
     expect(screen.getByTestId('tree-verdict')).toHaveTextContent('Not a tree: it is in 2 pieces');
   });
 
+  it('runs DFS and BFS side by side and stops when the first path is found', async () => {
+    const user = userEvent.setup();
+    renderAt('/learn/m3-dfs-or-bfs');
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'DFS or BFS?' }, { timeout: 10_000 }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', {
+        name: 'Breadth-First Search: 10 by 8 cells, 0 expanded, no path yet',
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', {
+        name: 'Depth-First Search: 10 by 8 cells, 0 expanded, no path yet',
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('The shortest possible path is 16 moves.')).toBeInTheDocument();
+
+    const bar = screen.getByRole('group', { name: 'Breakpoint' });
+    screen.getByRole('slider', { name: 'Demo speed' }).focus();
+    await user.keyboard('{End}');
+    await user.click(within(bar).getByRole('button', { name: 'Run until the next path is found' }));
+    expect(await within(bar).findByTestId('breakpoint-message')).toHaveTextContent(
+      'Stopped at step 75: Depth-First Search found a path of 26 moves.',
+    );
+    await waitFor(() =>
+      expect(useLearnProgress.getState().lessons['m3-dfs-or-bfs']?.tryIts).toEqual(['first-path']),
+    );
+    const scores = screen.getByRole('table');
+    expect(within(scores).getByRole('row', { name: /^Depth-First Search/ })).toHaveTextContent(
+      '26 moves (+10)',
+    );
+    expect(within(scores).getByRole('row', { name: /^Breadth-First Search/ })).toHaveTextContent(
+      'not yet',
+    );
+  });
+
   it('shows a friendly page for an unknown lesson', async () => {
     renderAt('/learn/no-such-lesson');
     expect(await screen.findByRole('heading', { name: 'Lesson not found' })).toBeInTheDocument();

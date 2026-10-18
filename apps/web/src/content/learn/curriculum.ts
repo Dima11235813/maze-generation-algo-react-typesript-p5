@@ -83,6 +83,22 @@ export const CURRICULUM: Curriculum = [
         minutes: 10,
         load: () => import('./m3/frontierRing').then((m) => m.lesson),
       },
+      {
+        id: 'm3-distance-map',
+        title: 'Reading a distance map',
+        summary:
+          'Flood fill labels every cell with its distance to the goal; a shortest path is then just a walk downhill.',
+        minutes: 10,
+        load: () => import('./m3/distanceMap').then((m) => m.lesson),
+      },
+      {
+        id: 'm3-dfs-or-bfs',
+        title: 'DFS or BFS?',
+        summary:
+          'Both searches side by side on a maze with loops: depth-first often finds a path sooner, breadth-first finds the shortest.',
+        minutes: 12,
+        load: () => import('./m3/dfsOrBfs').then((m) => m.lesson),
+      },
     ],
   },
   {
