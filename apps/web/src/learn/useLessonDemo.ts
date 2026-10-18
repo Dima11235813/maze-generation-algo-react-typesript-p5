@@ -10,7 +10,7 @@ import type { StepPlayer } from '@maze/player';
 import { useStepPlayer } from '@maze/player/react';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { genPseudocodeFor } from '../content/genPseudocode';
-import type { DemoSpec } from '../content/learn/types';
+import type { PlayerDemoSpec } from '../content/learn/types';
 import { pseudocodeFor, type PseudocodeListing } from '../content/pseudocode';
 import { drainGeneration } from '../maze/drain';
 import { MazeSession } from '../maze/session';
@@ -56,7 +56,7 @@ function useFollowSteps<S extends Step, R>(
   return { currentLine, lastStep };
 }
 
-export function useLessonDemo(demo: DemoSpec) {
+export function useLessonDemo(demo: PlayerDemoSpec) {
   const sessionRef = useRef<MazeSession | null>(null);
   sessionRef.current ??= new MazeSession({ speed: LESSON_DEFAULT_SPEED });
   const session = sessionRef.current;

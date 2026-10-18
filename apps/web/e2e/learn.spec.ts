@@ -12,7 +12,7 @@ test.describe('learn', () => {
 
     await expect(page.getByRole('link', { name: /^Start with/ })).toHaveAttribute(
       'href',
-      '/learn/m2-backtracker',
+      '/learn/m1-maze-is-graph',
     );
     await modules.getByRole('link', { name: /The frontier is a ring/ }).click();
     await expect(page).toHaveURL(/\/learn\/m3-frontier-ring$/);

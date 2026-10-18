@@ -4,10 +4,11 @@
  * A lesson is a typed module: metadata in the curriculum (so the index never loads lesson
  * bodies) plus a lazily loaded `LessonContent` with the prose component and the demo it drives.
  */
-import type { MazeState, Step } from '@maze/core';
+import type { CellId, MazeState, Step } from '@maze/core';
 import type { PlayerStatus } from '@maze/player';
 import type { ComponentType } from 'react';
 import type { GenStructureState } from '../../learn/genStructure';
+import type { GraphStats } from '../../learn/graphDemo';
 import type { SolveStructureState } from '../../learn/solveStructure';
 
 interface DemoMaze {
@@ -28,7 +29,27 @@ export interface GenerateDemoSpec extends DemoMaze {
   readonly kind: 'generate';
 }
 
-export type DemoSpec = SolveDemoSpec | GenerateDemoSpec;
+/** A small maze the learner edits by hand, read as a graph; no algorithm runs (M1). */
+export interface GraphDemoSpec extends DemoMaze {
+  readonly kind: 'graph';
+  /** Passages closed after generating, so the maze starts in `cut + 1` pieces. */
+  readonly cut?: number;
+}
+
+type DemoSpec = SolveDemoSpec | GenerateDemoSpec | GraphDemoSpec;
+
+/** The demos a step player drives. */
+export type PlayerDemoSpec = SolveDemoSpec | GenerateDemoSpec;
+
+/** What a graph demo shows: its stats and the selected cell. */
+interface GraphDemoView {
+  readonly stats: GraphStats;
+  readonly selected: CellId | null;
+  /** Passages of the selected cell. */
+  readonly degree: number | null;
+  /** Walls opened or closed so far (undo takes one back). */
+  readonly edits: number;
+}
 
 interface ComplexityNote {
   readonly time: string;
@@ -65,6 +86,8 @@ export interface DemoState {
   readonly structure: SolveStructureState | null;
   /** Generate demos: the generator's stack or sets. */
   readonly genStructure: GenStructureState | null;
+  /** Graph demos: the stats and the selection. */
+  readonly graph: GraphDemoView | null;
 }
 
 /** A task done in the demo, verified live by a predicate over its state (13 section 11). */

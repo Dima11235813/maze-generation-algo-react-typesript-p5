@@ -20,9 +20,11 @@ import { describe, expect, it } from 'vitest';
 import { makeSolveBreakpoint } from '../../learn/breakpoints';
 import { makeGenBreakpoint } from '../../learn/genBreakpoints';
 import { GenStructureTracker } from '../../learn/genStructure';
+import { GraphDemoModel, cutOffCells, graphDemoMaze } from '../../learn/graphDemo';
 import { SolveStructureTracker } from '../../learn/solveStructure';
 import { CURRICULUM } from './curriculum';
 import type {
+  GraphDemoSpec,
   DemoState,
   GenerateDemoSpec,
   LessonContent,
@@ -66,6 +68,7 @@ function solveRig(spec: SolveDemoSpec) {
     maze,
     structure: tracker.snapshot(),
     genStructure: null,
+    graph: null,
   });
   return { maze, player, tracker, state };
 }
@@ -98,8 +101,50 @@ function genRig(spec: GenerateDemoSpec) {
     maze,
     structure: null,
     genStructure: tracker.snapshot(),
+    graph: null,
   });
   return { grid, maze, player, tracker, state };
+}
+
+/** A graph demo outside React: the edit model and the state the page derives from it. */
+function graphRig(spec: GraphDemoSpec) {
+  const model = new GraphDemoModel(graphDemoMaze(spec));
+  const state = (): DemoState => {
+    const s = model.getSnapshot();
+    return {
+      status: null,
+      stepCount: s.edits,
+      lastStep: null,
+      maze: s.state,
+      structure: null,
+      genStructure: null,
+      graph: {
+        stats: s.stats,
+        selected: s.selected,
+        degree: s.selected === null ? null : openNeighbors(s.state, s.selected).length,
+        edits: s.edits,
+      },
+    };
+  };
+  /** Neighbouring pairs with a wall between them (each once). */
+  const walls = (): [number, number][] => {
+    const m = model.getSnapshot().state;
+    const out: [number, number][] = [];
+    for (let c = 0; c < cellCount(m.grid); c++) {
+      const right = c % m.grid.width < m.grid.width - 1 ? c + 1 : -1;
+      const below = c + m.grid.width < cellCount(m.grid) ? c + m.grid.width : -1;
+      for (const nb of [right, below]) {
+        if (nb >= 0 && !openNeighbors(m, c).includes(nb)) out.push([c, nb]);
+      }
+    }
+    return out;
+  };
+  return { model, state, walls };
+}
+
+function graphSpec(lesson: LessonContent): GraphDemoSpec {
+  if (lesson.demo.kind !== 'graph') throw new Error('a graph demo');
+  return lesson.demo;
 }
 
 async function load(id: string): Promise<LessonContent> {
@@ -240,5 +285,65 @@ describe('lesson content', () => {
     expect(check('reach-goal').success(state())).toMatch(
       /^DFS reached the goal after expanding \d+ cells\.$/,
     );
+  });
+
+  it('M1.1: every try-it can be done by selecting cells and editing walls', async () => {
+    const lesson = await load('m1-maze-is-graph');
+    const check = (id: string) => checkOf(lesson, id);
+    const { model, state, walls } = graphRig(graphSpec(lesson));
+    for (const c of lesson.tryIt ?? []) expect(c.check(state()), c.id).toBe(false);
+
+    const m = model.getSnapshot().state;
+    const cells = [...Array(cellCount(m.grid)).keys()];
+    model.select(cells.find((c) => openNeighbors(m, c).length >= 3) ?? null);
+    expect(check('junction').check(state())).toBe(true);
+    expect(check('junction').success(state())).toMatch(
+      /^Row \d+, column \d+ has degree [34]: [34] passages meet there\.$/,
+    );
+    model.select(cells.find((c) => openNeighbors(m, c).length === 1) ?? null);
+    expect(check('dead-end').check(state())).toBe(true);
+    expect(check('junction').check(state())).toBe(false);
+
+    const [a, b] = walls()[0] ?? [0, 1];
+    model.toggleWall(a, b);
+    expect(check('loop').check(state())).toBe(true);
+    expect(check('loop').success(state())).toBe(
+      '1 loop: some cells now have two different routes between them.',
+    );
+    model.reset();
+    const leaf = cells.find((c) => c !== m.start && openNeighbors(m, c).length === 1) ?? 0;
+    model.toggleWall(leaf, openNeighbors(m, leaf)[0] ?? 0);
+    expect(check('split').check(state())).toBe(true);
+    expect(check('loop').check(state())).toBe(false);
+  });
+
+  it('M1.2: the cut maze can be joined back into one tree, then given one loop', async () => {
+    const lesson = await load('m1-perfect-trees');
+    const check = (id: string) => checkOf(lesson, id);
+    const { model, state, walls } = graphRig(graphSpec(lesson));
+    for (const c of lesson.tryIt ?? []) expect(c.check(state()), c.id).toBe(false);
+    expect(state().graph?.stats).toMatchObject({ cells: 35, passages: 32, pieces: 3, loops: 0 });
+
+    /** A wall with a cut-off cell on exactly one side joins two pieces. */
+    const joining = () => {
+      const cut = new Set(cutOffCells(model.getSnapshot().state));
+      const found = walls().find(([a, b]) => cut.has(a) !== cut.has(b));
+      if (!found) throw new Error('no joining wall');
+      return found;
+    };
+    model.toggleWall(...joining());
+    expect(check('two-pieces').check(state())).toBe(true);
+    expect(check('two-pieces').success(state())).toBe(
+      'Two pieces left and still no loop: 33 passages for 35 cells.',
+    );
+    model.toggleWall(...joining());
+    expect(check('tree').check(state())).toBe(true);
+    expect(check('tree').success(state())).toBe(
+      'A tree: 35 cells joined by 34 passages, one fewer.',
+    );
+    expect(check('one-more').check(state())).toBe(false);
+    model.toggleWall(...(walls()[0] ?? [0, 1]));
+    expect(check('one-more').check(state())).toBe(true);
+    expect(check('tree').check(state())).toBe(false);
   });
 });

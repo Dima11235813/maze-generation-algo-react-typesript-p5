@@ -4,23 +4,33 @@
  * view, try-it checks, a complexity callout and the quiz, with previous/next lessons and local
  * progress. A passed quiz completes the lesson; lessons without one have a "Mark as done" button.
  */
-import { generators, solvers } from '@maze/core';
+import { generators, openNeighbors, solvers } from '@maze/core';
 import { Button } from '@maze/ui';
 import { Link, useParams } from '@tanstack/react-router';
 import { CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { RouteLoading } from '../../app/RouteLoading';
 import { locateLesson, moduleTitle, type LessonLocation } from '../../content/learn/curriculum';
-import type { DemoState, LessonContent } from '../../content/learn/types';
+import type {
+  DemoState,
+  GraphDemoSpec,
+  LessonContent,
+  PlayerDemoSpec,
+} from '../../content/learn/types';
+import type { CodeListing } from '../../content/pseudocode';
 import { useBreakpoint } from '../../layout/breakpoints';
 import { Section } from '../../layout/Section';
 import { Workspace } from '../../layout/Workspace';
 import { genStructureFor, genStructureTitle } from '../../learn/genStructure';
+import { graphSummary } from '../../learn/graphDemo';
+import { useGraphDemo } from '../../learn/useGraphDemo';
 import { solveStructureFor, structureTitle } from '../../learn/solveStructure';
 import { useLessonDemo } from '../../learn/useLessonDemo';
 import { lessonStatus, useLearnProgress } from '../../state/learnProgress';
 import { PseudocodePanel } from '../watch/PseudocodePanel';
 import { GenStructureView } from './GenStructureView';
+import { GraphDemo } from './GraphDemo';
+import { GraphStatsView } from './GraphStatsView';
 import { LessonDemo } from './LessonDemo';
 import { Quiz } from './Quiz';
 import { StructureView } from './StructureView';
@@ -57,14 +67,39 @@ export function LessonPage() {
     );
   }
   if (content?.id !== location.lesson.id) return <RouteLoading />;
-  return <LessonView key={location.lesson.id} location={location} content={content.content} />;
+  const spec = content.content.demo;
+  return spec.kind === 'graph' ? (
+    <GraphLessonView
+      key={location.lesson.id}
+      location={location}
+      content={content.content}
+      spec={spec}
+    />
+  ) : (
+    <PlayerLessonView
+      key={location.lesson.id}
+      location={location}
+      content={content.content}
+      spec={spec}
+    />
+  );
 }
 
-function LessonView({ location, content }: { location: LessonLocation; content: LessonContent }) {
+/** The page around any demo: header and progress, sections, try-its, quiz and navigation. */
+interface LessonFrameProps {
+  location: LessonLocation;
+  content: LessonContent;
+  stage: ReactNode;
+  /** The section beside the demo: the data structure, or the graph. */
+  structure: { readonly title: string; readonly summary: string; readonly node: ReactNode };
+  /** Pseudo-code synced to the demo; null when no algorithm runs. */
+  code: { readonly listing: CodeListing; readonly currentLine: number | null } | null;
+  demoState: DemoState;
+}
+
+function LessonFrame({ location, content, stage, structure, code, demoState }: LessonFrameProps) {
   const { module, lesson, previous, next } = location;
-  const demo = useLessonDemo(content.demo);
   const bp = useBreakpoint();
-  const touchLayout = bp === 'mobile' || bp === 'tablet';
   const progress = useLearnProgress((s) => s.lessons[lesson.id]);
   const start = useLearnProgress((s) => s.start);
   const complete = useLearnProgress((s) => s.complete);
@@ -72,33 +107,12 @@ function LessonView({ location, content }: { location: LessonLocation; content: 
   const recordQuiz = useLearnProgress((s) => s.recordQuiz);
   const completeTryIt = useLearnProgress((s) => s.completeTryIt);
   const status = lessonStatus(progress);
-  const { quiz, tryIt, tryThis } = content;
-  const spec = content.demo;
-  const algorithmName =
-    spec.kind === 'solve'
-      ? (solvers.get(spec.solverId)?.meta.name ?? spec.solverId)
-      : (generators.get(spec.generatorId)?.meta.name ?? spec.generatorId);
-  const structureHeading =
-    spec.kind === 'solve'
-      ? structureTitle(solveStructureFor(spec.solverId))
-      : genStructureTitle(genStructureFor(spec.generatorId));
-  const { Body } = content;
+  const { quiz, tryIt, tryThis, Body } = content;
 
   useEffect(() => {
     start(lesson.id);
   }, [start, lesson.id]);
 
-  const demoState = useMemo<DemoState>(
-    () => ({
-      status: demo.playerSnap?.status ?? null,
-      stepCount: demo.playerSnap?.stepCount ?? 0,
-      lastStep: demo.lastStep,
-      maze: demo.snap.state,
-      structure: demo.structure,
-      genStructure: demo.genStructure,
-    }),
-    [demo.playerSnap, demo.lastStep, demo.snap.state, demo.structure, demo.genStructure],
-  );
   const onTryItDone = useCallback(
     (checkId: string) => {
       completeTryIt(lesson.id, checkId);
@@ -149,7 +163,7 @@ function LessonView({ location, content }: { location: LessonLocation; content: 
       </header>
       <Workspace
         stageLabel="Lesson demo"
-        stage={<LessonDemo demo={demo} algorithmName={algorithmName} pageScroll={touchLayout} />}
+        stage={stage}
         left={
           <Section id="lesson-concept" title="Concept" summary={lesson.summary} defaultOpen>
             <div className="flex flex-col gap-3 text-sm leading-6">
@@ -161,24 +175,26 @@ function LessonView({ location, content }: { location: LessonLocation; content: 
           <>
             <Section
               id="lesson-structure"
-              title={structureHeading}
-              summary={spec.kind === 'solve' ? 'the frontier' : 'what the generator keeps'}
+              title={structure.title}
+              summary={structure.summary}
               defaultOpen
             >
-              {spec.kind === 'solve' ? (
-                <StructureView grid={demo.snap.state?.grid ?? null} state={demo.structure} />
-              ) : (
-                <GenStructureView grid={demo.snap.state?.grid ?? null} state={demo.genStructure} />
-              )}
+              {structure.node}
             </Section>
-            <Section
-              id="lesson-pseudocode"
-              title="Pseudo-code"
-              summary={demo.listing.title}
-              defaultOpen={bp !== 'mobile'}
-            >
-              <PseudocodePanel listing={demo.listing} currentLine={demo.currentLine} hideHeading />
-            </Section>
+            {code ? (
+              <Section
+                id="lesson-pseudocode"
+                title="Pseudo-code"
+                summary={code.listing.title}
+                defaultOpen={bp !== 'mobile'}
+              >
+                <PseudocodePanel
+                  listing={code.listing}
+                  currentLine={code.currentLine}
+                  hideHeading
+                />
+              </Section>
+            ) : null}
             {tryIt?.length || tryThis?.length ? (
               <Section
                 id="lesson-try"
@@ -280,5 +296,104 @@ function LessonView({ location, content }: { location: LessonLocation; content: 
         }
       />
     </div>
+  );
+}
+
+/** A lesson whose demo plays an algorithm: a solver on a finished maze, or a generator. */
+function PlayerLessonView({
+  location,
+  content,
+  spec,
+}: {
+  location: LessonLocation;
+  content: LessonContent;
+  spec: PlayerDemoSpec;
+}) {
+  const demo = useLessonDemo(spec);
+  const bp = useBreakpoint();
+  const touchLayout = bp === 'mobile' || bp === 'tablet';
+  const grid = demo.snap.state?.grid ?? null;
+  const algorithmName =
+    spec.kind === 'solve'
+      ? (solvers.get(spec.solverId)?.meta.name ?? spec.solverId)
+      : (generators.get(spec.generatorId)?.meta.name ?? spec.generatorId);
+  const structure =
+    spec.kind === 'solve'
+      ? {
+          title: structureTitle(solveStructureFor(spec.solverId)),
+          summary: 'the frontier',
+          node: <StructureView grid={grid} state={demo.structure} />,
+        }
+      : {
+          title: genStructureTitle(genStructureFor(spec.generatorId)),
+          summary: 'what the generator keeps',
+          node: <GenStructureView grid={grid} state={demo.genStructure} />,
+        };
+  const demoState = useMemo<DemoState>(
+    () => ({
+      status: demo.playerSnap?.status ?? null,
+      stepCount: demo.playerSnap?.stepCount ?? 0,
+      lastStep: demo.lastStep,
+      maze: demo.snap.state,
+      structure: demo.structure,
+      genStructure: demo.genStructure,
+      graph: null,
+    }),
+    [demo.playerSnap, demo.lastStep, demo.snap.state, demo.structure, demo.genStructure],
+  );
+  return (
+    <LessonFrame
+      location={location}
+      content={content}
+      stage={<LessonDemo demo={demo} algorithmName={algorithmName} pageScroll={touchLayout} />}
+      structure={structure}
+      code={{ listing: demo.listing, currentLine: demo.currentLine }}
+      demoState={demoState}
+    />
+  );
+}
+
+/** A lesson whose demo is a maze edited by hand and read as a graph (M1). */
+function GraphLessonView({
+  location,
+  content,
+  spec,
+}: {
+  location: LessonLocation;
+  content: LessonContent;
+  spec: GraphDemoSpec;
+}) {
+  const demo = useGraphDemo(spec);
+  const { state, stats, selected, edits } = demo.snap;
+  const demoState = useMemo<DemoState>(
+    () => ({
+      status: null,
+      stepCount: edits,
+      lastStep: null,
+      maze: state,
+      structure: null,
+      genStructure: null,
+      graph: {
+        stats,
+        selected,
+        degree: selected === null ? null : openNeighbors(state, selected).length,
+        edits,
+      },
+    }),
+    [state, stats, selected, edits],
+  );
+  return (
+    <LessonFrame
+      location={location}
+      content={content}
+      stage={<GraphDemo demo={demo} />}
+      structure={{
+        title: 'Graph',
+        summary: graphSummary(stats),
+        node: <GraphStatsView state={state} stats={stats} selected={selected} />,
+      }}
+      code={null}
+      demoState={demoState}
+    />
   );
 }

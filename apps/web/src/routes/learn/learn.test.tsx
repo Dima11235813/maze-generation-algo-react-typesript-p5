@@ -8,7 +8,10 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createAppRouter } from '../../app/router';
+import { colOf, openNeighbors, rowOf } from '@maze/core';
 import { CURRICULUM, locateLesson } from '../../content/learn/curriculum';
+import { lesson as perfectTrees } from '../../content/learn/m1/perfectTrees';
+import { cutOffCells, graphDemoMaze, GraphDemoModel } from '../../learn/graphDemo';
 import type { Curriculum, LessonContent } from '../../content/learn/types';
 import { RendererFactoriesContext } from '../../maze/rendererFactories';
 import { createLearnProgressStore, useLearnProgress } from '../../state/learnProgress';
@@ -268,6 +271,99 @@ describe('Learn', () => {
       within(screen.getByRole('list', { name: /pseudo-code/i })).getByText('(executing)')
         .parentElement,
     ).toHaveTextContent('stack.pop()');
+  });
+
+  it('edits a graph demo by keyboard and buttons until the maze is one tree', async () => {
+    const user = userEvent.setup();
+    if (perfectTrees.demo.kind !== 'graph') throw new Error('a graph demo');
+    // The same moves, planned on a copy of the demo's model.
+    const plan = new GraphDemoModel(graphDemoMaze(perfectTrees.demo));
+    const joining = (): [number, number] => {
+      const m = plan.getSnapshot().state;
+      const cut = new Set(cutOffCells(m));
+      for (let a = 0; a < 35; a++) {
+        for (const b of [a + 1, a + 7]) {
+          if ((b === a + 1 && a % 7 === 6) || b >= 35 || openNeighbors(m, a).includes(b)) continue;
+          if (cut.has(a) !== cut.has(b)) return [a, b];
+        }
+      }
+      throw new Error('no joining wall');
+    };
+    const arrowsTo = (from: number, to: number): string => {
+      const rows =
+        rowOf(plan.getSnapshot().state.grid, to) - rowOf(plan.getSnapshot().state.grid, from);
+      const cols =
+        colOf(plan.getSnapshot().state.grid, to) - colOf(plan.getSnapshot().state.grid, from);
+      return (
+        (rows > 0 ? '{ArrowDown}' : '{ArrowUp}').repeat(Math.abs(rows)) +
+        (cols > 0 ? '{ArrowRight}' : '{ArrowLeft}').repeat(Math.abs(cols))
+      );
+    };
+
+    renderAt('/learn/m1-perfect-trees');
+    expect(
+      await screen.findByRole(
+        'heading',
+        { level: 1, name: 'Perfect mazes are trees' },
+        { timeout: 10_000 },
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('tree-verdict')).toHaveTextContent(
+      'Not a tree: it is in 3 pieces (32 passages for 35 cells).',
+    );
+    // No pseudo-code: no algorithm runs in a graph demo.
+    expect(screen.queryByRole('list', { name: /pseudo-code/i })).not.toBeInTheDocument();
+    const edit = screen.getByRole('group', { name: 'Edit the maze' });
+    expect(within(edit).getByRole('button', { name: 'East wall' })).toBeDisabled();
+
+    // Keyboard: the first arrow selects the start, then walk to the first joining wall and use
+    // the edit row's button for that side.
+    const [a1, b1] = joining();
+    plan.toggleWall(a1, b1);
+    const canvas = screen.getByRole('img', {
+      name: /^Graph demo: 7 by 5 cells, 3 pieces, no loops/,
+    });
+    canvas.focus();
+    await user.keyboard(`{ArrowRight}${arrowsTo(0, a1)}`);
+    const side1 = b1 === a1 + 1 ? 'East wall' : 'South wall';
+    expect(within(edit).getByRole('button', { name: side1 })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await user.click(within(edit).getByRole('button', { name: side1 }));
+    expect(screen.getByTestId('tree-verdict')).toHaveTextContent('Not a tree: it is in 2 pieces');
+    await waitFor(() =>
+      expect(useLearnProgress.getState().lessons['m1-perfect-trees']?.tryIts).toContain(
+        'two-pieces',
+      ),
+    );
+
+    // Shift+arrow on the maze toggles the wall on that side of the selection.
+    const [a2, b2] = joining();
+    canvas.focus();
+    await user.keyboard(arrowsTo(a1, a2));
+    await user.keyboard(
+      b2 === a2 + 1 ? '{Shift>}{ArrowRight}{/Shift}' : '{Shift>}{ArrowDown}{/Shift}',
+    );
+    expect(screen.getByTestId('tree-verdict')).toHaveTextContent(
+      'A tree: one piece with no loops, and 34 passages = 35 cells - 1.',
+    );
+    await waitFor(() =>
+      expect(useLearnProgress.getState().lessons['m1-perfect-trees']?.tryIts).toContain('tree'),
+    );
+    expect(
+      screen
+        .getAllByRole('status')
+        .some((s) =>
+          /Opened the wall between row \d+, column \d+ and row \d+, column \d+: 1 piece, no loops\./.test(
+            s.textContent ?? '',
+          ),
+        ),
+    ).toBe(true);
+
+    // Undo takes the last edit back.
+    await user.click(within(edit).getByRole('button', { name: /Undo/ }));
+    expect(screen.getByTestId('tree-verdict')).toHaveTextContent('Not a tree: it is in 2 pieces');
   });
 
   it('shows a friendly page for an unknown lesson', async () => {
