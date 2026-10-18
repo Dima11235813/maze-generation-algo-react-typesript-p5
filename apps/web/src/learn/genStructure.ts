@@ -1,20 +1,24 @@
 /**
  * Which data structure a generator keeps, and one tracker that folds a generation's steps into
  * it (proj-mgmt/20-learn-mode.md, WI-06d/e): the recursive backtracker's path stack, Prim's
- * frontier, Kruskal's disjoint sets. Used by generator demos in lessons; rebuilt from steps only, like the solver
- * structures, so a rewind resets it and replays exactly.
+ * frontier, Kruskal's disjoint sets, the random walk of Aldous-Broder and Wilson's. Used by
+ * generator demos in lessons; rebuilt from steps only, like the solver structures, so a rewind
+ * resets it and replays exactly.
  */
 import type { CellId, GenStep } from '@maze/core';
 import { DisjointSetModel, type DisjointSetSnapshot } from './disjointSetModel';
 import { FrontierSetModel, type FrontierSetSnapshot } from './frontierSetModel';
 import { BacktrackerStackModel, type StackSnapshot } from './stackModel';
+import { WalkModel, type WalkSnapshot } from './walkModel';
 
-export type GenStructureKind = 'stack' | 'frontier' | 'sets' | 'none';
+export type GenStructureKind = 'stack' | 'frontier' | 'sets' | 'walk' | 'none';
 
 const KIND: Readonly<Record<string, GenStructureKind>> = {
   'recursive-backtracker': 'stack',
   prims: 'frontier',
   kruskals: 'sets',
+  'aldous-broder': 'walk',
+  wilsons: 'walk',
 };
 
 export function genStructureFor(generatorId: string): GenStructureKind {
@@ -29,6 +33,8 @@ export function genStructureTitle(kind: GenStructureKind): string {
       return 'Frontier';
     case 'sets':
       return 'Disjoint sets';
+    case 'walk':
+      return 'Random walk';
     case 'none':
       return 'Data structure';
   }
@@ -38,6 +44,7 @@ type GenStructureSnapshot =
   | { readonly kind: 'stack'; readonly stack: StackSnapshot }
   | { readonly kind: 'frontier'; readonly frontier: FrontierSetSnapshot }
   | { readonly kind: 'sets'; readonly sets: DisjointSetSnapshot }
+  | { readonly kind: 'walk'; readonly walk: WalkSnapshot }
   | { readonly kind: 'none' };
 
 export interface GenStructureState {
@@ -45,7 +52,7 @@ export interface GenStructureState {
   readonly structure: GenStructureSnapshot;
 }
 
-type Model = BacktrackerStackModel | FrontierSetModel | DisjointSetModel | null;
+type Model = BacktrackerStackModel | FrontierSetModel | DisjointSetModel | WalkModel | null;
 
 export class GenStructureTracker {
   private readonly model: Model;
@@ -65,7 +72,9 @@ export class GenStructureTracker {
           ? new FrontierSetModel()
           : kind === 'sets'
             ? new DisjointSetModel(cells)
-            : null;
+            : kind === 'walk'
+              ? new WalkModel(cells)
+              : null;
   }
 
   reset(): void {
@@ -98,6 +107,11 @@ export class GenStructureTracker {
     return this.model instanceof DisjointSetModel ? this.model.pieces : 0;
   }
 
+  /** Cells outside the random walk's tree; 0 for generators without one. */
+  remaining(): number {
+    return this.model instanceof WalkModel ? this.model.remaining : 0;
+  }
+
   /** The latest step that was not a `visit` (a carve, a backtrack, ...), if any. */
   lastMove(): GenStep | null {
     for (let i = this.history.length - 1; i >= 0; i--) {
@@ -123,7 +137,9 @@ export class GenStructureTracker {
           ? { kind: 'frontier', frontier: m.snapshot() }
           : m instanceof DisjointSetModel
             ? { kind: 'sets', sets: m.snapshot() }
-            : { kind: 'none' };
+            : m instanceof WalkModel
+              ? { kind: 'walk', walk: m.snapshot() }
+              : { kind: 'none' };
     return { generatorId: this.generatorId, structure };
   }
 }

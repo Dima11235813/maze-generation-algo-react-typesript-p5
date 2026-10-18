@@ -21,6 +21,7 @@ import { BacktrackerStackModel } from '../../learn/stackModel';
 import { RendererFactoriesContext } from '../../maze/rendererFactories';
 import { usePrefs } from '../../state/prefs';
 import { createFakeFactories } from '../../test/fakeRenderer';
+import { DeadEndHistogram } from './DeadEndHistogram';
 import { DisjointSetView } from './DisjointSetView';
 import { GenStructureView } from './GenStructureView';
 import { StackView } from './StackView';
@@ -124,12 +125,29 @@ describe('generator structure view', () => {
       /^\d+ finds followed \d+ parent links/,
     );
     kruskal.unmount();
+    const walk = views('wilsons', 120);
+    expect(screen.getByTestId('walk-summary')).toHaveTextContent(/^The walk has taken \d+ steps/);
+    expect(screen.getByText('Loops erased')).toBeInTheDocument();
+    walk.unmount();
+    const ab = views('aldous-broder', 40);
+    expect(screen.queryByText('Loops erased')).not.toBeInTheDocument();
+    ab.unmount();
     const prim = views('prims', 20);
     expect(screen.getByRole('list', { name: 'Frontier cells' })).toBeInTheDocument();
     expect(screen.getByText(/^Last taken into the tree:/)).toBeInTheDocument();
     prim.unmount();
     views('binary-tree', 10);
     expect(screen.getByText(/keeps no stack or sets worth showing/)).toBeInTheDocument();
+  });
+});
+
+describe('dead-end histogram', () => {
+  it('puts the same facts in a table for screen readers', () => {
+    render(<DeadEndHistogram generatorIds={['recursive-backtracker', 'wilsons']} />);
+    const table = screen.getByRole('table', { name: /dead ends, over 50 mazes/ });
+    const rows = within(table).getAllByRole('row');
+    expect(rows).toHaveLength(3);
+    expect(within(table).getByRole('rowheader', { name: "Wilson's" })).toBeInTheDocument();
   });
 });
 

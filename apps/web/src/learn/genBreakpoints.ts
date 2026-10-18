@@ -18,10 +18,7 @@ import type { BreakHit } from '@maze/player';
 import { genStructureFor, type GenStructureTracker } from './genStructure';
 import type { Breakpoint, BreakpointCatalogue, BreakpointChoice } from './useBreakpointRun';
 
-export type GenBreakpointId =
-  'backtrack' | 'deadend' | 'stack' | 'frontier' | 'union' | 'reject' | 'pieces' | 'done';
-
-const ORDER: readonly GenBreakpointId[] = [
+const ORDER = [
   'backtrack',
   'deadend',
   'stack',
@@ -29,8 +26,13 @@ const ORDER: readonly GenBreakpointId[] = [
   'union',
   'reject',
   'pieces',
+  'erase',
+  'carve',
+  'remaining',
   'done',
-];
+] as const;
+
+export type GenBreakpointId = (typeof ORDER)[number];
 
 const LABELS: Readonly<Record<GenBreakpointId, string>> = {
   backtrack: 'the next backtrack',
@@ -40,11 +42,14 @@ const LABELS: Readonly<Record<GenBreakpointId, string>> = {
   union: 'the next union',
   reject: 'the next wall kept to avoid a loop',
   pieces: 'N or fewer pieces are left',
+  erase: 'the next loop is erased',
+  carve: 'the tree grows by one cell',
+  remaining: 'N or fewer cells are left outside the tree',
   done: 'the maze is complete',
 };
 
 /** The breakpoints that need N. */
-const COUNTED: ReadonlySet<string> = new Set(['stack', 'frontier', 'pieces']);
+const COUNTED: ReadonlySet<string> = new Set(['stack', 'frontier', 'pieces', 'remaining']);
 
 export interface GenBreakpointContext {
   readonly grid: Grid;
@@ -82,11 +87,17 @@ export function genBreakpointsFor(generatorId: string): readonly BreakpointChoic
     if (stack) fires.add('stack');
     if (kind === 'frontier') fires.add('frontier');
     if (kind === 'sets') fires.add('pieces');
+    const walk = kind === 'walk';
+    if (walk) {
+      fires.add('carve');
+      fires.add('remaining');
+    }
     const stuck = stuckMatcher(null);
     for (const s of generator.run(createGrid(9, 7), createRng('breakpoint-probe'), {})) {
       if (s.t === 'backtrack') fires.add('backtrack');
       if (s.t === 'union') fires.add('union');
       if (s.t === 'reject') fires.add('reject');
+      if (s.t === 'walk' && (s.erased?.length ?? 0) > 0) fires.add('erase');
       if (s.t === 'done') fires.add('done');
       // "Stuck" reads the path stack's story; other generators' backtracks mean other things.
       if (stack && stuck(s)) fires.add('deadend');
@@ -189,6 +200,41 @@ export function makeGenBreakpoint(
         (n) => `${String(n)} pieces are left`,
         `more than ${String(ctx.count)} pieces were always left`,
       );
+    case 'remaining':
+      return counted(
+        (t) => t.remaining(),
+        (n) => n <= ctx.count,
+        (n) => `${String(n)} cells are left outside the tree`,
+        `more than ${String(ctx.count)} cells were always left outside the tree`,
+      );
+    case 'erase':
+      return {
+        predicate: (s) => {
+          fold(s);
+          return s.t === 'walk' && (s.erased?.length ?? 0) > 0;
+        },
+        describe: (hit) =>
+          hit?.step.t === 'walk'
+            ? stopped(
+                hit,
+                `the walk came back to ${at(grid, hit.step.cell)}, so the loop of ${String(hit.step.erased?.length ?? 0)} cells after it is erased`,
+              )
+            : 'Ran to the end: no other loop was erased.',
+      };
+    case 'carve':
+      return {
+        predicate: (s) => {
+          fold(s);
+          return s.t === 'carve';
+        },
+        describe: (hit) =>
+          hit?.step.t === 'carve'
+            ? stopped(
+                hit,
+                `the passage from ${at(grid, hit.step.from)} to ${at(grid, hit.step.to)} is carved; ${String(ahead?.remaining() ?? 0)} cells left outside the tree`,
+              )
+            : 'Ran to the end: nothing else was carved.',
+      };
     case 'union':
       return {
         predicate: (s) => {
