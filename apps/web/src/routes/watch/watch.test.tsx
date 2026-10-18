@@ -141,4 +141,27 @@ describe('/watch', () => {
     const coarse = within(log).getAllByRole('listitem');
     expect(coarse.length).toBeLessThanOrEqual(2);
   });
+
+  it('runs DFS until its next dead end and says where it stopped', async () => {
+    const user = userEvent.setup();
+    renderWatch();
+    const picker = await screen.findByRole('group', { name: /solver/i });
+    await user.click(within(picker).getByRole('radio', { name: /depth-first/i }));
+    const bar = await screen.findByRole('group', { name: 'Breakpoint' });
+    const run = within(bar).getByRole('button', { name: 'Run until the next dead end' });
+    await waitFor(() => expect(run).toBeEnabled());
+    screen.getByRole('slider', { name: 'Speed' }).focus();
+    await user.keyboard('{End}');
+    await user.click(run);
+    expect(await within(bar).findByTestId('breakpoint-message')).toHaveTextContent(
+      /^Stopped at step \d+: a dead end at row \d+, column \d+\.$/,
+    );
+    // Paused on that step, ready for the next run.
+    expect(
+      within(screen.getByRole('toolbar', { name: /watch controls/i })).getByRole('button', {
+        name: /^play$/i,
+      }),
+    ).toBeInTheDocument();
+    expect(within(bar).getByRole('button', { name: 'Run until the next dead end' })).toBeEnabled();
+  });
 });

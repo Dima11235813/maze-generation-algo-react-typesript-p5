@@ -1,7 +1,7 @@
 import { expect, test } from './fixtures';
 
 test.describe('learn', () => {
-  test('from the landing page to a lesson: step the demo, mark it done, progress persists', async ({
+  test('from the landing page to a lesson: step, run to a breakpoint, pass the quiz, progress persists', async ({
     page,
   }) => {
     await page.goto('/');
@@ -26,7 +26,33 @@ test.describe('learn', () => {
       page.getByRole('list', { name: /pseudo-code/i }).locator('[aria-current="step"]'),
     ).toHaveCount(1);
 
-    await page.getByRole('button', { name: 'Mark as done' }).click();
+    // Run until the queue holds more than 6 cells: the try-it that asks for it is ticked.
+    await page.getByRole('combobox', { name: 'Run until' }).click();
+    await page.getByRole('option', { name: 'the queue holds more than N cells' }).click();
+    await page.getByRole('spinbutton', { name: 'N' }).fill('6');
+    await page.getByRole('slider', { name: 'Demo speed' }).focus();
+    await page.keyboard.press('End');
+    await page.getByRole('button', { name: 'Run until the queue holds more than 6 cells' }).click();
+    await expect(page.getByTestId('breakpoint-message')).toHaveText(
+      /^Stopped at step \d+: the queue holds 7 cells\.$/,
+    );
+    await expect(page.getByText(/^Try it done\. The queue holds 7 cells/)).toBeVisible();
+
+    // Passing the quiz completes the lesson.
+    await expect(page.getByRole('button', { name: 'Mark as done' })).toHaveCount(0);
+    const quiz = page.getByRole('form', { name: 'Quiz' });
+    for (const answer of [
+      'The one at the front of the queue: the earliest found',
+      'At most two: some distance d and d + 1',
+      'It reaches every cell at its smallest distance first, the goal included',
+      'O(V + E)',
+    ]) {
+      await quiz.getByRole('radio', { name: answer }).check();
+    }
+    await quiz.getByRole('button', { name: 'Check answers' }).press('Enter');
+    await expect(quiz.getByRole('status')).toHaveText(
+      '4 of 4 correct. Passed: this lesson is complete.',
+    );
     await expect(page.getByRole('button', { name: /lesson done/i })).toBeVisible();
 
     await page

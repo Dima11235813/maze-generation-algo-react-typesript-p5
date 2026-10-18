@@ -9,6 +9,9 @@ export {
   type StepPlayerSnapshot,
   type StepListener,
   type ResetListener,
+  type StepPredicate,
+  type BreakHit,
+  type BreakListener,
 } from './StepPlayer';
 export {
   createNarrator,

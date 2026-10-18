@@ -1,16 +1,17 @@
 /**
  * A Learn lesson (proj-mgmt/13 section 4, 20-learn-mode): concept prose, a live demo with the
- * transport below the maze, pseudo-code synced to the steps, the data-structure view and a
- * complexity callout, with previous/next lessons and local progress.
+ * transport and breakpoints below the maze, pseudo-code synced to the steps, the data-structure
+ * view, try-it checks, a complexity callout and the quiz, with previous/next lessons and local
+ * progress. A passed quiz completes the lesson; lessons without one have a "Mark as done" button.
  */
 import { solvers } from '@maze/core';
 import { Button } from '@maze/ui';
 import { Link, useParams } from '@tanstack/react-router';
 import { CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RouteLoading } from '../../app/RouteLoading';
 import { locateLesson, moduleTitle, type LessonLocation } from '../../content/learn/curriculum';
-import type { LessonContent } from '../../content/learn/types';
+import type { DemoState, LessonContent } from '../../content/learn/types';
 import { useBreakpoint } from '../../layout/breakpoints';
 import { Section } from '../../layout/Section';
 import { Workspace } from '../../layout/Workspace';
@@ -19,7 +20,9 @@ import { useLessonDemo } from '../../learn/useLessonDemo';
 import { lessonStatus, useLearnProgress } from '../../state/learnProgress';
 import { PseudocodePanel } from '../watch/PseudocodePanel';
 import { LessonDemo } from './LessonDemo';
+import { Quiz } from './Quiz';
 import { StructureView } from './StructureView';
+import { TryItList } from './TryItList';
 
 export function LessonPage() {
   const { lessonId } = useParams({ from: '/learn/$lessonId' });
@@ -64,13 +67,33 @@ function LessonView({ location, content }: { location: LessonLocation; content: 
   const start = useLearnProgress((s) => s.start);
   const complete = useLearnProgress((s) => s.complete);
   const reopen = useLearnProgress((s) => s.reopen);
+  const recordQuiz = useLearnProgress((s) => s.recordQuiz);
+  const completeTryIt = useLearnProgress((s) => s.completeTryIt);
   const status = lessonStatus(progress);
+  const { quiz, tryIt, tryThis } = content;
   const solverName = solvers.get(content.demo.solverId)?.meta.name ?? content.demo.solverId;
   const { Body } = content;
 
   useEffect(() => {
     start(lesson.id);
   }, [start, lesson.id]);
+
+  const demoState = useMemo<DemoState>(
+    () => ({
+      status: demo.playerSnap?.status ?? null,
+      stepCount: demo.playerSnap?.stepCount ?? 0,
+      lastStep: demo.lastStep,
+      maze: demo.snap.state,
+      structure: demo.structure,
+    }),
+    [demo.playerSnap, demo.lastStep, demo.snap.state, demo.structure],
+  );
+  const onTryItDone = useCallback(
+    (checkId: string) => {
+      completeTryIt(lesson.id, checkId);
+    },
+    [completeTryIt, lesson.id],
+  );
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -100,6 +123,8 @@ function LessonView({ location, content }: { location: LessonLocation; content: 
           >
             <CheckCircle2 className="h-4 w-4 text-accent" aria-hidden="true" /> Done
           </Button>
+        ) : quiz ? (
+          <span className="text-xs text-muted">Pass the quiz to finish</span>
         ) : (
           <Button
             size="sm"
@@ -139,13 +164,39 @@ function LessonView({ location, content }: { location: LessonLocation; content: 
             >
               <PseudocodePanel listing={demo.listing} currentLine={demo.currentLine} hideHeading />
             </Section>
-            {content.tryThis && content.tryThis.length > 0 ? (
-              <Section id="lesson-try" title="Try this" defaultOpen={bp !== 'mobile'}>
-                <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm">
-                  {content.tryThis.map((t) => (
-                    <li key={t}>{t}</li>
-                  ))}
-                </ul>
+            {tryIt?.length || tryThis?.length ? (
+              <Section
+                id="lesson-try"
+                title="Try it"
+                summary={
+                  tryIt?.length
+                    ? `${String(tryIt.filter((c) => progress?.tryIts?.includes(c.id)).length)} of ${String(tryIt.length)} done`
+                    : undefined
+                }
+                defaultOpen={bp !== 'mobile'}
+              >
+                <div className="flex flex-col gap-3">
+                  {tryIt?.length ? (
+                    <TryItList
+                      checks={tryIt}
+                      demo={demoState}
+                      done={progress?.tryIts ?? []}
+                      onDone={onTryItDone}
+                    />
+                  ) : null}
+                  {tryThis?.length ? (
+                    <div className="flex flex-col gap-1.5">
+                      {tryIt?.length ? (
+                        <h3 className="text-xs font-medium text-muted">More to explore</h3>
+                      ) : null}
+                      <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm">
+                        {tryThis.map((t) => (
+                          <li key={t}>{t}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                </div>
               </Section>
             ) : null}
             <Section
@@ -162,6 +213,25 @@ function LessonView({ location, content }: { location: LessonLocation; content: 
               </dl>
               <p className="mt-2 text-sm text-muted">{content.complexity.why}</p>
             </Section>
+            {quiz ? (
+              <Section
+                id="lesson-quiz"
+                title="Quiz"
+                summary={
+                  progress?.quiz
+                    ? `best ${String(progress.quiz.best)} of ${String(progress.quiz.total)}`
+                    : `${String(quiz.questions.length)} questions`
+                }
+                defaultOpen={bp !== 'mobile'}
+              >
+                <Quiz
+                  quiz={quiz}
+                  onChecked={(correct, total, passed) => {
+                    recordQuiz(lesson.id, correct, total, passed);
+                  }}
+                />
+              </Section>
+            ) : null}
             <nav aria-label="Lessons" className="flex items-center justify-between gap-2 pb-2">
               {previous ? (
                 <Link

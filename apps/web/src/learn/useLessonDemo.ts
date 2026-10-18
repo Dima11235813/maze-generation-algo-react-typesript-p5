@@ -11,6 +11,7 @@ import { pseudocodeFor } from '../content/pseudocode';
 import type { DemoSpec } from '../content/learn/types';
 import { drainGeneration } from '../maze/drain';
 import { MazeSession } from '../maze/session';
+import { useBreakpointRun } from './useBreakpointRun';
 import { useSolveStructure } from './useSolveStructure';
 
 /** A gentle default for reading along; the learner can change it. */
@@ -32,6 +33,8 @@ export function useLessonDemo(demo: DemoSpec) {
   const playerSnap = useStepPlayer(snap.solvePlayer);
   const [speed, setSpeedState] = useState(LESSON_DEFAULT_SPEED);
   const [currentLine, setCurrentLine] = useState<number | null>(null);
+  /** The latest step taken (try-it checks read it); null at step 0. */
+  const [lastStep, setLastStep] = useState<SolveStep | null>(null);
 
   const { generatorId, seed, width, height, solverId } = demo;
 
@@ -59,12 +62,17 @@ export function useLessonDemo(demo: DemoSpec) {
     if (!player) return;
     const listing = pseudocodeFor(solverId);
     setCurrentLine(null);
+    setLastStep(null);
     const offReset = player.onReset(() => {
       setCurrentLine(null);
+      setLastStep(null);
     });
     const offSteps = player.subscribe((batch: readonly SolveStep[]) => {
       const last = batch[batch.length - 1];
-      if (last) setCurrentLine(listing.stepToLine(last));
+      if (last) {
+        setCurrentLine(listing.stepToLine(last));
+        setLastStep(last);
+      }
     });
     return () => {
       offReset();
@@ -73,6 +81,15 @@ export function useLessonDemo(demo: DemoSpec) {
   }, [snap.solvePlayer, solverId]);
 
   const structure = useSolveStructure(snap.solvePlayer, snap.state, solverId);
+  const armed = snap.phase === 'ready' && snap.solvePlayer !== null;
+  const breakpoint = useBreakpointRun({
+    player: armed ? snap.solvePlayer : null,
+    maze: snap.state,
+    solverId,
+    tracker: structure.tracker,
+    running: playerSnap?.breakpointArmed ?? false,
+    done: playerSnap?.status === 'done',
+  });
 
   const setSpeed = useCallback(
     (s: number) => {
@@ -82,13 +99,14 @@ export function useLessonDemo(demo: DemoSpec) {
     [session],
   );
 
-  const armed = snap.phase === 'ready' && snap.solvePlayer !== null;
   return {
     session,
     snap,
     playerSnap,
     armed,
-    structure,
+    structure: structure.state,
+    breakpoint,
+    lastStep,
     currentLine,
     listing: pseudocodeFor(solverId),
     speed,

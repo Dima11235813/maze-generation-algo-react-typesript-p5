@@ -25,6 +25,11 @@ const FROM_GOAL = new Set(['flood-fill']);
 /** Solvers whose `expand` carries a settled distance (BFS rings, Dijkstra/A* costs). */
 const DISTANCES = new Set(['bfs', 'flood-fill', 'dijkstra', 'astar']);
 
+/** Where a solver's frontier starts and its distances count from. */
+export function solveOrigin(solverId: string): 'start' | 'goal' {
+  return FROM_GOAL.has(solverId) ? 'goal' : 'start';
+}
+
 export function solveStructureFor(solverId: string): SolveStructureKind {
   return KIND[solverId] ?? 'none';
 }
@@ -57,6 +62,23 @@ export interface SolveStructureState {
   readonly distances: DistanceSnapshot | null;
 }
 
+/** The frontier's cells, next first, with their distance from the origin when steps carry it. */
+export function frontierCells(
+  state: SolveStructureState,
+): readonly { readonly cell: CellId; readonly distance: number | null }[] {
+  const s = state.structure;
+  switch (s.kind) {
+    case 'queue':
+      return s.queue.entries.map((e) => ({ cell: e.cell, distance: e.depth }));
+    case 'stack':
+      return [...s.stack.cells].reverse().map((cell) => ({ cell, distance: null }));
+    case 'priority':
+      return s.pq.entries.map((e) => ({ cell: e.cell, distance: e.g }));
+    case 'none':
+      return [];
+  }
+}
+
 type Model = QueueModel | DfsStackModel | PriorityQueueModel | null;
 
 export class SolveStructureTracker {
@@ -64,10 +86,14 @@ export class SolveStructureTracker {
   private readonly distances: DistanceModel | null;
   private readonly solverId: string;
   private readonly origin: 'start' | 'goal';
+  private readonly args: readonly [CellId, CellId, number];
+  /** Steps folded since the last reset, so `fork` can rebuild the same state. */
+  private history: SolveStep[] = [];
 
   constructor(solverId: string, start: CellId, goal: CellId, cells: number) {
     this.solverId = solverId;
-    this.origin = FROM_GOAL.has(solverId) ? 'goal' : 'start';
+    this.args = [start, goal, cells];
+    this.origin = solveOrigin(solverId);
     const kind = solveStructureFor(solverId);
     this.model =
       kind === 'queue'
@@ -83,11 +109,30 @@ export class SolveStructureTracker {
   reset(): void {
     this.model?.reset();
     this.distances?.reset();
+    this.history = [];
   }
 
   applyBatch(steps: readonly SolveStep[]): void {
     this.model?.applyBatch(steps);
     this.distances?.applyBatch(steps);
+    for (const s of steps) this.history.push(s);
+  }
+
+  /** Folds one step (breakpoints test each step as it comes). */
+  apply(step: SolveStep): void {
+    this.applyBatch([step]);
+  }
+
+  /** Cells in the frontier now (queue, stack or open set); 0 for solvers without one. */
+  frontierSize(): number {
+    return this.model?.size ?? 0;
+  }
+
+  /** An independent copy at the same position, for a breakpoint to fold ahead on its own. */
+  fork(): SolveStructureTracker {
+    const copy = new SolveStructureTracker(this.solverId, ...this.args);
+    copy.applyBatch(this.history);
+    return copy;
   }
 
   snapshot(): SolveStructureState {

@@ -76,6 +76,11 @@ export class PriorityQueueModel {
     this.notMinimum = 0;
   }
 
+  /** Open cells now (one entry per cell, whatever the solver's heap holds). */
+  get size(): number {
+    return this.open.size;
+  }
+
   applyBatch(steps: readonly SolveStep[]): void {
     this.justRelaxed = [];
     this.justAdded = [];

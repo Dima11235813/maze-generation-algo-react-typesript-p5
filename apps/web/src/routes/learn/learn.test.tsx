@@ -146,7 +146,7 @@ describe('Learn', () => {
     ).toHaveLength(1);
   });
 
-  it('records progress locally and shows it in the index', async () => {
+  it('completes a lesson when its quiz is passed and shows it in the index', async () => {
     const user = userEvent.setup();
     const { view } = renderAt('/learn/m3-frontier-ring');
     await screen.findByRole(
@@ -155,14 +155,64 @@ describe('Learn', () => {
       { timeout: 10_000 },
     );
     expect(useLearnProgress.getState().lessons['m3-frontier-ring']?.startedAt).toBeTruthy();
-    await user.click(screen.getByRole('button', { name: 'Mark as done' }));
-    expect(useLearnProgress.getState().lessons['m3-frontier-ring']?.completedAt).toBeTruthy();
+    // A lesson with a quiz has no "Mark as done" button: the quiz completes it.
+    expect(screen.queryByRole('button', { name: 'Mark as done' })).not.toBeInTheDocument();
+    expect(screen.getByText('Pass the quiz to finish')).toBeInTheDocument();
+    const quiz = screen.getByRole('form', { name: 'Quiz' });
+    for (const answer of [
+      'The one at the front of the queue: the earliest found',
+      'At most two: some distance d and d + 1',
+      'It reaches every cell at its smallest distance first, the goal included',
+      'O(V + E)',
+    ]) {
+      await user.click(within(quiz).getByRole('radio', { name: answer }));
+    }
+    await user.click(within(quiz).getByRole('button', { name: 'Check answers' }));
+    expect(within(quiz).getByRole('status')).toHaveTextContent(
+      '4 of 4 correct. Passed: this lesson is complete.',
+    );
+    expect(useLearnProgress.getState().lessons['m3-frontier-ring']).toMatchObject({
+      completedAt: expect.any(String),
+      quiz: { best: 4, total: 4, attempts: 1 },
+    });
     expect(screen.getByRole('button', { name: /lesson done/i })).toBeInTheDocument();
     view.unmount();
 
     renderAt('/learn');
     expect(await screen.findByText('1 of 1 lessons done.')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /The frontier is a ring.*done/ })).toBeInTheDocument();
+  });
+
+  it('runs the demo until a breakpoint and ticks the try-it that asks for it', async () => {
+    const user = userEvent.setup();
+    renderAt('/learn/m3-frontier-ring');
+    const run = await screen.findByRole(
+      'button',
+      { name: 'Run until it reaches the goal' },
+      { timeout: 10_000 },
+    );
+    await waitFor(() => expect(run).toBeEnabled());
+    // Full speed, so the run takes a frame or two.
+    screen.getByRole('slider', { name: 'Demo speed' }).focus();
+    await user.keyboard('{End}');
+    await user.click(run);
+    expect(await screen.findByTestId('breakpoint-message')).toHaveTextContent(
+      /^Stopped at step \d+: it reached the goal at row \d+, column \d+\.$/,
+    );
+    const tryIt = screen.getByRole('list', { name: 'Try it' });
+    await waitFor(() =>
+      expect(useLearnProgress.getState().lessons['m3-frontier-ring']?.tryIts).toContain(
+        'reach-goal',
+      ),
+    );
+    expect(
+      within(tryIt).getByText(/take(s)? the goal from the front/).parentElement,
+    ).toHaveTextContent(/^Done: /);
+    expect(
+      screen
+        .getAllByRole('status')
+        .some((s) => /Try it done\..*BFS took the goal/.test(s.textContent ?? '')),
+    ).toBe(true);
   });
 
   it('shows a friendly page for an unknown lesson', async () => {

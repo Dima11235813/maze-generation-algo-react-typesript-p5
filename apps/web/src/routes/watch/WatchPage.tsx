@@ -38,6 +38,8 @@ import { Workspace } from '../../layout/Workspace';
 import { OverlayLegend } from './OverlayLegend';
 import { solveStructureFor, structureTitle } from '../../learn/solveStructure';
 import { useSolveStructure } from '../../learn/useSolveStructure';
+import { useBreakpointRun } from '../../learn/useBreakpointRun';
+import { BreakpointBar } from '../learn/BreakpointBar';
 import { StructureView } from '../learn/StructureView';
 import { PseudocodePanel } from './PseudocodePanel';
 import { currentParams, useAlgoParams } from '../../maze/useAlgoParams';
@@ -293,6 +295,14 @@ export function WatchPage() {
   }, [solverId, solverParamsKey, resetSolver]);
 
   const armed = snap.phase === 'ready' && snap.solvePlayer !== null;
+  const breakpointRun = useBreakpointRun({
+    player: armed ? snap.solvePlayer : null,
+    maze: snap.state,
+    solverId: snap.solverId,
+    tracker: structure.tracker,
+    running: playerSnap?.breakpointArmed ?? false,
+    done: playerSnap?.status === 'done',
+  });
   const ride = useRideAlong({
     session,
     enabled: rideAlong && armed,
@@ -529,6 +539,7 @@ export function WatchPage() {
                 }}
               />
             ) : null}
+            <BreakpointBar run={breakpointRun} />
             <TimelineBar
               snapshot={armed ? playerSnap : null}
               label="Solve"
@@ -580,7 +591,7 @@ export function WatchPage() {
               summary={structureKind === 'none' ? 'none kept' : 'the frontier'}
               defaultOpen={bp !== 'mobile'}
             >
-              <StructureView grid={snap.state?.grid ?? null} state={structure} />
+              <StructureView grid={snap.state?.grid ?? null} state={structure.state} />
             </Section>
             <Section id="watch-pseudocode" title="Pseudo-code" summary={listing.title}>
               <PseudocodePanel listing={listing} currentLine={currentLine} hideHeading />
