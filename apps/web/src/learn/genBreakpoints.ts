@@ -1,8 +1,10 @@
 /**
- * Breakpoints for generator runs (proj-mgmt/13 section 4.3, WI-06d): "run until the next
- * backtrack", "until the walk is stuck in a new dead end", "until the stack holds more than N
- * cells", "until the maze is complete". Like the solver ones they are step predicates for
- * `StepPlayer.playUntil`; a generator is offered the ones that fire on a small probe run.
+ * Breakpoints for generator runs (proj-mgmt/13 section 4.3, WI-06d/e): "run until the next
+ * backtrack", "until the walk is stuck in a new dead end", "until the stack (or Prim's frontier)
+ * holds more than N cells", "until the next union", "until the next wall kept to avoid a loop",
+ * "until N pieces are left", "until the maze is complete". Like the solver ones they are step
+ * predicates for `StepPlayer.playUntil`; a generator is offered the ones that fire on a small
+ * probe run.
  */
 import {
   createGrid,
@@ -16,22 +18,39 @@ import type { BreakHit } from '@maze/player';
 import { genStructureFor, type GenStructureTracker } from './genStructure';
 import type { Breakpoint, BreakpointCatalogue, BreakpointChoice } from './useBreakpointRun';
 
-export type GenBreakpointId = 'backtrack' | 'deadend' | 'stack' | 'done';
+export type GenBreakpointId =
+  'backtrack' | 'deadend' | 'stack' | 'frontier' | 'union' | 'reject' | 'pieces' | 'done';
 
-const ORDER: readonly GenBreakpointId[] = ['backtrack', 'deadend', 'stack', 'done'];
+const ORDER: readonly GenBreakpointId[] = [
+  'backtrack',
+  'deadend',
+  'stack',
+  'frontier',
+  'union',
+  'reject',
+  'pieces',
+  'done',
+];
 
 const LABELS: Readonly<Record<GenBreakpointId, string>> = {
   backtrack: 'the next backtrack',
   deadend: 'the walk is stuck in a new dead end',
   stack: 'the stack holds more than N cells',
+  frontier: 'the frontier holds more than N cells',
+  union: 'the next union',
+  reject: 'the next wall kept to avoid a loop',
+  pieces: 'N or fewer pieces are left',
   done: 'the maze is complete',
 };
+
+/** The breakpoints that need N. */
+const COUNTED: ReadonlySet<string> = new Set(['stack', 'frontier', 'pieces']);
 
 export interface GenBreakpointContext {
   readonly grid: Grid;
   /** The live structure, forked so the breakpoint can fold ahead on its own. */
   readonly tracker: GenStructureTracker | null;
-  /** N for "the stack holds more than N cells". */
+  /** N for the stack, the frontier or the pieces left. */
   readonly count: number;
 }
 
@@ -58,11 +77,16 @@ export function genBreakpointsFor(generatorId: string): readonly BreakpointChoic
   const generator = generators.get(generatorId);
   const fires = new Set<GenBreakpointId>();
   if (generator) {
-    const stack = genStructureFor(generatorId) === 'stack';
+    const kind = genStructureFor(generatorId);
+    const stack = kind === 'stack';
     if (stack) fires.add('stack');
+    if (kind === 'frontier') fires.add('frontier');
+    if (kind === 'sets') fires.add('pieces');
     const stuck = stuckMatcher(null);
     for (const s of generator.run(createGrid(9, 7), createRng('breakpoint-probe'), {})) {
       if (s.t === 'backtrack') fires.add('backtrack');
+      if (s.t === 'union') fires.add('union');
+      if (s.t === 'reject') fires.add('reject');
       if (s.t === 'done') fires.add('done');
       // "Stuck" reads the path stack's story; other generators' backtracks mean other things.
       if (stack && stuck(s)) fires.add('deadend');
@@ -89,6 +113,23 @@ export function makeGenBreakpoint(
   const fold = (s: GenStep): number => {
     ahead?.apply(s);
     return ahead?.stackSize() ?? 0;
+  };
+  /** A counted breakpoint: fold, read a size, test it; the message reports the size. */
+  const counted = (
+    read: (t: GenStructureTracker) => number,
+    test: (n: number) => boolean,
+    hitText: (n: number) => string,
+    missText: string,
+  ): Breakpoint<GenStep> => {
+    let n = 0;
+    return {
+      predicate: (s) => {
+        ahead?.apply(s);
+        n = ahead ? read(ahead) : 0;
+        return ahead !== null && test(n);
+      },
+      describe: (hit) => (hit ? stopped(hit, hitText(n)) : `Ran to the end: ${missText}.`),
+    };
   };
   const stopped = (hit: BreakHit<GenStep>, text: string) =>
     `Stopped at step ${String(hit.index)}: ${text}.`;
@@ -134,6 +175,48 @@ export function makeGenBreakpoint(
             : `Ran to the end: the stack never held more than ${String(ctx.count)} cells.`,
       };
     }
+    case 'frontier':
+      return counted(
+        (t) => t.frontierSize(),
+        (n) => n > ctx.count,
+        (n) => `the frontier holds ${String(n)} cells`,
+        `the frontier never held more than ${String(ctx.count)} cells`,
+      );
+    case 'pieces':
+      return counted(
+        (t) => t.pieces(),
+        (n) => n <= ctx.count,
+        (n) => `${String(n)} pieces are left`,
+        `more than ${String(ctx.count)} pieces were always left`,
+      );
+    case 'union':
+      return {
+        predicate: (s) => {
+          fold(s);
+          return s.t === 'union';
+        },
+        describe: (hit) =>
+          hit?.step.t === 'union'
+            ? stopped(
+                hit,
+                `${at(grid, hit.step.a)} and ${at(grid, hit.step.b)} were in different pieces, so they are joined; ${String(ahead?.pieces() ?? 0)} pieces left`,
+              )
+            : 'Ran to the end: there was no union left.',
+      };
+    case 'reject':
+      return {
+        predicate: (s) => {
+          fold(s);
+          return s.t === 'reject';
+        },
+        describe: (hit) =>
+          hit?.step.t === 'reject'
+            ? stopped(
+                hit,
+                `the wall between ${at(grid, hit.step.a)} and ${at(grid, hit.step.b)} stays: they are already in one piece`,
+              )
+            : 'Ran to the end: no other wall was kept.',
+      };
     case 'done':
       return {
         predicate: (s) => s.t === 'done',
@@ -154,7 +237,7 @@ export function genBreakpointCatalogue(
 ): BreakpointCatalogue<GenStep> {
   return {
     choices: genBreakpointsFor(generatorId),
-    needsCount: (id) => id === 'stack',
+    needsCount: (id) => COUNTED.has(id),
     make: (id, count) =>
       makeGenBreakpoint(isGenBreakpointId(id) ? id : 'done', {
         grid,

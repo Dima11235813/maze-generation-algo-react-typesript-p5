@@ -110,7 +110,24 @@ export const CURRICULUM: Curriculum = [
       'Describe union-find with path compression',
     ],
     prerequisites: ['m1', 'm3'],
-    lessons: [],
+    lessons: [
+      {
+        id: 'm4-prim-grows',
+        title: "Prim's grows one tree",
+        summary:
+          "Prim's keeps a frontier of cells around one growing tree and adds a random one each round.",
+        minutes: 10,
+        load: () => import('./m4/primGrows').then((m) => m.lesson),
+      },
+      {
+        id: 'm4-kruskal-joins',
+        title: "Kruskal's joins a forest",
+        summary:
+          "Kruskal's starts with every cell on its own and joins pieces wall by wall, asking union-find whether a wall would close a loop.",
+        minutes: 12,
+        load: () => import('./m4/kruskalJoins').then((m) => m.lesson),
+      },
+    ],
   },
   {
     id: 'm5',

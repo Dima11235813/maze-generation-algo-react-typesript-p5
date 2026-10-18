@@ -52,7 +52,10 @@ export const kruskals: MazeGenerator = {
       const a: CellId = edge >> 1;
       const b: CellId = neighbor(grid, a, edge % 2 === 0 ? Dir.E : Dir.S);
       // Only edges between different components may be added; anything else closes a cycle.
-      if (!sets.union(a, b)) continue;
+      if (!sets.union(a, b)) {
+        yield { t: 'reject', a, b } satisfies GenStep;
+        continue;
+      }
       yield { t: 'union', a, b } satisfies GenStep;
       removeWall(walls, grid, a, b);
       yield { t: 'carve', from: a, to: b } satisfies GenStep;

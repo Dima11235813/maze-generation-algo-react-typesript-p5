@@ -56,3 +56,12 @@ if (!globalThis.crypto?.subtle) {
 
 // TanStack Router calls window.scrollTo on navigation; jsdom does not implement it.
 Object.defineProperty(window, 'scrollTo', { value: () => undefined, writable: true });
+
+// Radix Select captures the pointer and scrolls the chosen option into view; jsdom has neither.
+if (typeof Element !== 'undefined') {
+  const proto = Element.prototype as Partial<Element>;
+  proto.hasPointerCapture ??= () => false;
+  proto.setPointerCapture ??= () => undefined;
+  proto.releasePointerCapture ??= () => undefined;
+  proto.scrollIntoView ??= () => undefined;
+}

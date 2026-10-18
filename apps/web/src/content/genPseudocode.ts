@@ -38,6 +38,7 @@ const RECURSIVE_BACKTRACKER = listing(
     seal: null,
     frontier: null,
     union: null,
+    reject: null,
     walk: null,
     divide: null,
     rotate: null,
@@ -61,6 +62,7 @@ const GENERIC = listing(
     backtrack: 2,
     frontier: 2,
     union: 3,
+    reject: 2,
     walk: 2,
     divide: 3,
     rotate: 3,
@@ -68,8 +70,65 @@ const GENERIC = listing(
   },
 );
 
+/** The simplified (cell-based) Prim's: a random frontier cell joins the tree each round. */
+const PRIMS = listing(
+  "Prim's (randomised)",
+  [
+    'tree <- {start}; frontier <- the neighbours of start',
+    'while frontier is not empty:',
+    '  cell <- take a random cell out of frontier',
+    '  n <- a random neighbour of cell already in the tree',
+    '  carve the wall between n and cell',
+    '  add cell to the tree',
+    '  frontier <- frontier + its neighbours in neither',
+    'return the maze',
+  ],
+  {
+    visit: 2,
+    carve: 4,
+    frontier: 6,
+    done: 7,
+    seal: null,
+    backtrack: null,
+    union: null,
+    reject: null,
+    walk: null,
+    divide: null,
+    rotate: null,
+  },
+);
+
+const KRUSKALS = listing(
+  "Kruskal's (randomised)",
+  [
+    'every cell is a set of its own',
+    'for each wall, in a random order:',
+    '  a, b <- the cells on either side of it',
+    '  if find(a) != find(b):',
+    '    union(a, b)',
+    '    carve the wall between a and b',
+    '  else: keep the wall (carving it would close a loop)',
+    'return the maze',
+  ],
+  {
+    union: 4,
+    carve: 5,
+    reject: 6,
+    done: 7,
+    visit: null,
+    seal: null,
+    backtrack: null,
+    frontier: null,
+    walk: null,
+    divide: null,
+    rotate: null,
+  },
+);
+
 const LISTINGS: Readonly<Record<string, PseudocodeListing<GenStep>>> = {
   'recursive-backtracker': RECURSIVE_BACKTRACKER,
+  prims: PRIMS,
+  kruskals: KRUSKALS,
 };
 
 export function genPseudocodeFor(generatorId: string): PseudocodeListing<GenStep> {

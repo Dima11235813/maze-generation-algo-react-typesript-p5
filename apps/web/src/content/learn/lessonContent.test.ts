@@ -420,4 +420,54 @@ describe('lesson content', () => {
     // With both paths found, "first" cannot be read off the state any more.
     expect(check('first-path').check(state())).toBe(false);
   });
+
+  it("M4.1: Prim's frontier passes 10, the tree reaches half, then the whole grid", async () => {
+    const lesson = await load('m4-prim-grows');
+    const check = (id: string) => checkOf(lesson, id);
+    const { grid, player, tracker, state } = genRig(genSpec(lesson));
+    for (const c of lesson.tryIt ?? []) expect(c.check(state()), c.id).toBe(false);
+
+    const wide = makeGenBreakpoint('frontier', { grid, tracker, count: 10 });
+    expect(player.runUntil(wide.predicate)).not.toBeNull();
+    expect(check('frontier-past-ten').check(state())).toBe(true);
+    expect(check('frontier-past-ten').success(state())).toMatch(
+      /^The frontier holds 1[1-4] cells around a tree of \d+\.$/,
+    );
+    let guard = 0;
+    while (!check('half').check(state()) && guard++ < 500) player.step();
+    expect(check('half').check(state())).toBe(true);
+    const done = makeGenBreakpoint('done', { grid, tracker, count: 0 });
+    expect(player.runUntil(done.predicate)).not.toBeNull();
+    expect(check('complete').check(state())).toBe(true);
+    expect(check('complete').success(state())).toMatch(
+      /^All 70 cells are in the tree; the frontier was at most \d+ cells\.$/,
+    );
+  });
+
+  it("M4.2: Kruskal's keeps a wall, gets down to 10 pieces, then one", async () => {
+    const lesson = await load('m4-kruskal-joins');
+    const check = (id: string) => checkOf(lesson, id);
+    const { grid, player, tracker, state } = genRig(genSpec(lesson));
+    for (const c of lesson.tryIt ?? []) expect(c.check(state()), c.id).toBe(false);
+
+    expect(
+      player.runUntil(makeGenBreakpoint('reject', { grid, tracker, count: 0 }).predicate),
+    ).not.toBeNull();
+    expect(check('first-kept').check(state())).toBe(true);
+    expect(check('first-kept').success(state())).toMatch(
+      /^The wall between row \d+, column \d+ and row \d+, column \d+ stays: they are already in one piece\.$/,
+    );
+    expect(
+      player.runUntil(makeGenBreakpoint('pieces', { grid, tracker, count: 10 }).predicate),
+    ).not.toBeNull();
+    expect(check('ten-pieces').check(state())).toBe(true);
+    expect(check('ten-pieces').success(state())).toBe('10 pieces left after 60 unions.');
+    expect(
+      player.runUntil(makeGenBreakpoint('done', { grid, tracker, count: 0 }).predicate),
+    ).not.toBeNull();
+    expect(check('complete').check(state())).toBe(true);
+    expect(check('complete').success(state())).toMatch(
+      /^One piece: 69 unions for 70 cells, and \d+ walls kept along the way\.$/,
+    );
+  });
 });

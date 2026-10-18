@@ -18,6 +18,11 @@ export interface DisjointSetSnapshot {
   readonly lastUnion: { readonly a: CellId; readonly b: CellId; readonly size: number } | null;
   /** Unions whose ends were already connected (0 for Kruskal: those edges are skipped). */
   readonly redundant: number;
+  /** Edges looked at and kept as walls, because their ends were already connected. */
+  readonly rejected: number;
+  /** `find` calls (two per edge looked at) and the parent links they followed. */
+  readonly finds: number;
+  readonly hops: number;
 }
 
 const SHOW_LARGEST = 6;
@@ -28,6 +33,9 @@ export class DisjointSetModel {
   private sets: number;
   private unions = 0;
   private redundant = 0;
+  private rejected = 0;
+  private finds = 0;
+  private hops = 0;
   private lastUnion: DisjointSetSnapshot['lastUnion'] = null;
   private readonly cells: number;
 
@@ -47,12 +55,25 @@ export class DisjointSetModel {
     this.sets = this.cells;
     this.unions = 0;
     this.redundant = 0;
+    this.rejected = 0;
+    this.finds = 0;
+    this.hops = 0;
     this.lastUnion = null;
   }
 
+  /** Separate components now. */
+  get pieces(): number {
+    return this.sets;
+  }
+
+  /** The set's representative, with path compression: every link on the way is pointed at it. */
   find(cell: CellId): CellId {
+    this.finds++;
     let root = cell;
-    while (this.parent[root] !== root) root = this.parent[root] as number;
+    while (this.parent[root] !== root) {
+      root = this.parent[root] as number;
+      this.hops++;
+    }
     let c = cell;
     while (this.parent[c] !== root) {
       const next = this.parent[c] as number;
@@ -67,6 +88,12 @@ export class DisjointSetModel {
   }
 
   apply(step: GenStep): void {
+    if (step.t === 'reject') {
+      this.find(step.a);
+      this.find(step.b);
+      this.rejected++;
+      return;
+    }
     if (step.t !== 'union') return;
     let ra = this.find(step.a);
     let rb = this.find(step.b);
@@ -97,6 +124,9 @@ export class DisjointSetModel {
       largest: roots.slice(0, SHOW_LARGEST),
       lastUnion: this.lastUnion,
       redundant: this.redundant,
+      rejected: this.rejected,
+      finds: this.finds,
+      hops: this.hops,
     };
   }
 }
