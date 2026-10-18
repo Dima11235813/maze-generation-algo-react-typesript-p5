@@ -169,5 +169,7 @@ powershell -ExecutionPolicy Bypass -File D:\GDrive\proj-mgmt\inventory\scripts\p
   tests needing sizes stub `clientWidth`/`offsetWidth` (see `routes/tools/tools.test.tsx`).
 - A second surface for the same action (toolbar + maze tools) makes loose queries ambiguous:
   scope RTL/Playwright queries to their container (`within(toolbar)`).
+- Interaction screenshots taken right after a tap catch CSS transitions mid-way: wait ~400 ms,
+  and print the element's attributes and computed style before "fixing" a look (L-47).
 - `setTimeout` return types depend on which lib (DOM/Node) TypeScript sees first: never rely on
   them (`Number(setTimeout(...))` or `ReturnType<typeof setTimeout>`).

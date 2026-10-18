@@ -33,6 +33,8 @@ The one-line rules every session needs; the entries below keep the story behind 
 | Checks | Interaction scripts live in `apps/web/.local/` (ignored); open collapsed phone sections first | L-44 |
 | Learn | Offer only what an algorithm can do (probe it); stateful breakpoints fork the live state | L-45 |
 | Tests | Radio groups: tab in forwards; checks met together share one live message | L-46 |
+| Checks | Let CSS transitions settle before screenshots; read computed state before "fixing" | L-47 |
+| A11y | Wrap long text instead of scrolling sideways; scope text queries away from the announcer | L-48 |
 | Owner | Phone-first, small merged slices, protect the 3D views and the walkthrough | L-17 |
 
 ## Process and orchestration
@@ -291,3 +293,21 @@ at once; announcing them one by one let the second message replace the first bef
 *Rule:* tab into radio groups forwards in tests; combine everything that passed at one moment into
 one live message. Also: ESLint now ignores `**/.local/**` and `**/*.tmp.*`, so local scratch
 scripts no longer fail `pnpm lint`.
+
+**L-47 A screenshot taken during a CSS transition looks like a bug.** The M1 edit row's wall
+buttons showed half-tinted and in the wrong pressed state in the interaction screenshots, as if
+`aria-pressed` were out of sync. Reading the DOM showed the right `aria-pressed` values; computed
+background colours had fractional alpha: the screenshot caught the 150 ms `transition-colors`
+right after the taps. Adding a style to "fix" it would have papered over nothing. *Rule:* in
+interaction scripts wait ~400 ms after the last interaction before a screenshot, and when a shot
+looks wrong, print the element's attributes and computed style before changing code (as L-22).
+
+**L-48 Two small traps from the lesson smoke test.** (1) axe flags a horizontally scrolling region
+that cannot take focus (`scrollable-region-focusable`): DFS pseudo-code lines are wider than the
+side column. `tabIndex` on the list is refused by `jsx-a11y/no-noninteractive-tabindex`; wrapping
+each line under its own indent (`whitespace-pre-wrap` + `padding-left: <indent>ch`) removes the
+scroll, so there is nothing to focus. (2) `getByText(/stuck at row/)` also matched the hidden
+announcer, which holds the same sentence. *Rule:* prefer wrapping to sideways scrolling for text;
+locate messages by their test id or container, never by text alone when it is also announced.
+Also: a new demo kind added to a lesson union shows up in every test fixture of `DemoState`; give
+new fields a `null` default in each fixture in the same change.
