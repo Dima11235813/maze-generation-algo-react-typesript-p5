@@ -470,4 +470,49 @@ describe('lesson content', () => {
       /^One piece: 69 unions for 70 cells, and \d+ walls kept along the way\.$/,
     );
   });
+
+  it('M5.1: Aldous-Broder reaches half the maze, then the last few cells, then the end', async () => {
+    const lesson = await load('m5-aldous-broder');
+    const check = (id: string) => checkOf(lesson, id);
+    const { grid, player, tracker, state } = genRig(genSpec(lesson));
+    for (const c of lesson.tryIt ?? []) expect(c.check(state()), c.id).toBe(false);
+    const left = (count: number) => makeGenBreakpoint('remaining', { grid, tracker, count });
+    expect(player.runUntil(left(24).predicate)).not.toBeNull();
+    expect(check('half').check(state())).toBe(true);
+    expect(check('last-few').check(state())).toBe(false);
+    expect(player.runUntil(left(3).predicate)).not.toBeNull();
+    expect(check('last-few').check(state())).toBe(true);
+    expect(
+      player.runUntil(makeGenBreakpoint('done', { grid, tracker, count: 0 }).predicate),
+    ).not.toBeNull();
+    expect(check('complete').check(state())).toBe(true);
+    expect(check('complete').success(state())).toMatch(
+      /^\d+ walk steps built a tree of 48 cells with 47 passages\.$/,
+    );
+  });
+
+  it("M5.2: Wilson's erases a loop, grows a branch, and finishes", async () => {
+    const lesson = await load('m5-wilson-erases');
+    const check = (id: string) => checkOf(lesson, id);
+    const { grid, player, tracker, state } = genRig(genSpec(lesson));
+    for (const c of lesson.tryIt ?? []) expect(c.check(state()), c.id).toBe(false);
+    expect(
+      player.runUntil(makeGenBreakpoint('erase', { grid, tracker, count: 0 }).predicate),
+    ).not.toBeNull();
+    expect(check('first-erase').check(state())).toBe(true);
+    expect(check('first-erase').success(state())).toMatch(
+      /^The walk crossed its own path, so the \d+ cells? after the crossing are erased\.$/,
+    );
+    expect(
+      player.runUntil(makeGenBreakpoint('carve', { grid, tracker, count: 0 }).predicate),
+    ).not.toBeNull();
+    expect(check('branch').check(state())).toBe(true);
+    expect(
+      player.runUntil(makeGenBreakpoint('done', { grid, tracker, count: 0 }).predicate),
+    ).not.toBeNull();
+    expect(check('complete').check(state())).toBe(true);
+    expect(check('complete').success(state())).toMatch(
+      /^Done: \d+ walk steps, \d+ loops erased, a tree of 48 cells\.$/,
+    );
+  });
 });

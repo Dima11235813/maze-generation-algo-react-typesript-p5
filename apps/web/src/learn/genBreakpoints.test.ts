@@ -50,6 +50,7 @@ function expected(
   // Prim's frontier and Kruskal's pieces, counted here without the models.
   const frontier = new Set<number>();
   let unions = 0;
+  let carves = 0;
   let lastMove: GenStep | null = null;
   for (let i = 0; i < steps.length; i++) {
     const s = steps[i] as GenStep;
@@ -59,6 +60,7 @@ function expected(
       for (const c of s.add ?? []) frontier.add(c);
     }
     if (s.t === 'union') unions++;
+    if (s.t === 'carve') carves++;
     const previous = lastMove;
     if (s.t !== 'visit') lastMove = s;
     if (i < from) continue;
@@ -69,9 +71,13 @@ function expected(
           ? frontier.size > count
           : id === 'pieces'
             ? cells - unions <= count
-            : id === 'deadend'
-              ? s.t === 'backtrack' && previous?.t === 'carve'
-              : s.t === id;
+            : id === 'remaining'
+              ? cells - 1 - carves <= count
+              : id === 'erase'
+                ? s.t === 'walk' && (s.erased?.length ?? 0) > 0
+                : id === 'deadend'
+                  ? s.t === 'backtrack' && previous?.t === 'carve'
+                  : s.t === id;
     if (hit) return i + 1;
   }
   return null;
@@ -81,6 +87,7 @@ const COUNTS: Partial<Record<GenBreakpointId, readonly number[]>> = {
   stack: [5, 15],
   frontier: [4, 10],
   pieces: [30, 5],
+  remaining: [30, 3],
 };
 
 describe('generator breakpoints', () => {
@@ -88,7 +95,9 @@ describe('generator breakpoints', () => {
     expect(ids('recursive-backtracker')).toEqual(['backtrack', 'deadend', 'stack', 'done']);
     expect(ids('prims')).toEqual(['frontier', 'done']);
     expect(ids('kruskals')).toEqual(['union', 'reject', 'pieces', 'done']);
-    expect(ids('aldous-broder')).toEqual(['done']);
+    expect(ids('aldous-broder')).toEqual(['carve', 'remaining', 'done']);
+    expect(ids('wilsons')).toEqual(['erase', 'carve', 'remaining', 'done']);
+    expect(ids('binary-tree')).toEqual(['done']);
     for (const id of generators.ids) expect(ids(id), id).toContain('done');
     expect(genBreakpointsFor('recursive-backtracker').find((c) => c.id === 'stack')?.label).toBe(
       'the stack holds more than N cells',
@@ -96,7 +105,7 @@ describe('generator breakpoints', () => {
     expect(genBreakpointsFor('no-such-generator')).toEqual([]);
   });
 
-  it.each(['recursive-backtracker', 'prims', 'kruskals'])(
+  it.each(['recursive-backtracker', 'prims', 'kruskals', 'aldous-broder', 'wilsons'])(
     '%s: every breakpoint stops exactly on its first match',
     (generatorId) => {
       for (const [seed, w, h, rawParams] of RUNS) {

@@ -125,10 +125,69 @@ const KRUSKALS = listing(
   },
 );
 
+const ALDOUS_BRODER = listing(
+  'Aldous-Broder',
+  [
+    'cell <- start; the tree holds only start',
+    'while some cell is not in the tree:',
+    '  n <- a random neighbour of cell',
+    '  if n is not in the tree:',
+    '    carve the wall between cell and n; add n to the tree',
+    '  cell <- n',
+    'return the maze',
+  ],
+  {
+    visit: 0,
+    walk: 2,
+    carve: 4,
+    done: 6,
+    seal: null,
+    backtrack: null,
+    frontier: null,
+    union: null,
+    reject: null,
+    divide: null,
+    rotate: null,
+  },
+);
+
+const WILSONS_MAP: LineMap = {
+  visit: 0,
+  walk: 4,
+  carve: 6,
+  done: 7,
+  seal: null,
+  backtrack: null,
+  frontier: null,
+  union: null,
+  reject: null,
+  divide: null,
+  rotate: null,
+};
+
+/** A walk step that erased a loop belongs to the erase line, not the plain step line. */
+const WILSONS: PseudocodeListing<GenStep> = {
+  title: "Wilson's",
+  lines: [
+    'tree <- {start}',
+    'while some cell is not in the tree:',
+    '  walk <- [a random cell not in the tree]',
+    '  until the walk reaches the tree:',
+    '    step to a random neighbour',
+    '    if it is already on the walk: erase the loop back to it',
+    '  carve the walk into the tree, cell by cell',
+    'return the maze',
+  ],
+  stepToLine: (step) =>
+    step.t === 'walk' && (step.erased?.length ?? 0) > 0 ? 5 : WILSONS_MAP[step.t],
+};
+
 const LISTINGS: Readonly<Record<string, PseudocodeListing<GenStep>>> = {
   'recursive-backtracker': RECURSIVE_BACKTRACKER,
   prims: PRIMS,
   kruskals: KRUSKALS,
+  'aldous-broder': ALDOUS_BRODER,
+  wilsons: WILSONS,
 };
 
 export function genPseudocodeFor(generatorId: string): PseudocodeListing<GenStep> {

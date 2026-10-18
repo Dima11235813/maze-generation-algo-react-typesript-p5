@@ -135,7 +135,24 @@ export const CURRICULUM: Curriculum = [
     title: 'Uniform spanning trees: Aldous-Broder & Wilson',
     objectives: ['Define uniformity', 'Explain loop erasure', 'Discuss expected running time'],
     prerequisites: ['m4'],
-    lessons: [],
+    lessons: [
+      {
+        id: 'm5-aldous-broder',
+        title: 'Aldous-Broder walks at random',
+        summary:
+          'A plain random walk that carves only into new cells builds a perfectly unbiased maze, slowly.',
+        minutes: 10,
+        load: () => import('./m5/aldousBroder').then((m) => m.lesson),
+      },
+      {
+        id: 'm5-wilson-erases',
+        title: "Wilson's erases loops",
+        summary:
+          "Loop-erased random walks build the same unbiased mazes faster; dead-end counts over 50 seeds show each generator's bias.",
+        minutes: 12,
+        load: () => import('./m5/wilsonErases').then((m) => m.lesson),
+      },
+    ],
   },
   {
     id: 'm6',
