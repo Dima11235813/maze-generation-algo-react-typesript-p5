@@ -20,6 +20,8 @@ export function BreakpointBar({ run }: { run: BreakpointRun }) {
       <SimpleSelect
         label="Run until"
         className="min-w-0 flex-1"
+        // Wrap long choices on phones instead of truncating them.
+        triggerClassName="h-auto min-h-9 py-1.5 text-left whitespace-normal"
         value={choice}
         options={choices.map((c) => ({ value: c.id, label: c.label }))}
         onValueChange={run.setChoice}
@@ -28,7 +30,8 @@ export function BreakpointBar({ run }: { run: BreakpointRun }) {
       {needsCount ? (
         <NumberField
           label="N"
-          className="w-24"
+          className="w-20"
+          inputClassName="w-full"
           value={count}
           min={1}
           max={999}
