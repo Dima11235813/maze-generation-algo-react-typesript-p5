@@ -32,7 +32,8 @@ test.describe('every lesson', () => {
     for (const href of hrefs) {
       await page.goto(href);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 30_000 });
-      const canvas = page.getByRole('img', { name: /^(Demo maze|Graph demo): \d+ by \d+ cells/ });
+      // Demo canvases are named "<what>: W by H cells, ..." (a pair demo has one per solver).
+      const canvas = page.getByRole('img', { name: /^[^:]+: \d+ by \d+ cells/ }).first();
       await expect(canvas, href).toBeVisible();
       const edit = page.getByRole('group', { name: 'Edit the maze' });
       if ((await edit.count()) > 0) {
@@ -47,10 +48,11 @@ test.describe('every lesson', () => {
           .getByRole('button', { name: /step once/i });
         await expect(step, href).toBeEnabled({ timeout: 30_000 });
         await step.click();
-        await expect(
-          page.getByRole('list', { name: /pseudo-code/i }).locator('[aria-current="step"]'),
-          href,
-        ).toHaveCount(1);
+        const code = page.getByRole('list', { name: /pseudo-code/i });
+        // Demos that run one algorithm show its pseudo-code, following the step.
+        if ((await code.count()) > 0) {
+          await expect(code.locator('[aria-current="step"]'), href).toHaveCount(1);
+        }
       }
       await expect(page.getByRole('form', { name: 'Quiz' }), href).toBeVisible();
       await expectNoSeriousViolations(page, href);

@@ -9,6 +9,7 @@ import type { PlayerStatus } from '@maze/player';
 import type { ComponentType } from 'react';
 import type { GenStructureState } from '../../learn/genStructure';
 import type { GraphStats } from '../../learn/graphDemo';
+import type { PairLane } from '../../learn/pairDemo';
 import type { SolveStructureState } from '../../learn/solveStructure';
 
 interface DemoMaze {
@@ -36,7 +37,15 @@ export interface GraphDemoSpec extends DemoMaze {
   readonly cut?: number;
 }
 
-type DemoSpec = SolveDemoSpec | GenerateDemoSpec | GraphDemoSpec;
+/** Two solvers side by side on one braided maze, in lockstep (M3 "DFS or BFS?"). */
+export interface PairDemoSpec extends DemoMaze {
+  readonly kind: 'pair';
+  /** Percent of dead ends braided away, which adds loops. */
+  readonly braid: number;
+  readonly solverIds: readonly [string, string];
+}
+
+type DemoSpec = SolveDemoSpec | GenerateDemoSpec | GraphDemoSpec | PairDemoSpec;
 
 /** The demos a step player drives. */
 export type PlayerDemoSpec = SolveDemoSpec | GenerateDemoSpec;
@@ -88,6 +97,11 @@ export interface DemoState {
   readonly genStructure: GenStructureState | null;
   /** Graph demos: the stats and the selection. */
   readonly graph: GraphDemoView | null;
+  /** Pair demos: each lane's progress and the shortest path's length. */
+  readonly pair: {
+    readonly lanes: readonly PairLane[];
+    readonly shortest: number | null;
+  } | null;
 }
 
 /** A task done in the demo, verified live by a predicate over its state (13 section 11). */

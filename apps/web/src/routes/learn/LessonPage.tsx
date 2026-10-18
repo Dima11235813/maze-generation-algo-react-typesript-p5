@@ -15,6 +15,7 @@ import type {
   DemoState,
   GraphDemoSpec,
   LessonContent,
+  PairDemoSpec,
   PlayerDemoSpec,
 } from '../../content/learn/types';
 import type { CodeListing } from '../../content/pseudocode';
@@ -24,6 +25,7 @@ import { Workspace } from '../../layout/Workspace';
 import { genStructureFor, genStructureTitle } from '../../learn/genStructure';
 import { graphSummary } from '../../learn/graphDemo';
 import { useGraphDemo } from '../../learn/useGraphDemo';
+import { usePairDemo } from '../../learn/usePairDemo';
 import { solveStructureFor, structureTitle } from '../../learn/solveStructure';
 import { useLessonDemo } from '../../learn/useLessonDemo';
 import { lessonStatus, useLearnProgress } from '../../state/learnProgress';
@@ -32,6 +34,8 @@ import { GenStructureView } from './GenStructureView';
 import { GraphDemo } from './GraphDemo';
 import { GraphStatsView } from './GraphStatsView';
 import { LessonDemo } from './LessonDemo';
+import { PairDemo } from './PairDemo';
+import { PairStatsView } from './PairStatsView';
 import { Quiz } from './Quiz';
 import { StructureView } from './StructureView';
 import { TryItList } from './TryItList';
@@ -68,6 +72,16 @@ export function LessonPage() {
   }
   if (content?.id !== location.lesson.id) return <RouteLoading />;
   const spec = content.content.demo;
+  if (spec.kind === 'pair') {
+    return (
+      <PairLessonView
+        key={location.lesson.id}
+        location={location}
+        content={content.content}
+        spec={spec}
+      />
+    );
+  }
   return spec.kind === 'graph' ? (
     <GraphLessonView
       key={location.lesson.id}
@@ -338,6 +352,7 @@ function PlayerLessonView({
       structure: demo.structure,
       genStructure: demo.genStructure,
       graph: null,
+      pair: null,
     }),
     [demo.playerSnap, demo.lastStep, demo.snap.state, demo.structure, demo.genStructure],
   );
@@ -379,6 +394,7 @@ function GraphLessonView({
         degree: selected === null ? null : openNeighbors(state, selected).length,
         edits,
       },
+      pair: null,
     }),
     [state, stats, selected, edits],
   );
@@ -391,6 +407,48 @@ function GraphLessonView({
         title: 'Graph',
         summary: graphSummary(stats),
         node: <GraphStatsView state={state} stats={stats} selected={selected} />,
+      }}
+      code={null}
+      demoState={demoState}
+    />
+  );
+}
+
+/** A lesson whose demo runs two solvers side by side on one maze, in lockstep (M3). */
+function PairLessonView({
+  location,
+  content,
+  spec,
+}: {
+  location: LessonLocation;
+  content: LessonContent;
+  spec: PairDemoSpec;
+}) {
+  const demo = usePairDemo(spec);
+  const { model, playerSnap, lanes } = demo;
+  const demoState = useMemo<DemoState>(
+    () => ({
+      status: playerSnap?.status ?? null,
+      stepCount: playerSnap?.stepCount ?? 0,
+      lastStep: null,
+      maze: model.maze,
+      structure: null,
+      genStructure: null,
+      graph: null,
+      pair: { lanes, shortest: model.shortest },
+    }),
+    [playerSnap, model, lanes],
+  );
+  const found = lanes.filter((l) => l.pathMoves !== null).length;
+  return (
+    <LessonFrame
+      location={location}
+      content={content}
+      stage={<PairDemo demo={demo} />}
+      structure={{
+        title: 'Side by side',
+        summary: `${String(found)} of ${String(lanes.length)} paths found`,
+        node: <PairStatsView lanes={lanes} shortest={model.shortest} />,
       }}
       code={null}
       demoState={demoState}

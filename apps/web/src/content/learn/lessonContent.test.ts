@@ -9,6 +9,7 @@ import {
   generators,
   openNeighbors,
   runToEnd,
+  solutionLength,
   solvers,
   type GenStep,
   type MazeState,
@@ -21,10 +22,12 @@ import { makeSolveBreakpoint } from '../../learn/breakpoints';
 import { makeGenBreakpoint } from '../../learn/genBreakpoints';
 import { GenStructureTracker } from '../../learn/genStructure';
 import { GraphDemoModel, cutOffCells, graphDemoMaze } from '../../learn/graphDemo';
+import { PairDemoModel, pairBreakpointCatalogue } from '../../learn/pairDemo';
 import { SolveStructureTracker } from '../../learn/solveStructure';
 import { CURRICULUM } from './curriculum';
 import type {
   GraphDemoSpec,
+  PairDemoSpec,
   DemoState,
   GenerateDemoSpec,
   LessonContent,
@@ -69,6 +72,7 @@ function solveRig(spec: SolveDemoSpec) {
     structure: tracker.snapshot(),
     genStructure: null,
     graph: null,
+    pair: null,
   });
   return { maze, player, tracker, state };
 }
@@ -102,6 +106,7 @@ function genRig(spec: GenerateDemoSpec) {
     structure: null,
     genStructure: tracker.snapshot(),
     graph: null,
+    pair: null,
   });
   return { grid, maze, player, tracker, state };
 }
@@ -124,6 +129,7 @@ function graphRig(spec: GraphDemoSpec) {
         degree: s.selected === null ? null : openNeighbors(s.state, s.selected).length,
         edits: s.edits,
       },
+      pair: null,
     };
   };
   /** Neighbouring pairs with a wall between them (each once). */
@@ -140,6 +146,27 @@ function graphRig(spec: GraphDemoSpec) {
     return out;
   };
   return { model, state, walls };
+}
+
+/** A pair demo outside React: the lockstep model and the state the page derives from it. */
+function pairRig(spec: PairDemoSpec) {
+  const model = new PairDemoModel(spec, { schedule: paused });
+  const state = (): DemoState => ({
+    status: model.player.getStatus(),
+    stepCount: model.player.getSnapshot().stepCount,
+    lastStep: null,
+    maze: model.maze,
+    structure: null,
+    genStructure: null,
+    graph: null,
+    pair: { lanes: model.lanes(), shortest: model.shortest },
+  });
+  return { model, state };
+}
+
+function pairSpec(lesson: LessonContent): PairDemoSpec {
+  if (lesson.demo.kind !== 'pair') throw new Error('a pair demo');
+  return lesson.demo;
 }
 
 function graphSpec(lesson: LessonContent): GraphDemoSpec {
@@ -345,5 +372,52 @@ describe('lesson content', () => {
     model.toggleWall(...(walls()[0] ?? [0, 1]));
     expect(check('one-more').check(state())).toBe(true);
     expect(check('tree').check(state())).toBe(false);
+  });
+
+  it('M3.2: the flood reaches the start, covers the maze, and the walk goes downhill', async () => {
+    const lesson = await load('m3-distance-map');
+    const check = (id: string) => checkOf(lesson, id);
+    const spec = solveSpec(lesson);
+    const { maze, player, tracker, state } = solveRig(spec);
+    const ctx = { solverId: spec.solverId, maze, tracker, count: 0 };
+    for (const c of lesson.tryIt ?? []) expect(c.check(state()), c.id).toBe(false);
+
+    expect(player.runUntil(makeSolveBreakpoint('goal', ctx).predicate)).not.toBeNull();
+    expect(check('reach-start').check(state())).toBe(true);
+    const d = solutionLength(maze);
+    expect(check('reach-start').success(state())).toBe(
+      `The flood reached the start at distance ${String(d)}: the shortest path has ${String(d)} moves.`,
+    );
+    expect(player.runUntil(makeSolveBreakpoint('path', ctx).predicate)).not.toBeNull();
+    expect(check('map-complete').check(state())).toBe(true);
+    expect(check('downhill').check(state())).toBe(false);
+    player.runToEnd();
+    expect(check('downhill').check(state())).toBe(true);
+    expect(check('downhill').success(state())).toBe(
+      `The walk took ${String(d)} moves, from ${String(d)} at the start down to 0 at the goal.`,
+    );
+  });
+
+  it('M3.3: DFS finds a path first and a longer one; BFS finds the shortest', async () => {
+    const lesson = await load('m3-dfs-or-bfs');
+    const check = (id: string) => checkOf(lesson, id);
+    const { model, state } = pairRig(pairSpec(lesson));
+    for (const c of lesson.tryIt ?? []) expect(c.check(state()), c.id).toBe(false);
+    const next = () =>
+      model.player.runUntil(pairBreakpointCatalogue(model).make('path', 0).predicate);
+
+    expect(next()).not.toBeNull();
+    expect(check('first-path').check(state())).toBe(true);
+    expect(check('first-path').success(state())).toBe(
+      'Depth-First Search found its path first, 26 moves long, after 75 steps.',
+    );
+    expect(check('both-paths').check(state())).toBe(false);
+    expect(next()).not.toBeNull();
+    expect(check('both-paths').check(state())).toBe(true);
+    expect(check('both-paths').success(state())).toBe(
+      'Breadth-First Search 16 moves, Depth-First Search 26 moves; the shortest possible is 16.',
+    );
+    // With both paths found, "first" cannot be read off the state any more.
+    expect(check('first-path').check(state())).toBe(false);
   });
 });
