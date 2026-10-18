@@ -38,6 +38,7 @@ function renderAt(path: string) {
 }
 
 const neverLoaded = (): Promise<LessonContent> => Promise.reject(new Error('not in this test'));
+const ALL_LESSONS = CURRICULUM.flatMap((m) => m.lessons);
 
 const FAKE: Curriculum = [
   {
@@ -89,8 +90,11 @@ describe('Learn', () => {
     expect(within(modules).getAllByText('planned').length).toBeGreaterThan(0);
     expect(screen.getByRole('link', { name: /Start with/ })).toHaveAttribute(
       'href',
-      '/learn/m3-frontier-ring',
+      `/learn/${ALL_LESSONS[0]?.id ?? ''}`,
     );
+    expect(
+      screen.getByText(`0 of ${String(ALL_LESSONS.length)} lessons done.`),
+    ).toBeInTheDocument();
   });
 
   it('locates lessons with neighbours across modules', () => {
@@ -179,7 +183,9 @@ describe('Learn', () => {
     view.unmount();
 
     renderAt('/learn');
-    expect(await screen.findByText('1 of 1 lessons done.')).toBeInTheDocument();
+    expect(
+      await screen.findByText(`1 of ${String(ALL_LESSONS.length)} lessons done.`),
+    ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /The frontier is a ring.*done/ })).toBeInTheDocument();
   });
 
@@ -213,6 +219,55 @@ describe('Learn', () => {
         .getAllByRole('status')
         .some((s) => /Try it done\..*BFS took the goal/.test(s.textContent ?? '')),
     ).toBe(true);
+  });
+
+  it('plays a generator demo: the stack grows, backs up and the breakpoint stops on a backtrack', async () => {
+    const user = userEvent.setup();
+    renderAt('/learn/m2-backtracker');
+    expect(
+      await screen.findByRole(
+        'heading',
+        { level: 1, name: 'The backtracker carves a tree' },
+        { timeout: 10_000 },
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: /^Demo maze: 10 by 7 cells, Recursive Backtracker \(DFS\)/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('list', { name: 'Recursive backtracker pseudo-code' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('The stack is empty.')).toBeInTheDocument();
+
+    const tools = screen.getByRole('toolbar', { name: 'Maze tools' });
+    const step = within(tools).getByRole('button', { name: /step once/i });
+    await waitFor(() => expect(step).toBeEnabled());
+    await user.click(step);
+    const stack = await screen.findByRole('list', { name: 'Stack, top first' });
+    expect(within(stack).getAllByRole('listitem')).toHaveLength(1);
+    expect(
+      within(stack).getByRole('listitem', { name: /^Top, the current cell: row 1, column 1/ }),
+    ).toBeInTheDocument();
+
+    const bar = screen.getByRole('group', { name: 'Breakpoint' });
+    const run = within(bar).getByRole('button', { name: 'Run until the next backtrack' });
+    screen.getByRole('slider', { name: 'Demo speed' }).focus();
+    await user.keyboard('{End}');
+    await user.click(run);
+    expect(await within(bar).findByTestId('breakpoint-message')).toHaveTextContent(
+      /^Stopped at step \d+: it backs up from row \d+, column \d+ to row \d+, column \d+, \d+ cells left on the stack\.$/,
+    );
+    await waitFor(() =>
+      expect(useLearnProgress.getState().lessons['m2-backtracker']?.tryIts).toContain(
+        'first-backtrack',
+      ),
+    );
+    // A backtrack straight after a carve is also a new dead end.
+    expect(useLearnProgress.getState().lessons['m2-backtracker']?.tryIts).toContain('stuck');
+    expect(
+      within(screen.getByRole('list', { name: /pseudo-code/i })).getByText('(executing)')
+        .parentElement,
+    ).toHaveTextContent('stack.pop()');
   });
 
   it('shows a friendly page for an unknown lesson', async () => {

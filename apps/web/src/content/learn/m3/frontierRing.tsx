@@ -40,6 +40,7 @@ export const lesson: LessonContent = {
     </>
   ),
   demo: {
+    kind: 'solve',
     generatorId: 'prims',
     seed: 'frontier-ring',
     width: 12,

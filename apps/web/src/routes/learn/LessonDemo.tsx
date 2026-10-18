@@ -1,6 +1,7 @@
 /**
- * The lesson's live demo: the maze in 2D with the solver overlay, the playback row below it
- * (never on the maze), a speed slider and the timeline for seeking and restarting.
+ * The lesson's live demo: the maze in 2D with the solver overlay (or the generator carving it),
+ * the playback row below it (never on the maze), a speed slider and the timeline for seeking
+ * and restarting.
  */
 import { SPEED_PRESETS } from '@maze/player';
 import { Slider } from '@maze/ui';
@@ -21,12 +22,13 @@ const noop = (): void => undefined;
 
 export interface LessonDemoProps {
   demo: ReturnType<typeof useLessonDemo>;
-  solverName: string;
+  /** The solver or generator the demo runs. */
+  algorithmName: string;
   pageScroll: boolean;
 }
 
-export function LessonDemo({ demo, solverName, pageScroll }: LessonDemoProps) {
-  const { session, snap, playerSnap, armed, speed, setSpeed } = demo;
+export function LessonDemo({ demo, algorithmName, pageScroll }: LessonDemoProps) {
+  const { session, snap, playerSnap, armed, generating, speed, setSpeed } = demo;
   const prefs = usePrefs();
   const reducedMotion = useReducedMotion();
   const theme = useMemo(
@@ -92,7 +94,7 @@ export function LessonDemo({ demo, solverName, pageScroll }: LessonDemoProps) {
   const label =
     snap.phase === 'empty'
       ? 'Demo maze, preparing'
-      : `Demo maze: ${String(snap.width)} by ${String(snap.height)} cells, ${solverName} ${status ?? 'ready'}`;
+      : `Demo maze: ${String(snap.width)} by ${String(snap.height)} cells, ${algorithmName} ${status ?? 'ready'}`;
 
   return (
     <>
@@ -105,8 +107,8 @@ export function LessonDemo({ demo, solverName, pageScroll }: LessonDemoProps) {
           camera={camera}
           firstPerson={null}
           maze={snap.state}
-          generation={null}
-          solve={session.solveTracker}
+          generation={generating ? session.generation : null}
+          solve={generating ? null : session.solveTracker}
           label={label}
           onHostSize={noop}
           pageScroll={pageScroll}

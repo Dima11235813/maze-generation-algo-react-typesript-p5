@@ -15,12 +15,14 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createAppRouter } from '../../app/router';
 import { DisjointSetModel } from '../../learn/disjointSetModel';
+import { GenStructureTracker } from '../../learn/genStructure';
 import { SolveStructureTracker } from '../../learn/solveStructure';
 import { BacktrackerStackModel } from '../../learn/stackModel';
 import { RendererFactoriesContext } from '../../maze/rendererFactories';
 import { usePrefs } from '../../state/prefs';
 import { createFakeFactories } from '../../test/fakeRenderer';
 import { DisjointSetView } from './DisjointSetView';
+import { GenStructureView } from './GenStructureView';
 import { StackView } from './StackView';
 import { StructureView } from './StructureView';
 
@@ -101,6 +103,26 @@ describe('data-structure views', () => {
     expect(
       within(screen.getByRole('list', { name: 'Largest components' })).getByText('48 cells'),
     ).toBeInTheDocument();
+  });
+});
+
+describe('generator structure view', () => {
+  it('picks the view from the generator: the path stack, the sets, or a note', () => {
+    const grid = createGrid(8, 6);
+    const views = (generatorId: string, steps: number) => {
+      const tracker = new GenStructureTracker(generatorId, cellCount(grid));
+      const all: GenStep[] = [...generators.require(generatorId).run(grid, createRng('g-1'), {})];
+      tracker.applyBatch(all.slice(0, steps));
+      return render(<GenStructureView grid={grid} state={tracker.snapshot()} />);
+    };
+    const back = views('recursive-backtracker', 12);
+    expect(screen.getByRole('list', { name: 'Stack, top first' })).toBeInTheDocument();
+    back.unmount();
+    const kruskal = views('kruskals', 30);
+    expect(screen.getByRole('list', { name: 'Largest components' })).toBeInTheDocument();
+    kruskal.unmount();
+    views('binary-tree', 10);
+    expect(screen.getByText(/keeps no stack or sets worth showing/)).toBeInTheDocument();
   });
 });
 

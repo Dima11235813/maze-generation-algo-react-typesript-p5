@@ -4,7 +4,7 @@
  * view, try-it checks, a complexity callout and the quiz, with previous/next lessons and local
  * progress. A passed quiz completes the lesson; lessons without one have a "Mark as done" button.
  */
-import { solvers } from '@maze/core';
+import { generators, solvers } from '@maze/core';
 import { Button } from '@maze/ui';
 import { Link, useParams } from '@tanstack/react-router';
 import { CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -15,10 +15,12 @@ import type { DemoState, LessonContent } from '../../content/learn/types';
 import { useBreakpoint } from '../../layout/breakpoints';
 import { Section } from '../../layout/Section';
 import { Workspace } from '../../layout/Workspace';
+import { genStructureFor, genStructureTitle } from '../../learn/genStructure';
 import { solveStructureFor, structureTitle } from '../../learn/solveStructure';
 import { useLessonDemo } from '../../learn/useLessonDemo';
 import { lessonStatus, useLearnProgress } from '../../state/learnProgress';
 import { PseudocodePanel } from '../watch/PseudocodePanel';
+import { GenStructureView } from './GenStructureView';
 import { LessonDemo } from './LessonDemo';
 import { Quiz } from './Quiz';
 import { StructureView } from './StructureView';
@@ -71,7 +73,15 @@ function LessonView({ location, content }: { location: LessonLocation; content: 
   const completeTryIt = useLearnProgress((s) => s.completeTryIt);
   const status = lessonStatus(progress);
   const { quiz, tryIt, tryThis } = content;
-  const solverName = solvers.get(content.demo.solverId)?.meta.name ?? content.demo.solverId;
+  const spec = content.demo;
+  const algorithmName =
+    spec.kind === 'solve'
+      ? (solvers.get(spec.solverId)?.meta.name ?? spec.solverId)
+      : (generators.get(spec.generatorId)?.meta.name ?? spec.generatorId);
+  const structureHeading =
+    spec.kind === 'solve'
+      ? structureTitle(solveStructureFor(spec.solverId))
+      : genStructureTitle(genStructureFor(spec.generatorId));
   const { Body } = content;
 
   useEffect(() => {
@@ -85,8 +95,9 @@ function LessonView({ location, content }: { location: LessonLocation; content: 
       lastStep: demo.lastStep,
       maze: demo.snap.state,
       structure: demo.structure,
+      genStructure: demo.genStructure,
     }),
-    [demo.playerSnap, demo.lastStep, demo.snap.state, demo.structure],
+    [demo.playerSnap, demo.lastStep, demo.snap.state, demo.structure, demo.genStructure],
   );
   const onTryItDone = useCallback(
     (checkId: string) => {
@@ -138,7 +149,7 @@ function LessonView({ location, content }: { location: LessonLocation; content: 
       </header>
       <Workspace
         stageLabel="Lesson demo"
-        stage={<LessonDemo demo={demo} solverName={solverName} pageScroll={touchLayout} />}
+        stage={<LessonDemo demo={demo} algorithmName={algorithmName} pageScroll={touchLayout} />}
         left={
           <Section id="lesson-concept" title="Concept" summary={lesson.summary} defaultOpen>
             <div className="flex flex-col gap-3 text-sm leading-6">
@@ -150,11 +161,15 @@ function LessonView({ location, content }: { location: LessonLocation; content: 
           <>
             <Section
               id="lesson-structure"
-              title={structureTitle(solveStructureFor(content.demo.solverId))}
-              summary="the frontier"
+              title={structureHeading}
+              summary={spec.kind === 'solve' ? 'the frontier' : 'what the generator keeps'}
               defaultOpen
             >
-              <StructureView grid={demo.snap.state?.grid ?? null} state={demo.structure} />
+              {spec.kind === 'solve' ? (
+                <StructureView grid={demo.snap.state?.grid ?? null} state={demo.structure} />
+              ) : (
+                <GenStructureView grid={demo.snap.state?.grid ?? null} state={demo.genStructure} />
+              )}
             </Section>
             <Section
               id="lesson-pseudocode"

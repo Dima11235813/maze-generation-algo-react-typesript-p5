@@ -8,12 +8,16 @@
  */
 import type { SolveStep } from '@maze/core';
 
-export interface PseudocodeListing {
+/** What the panel shows: a title and the lines. */
+export interface CodeListing {
   /** Display title, e.g. "Breadth-first search". */
   readonly title: string;
   readonly lines: readonly string[];
+}
+
+export interface PseudocodeListing<S = SolveStep> extends CodeListing {
   /** 0-based line index for a step, or null when the step has no corresponding line. */
-  stepToLine(step: SolveStep): number | null;
+  stepToLine(step: S): number | null;
 }
 
 /** Line for every step verb; `done` is the only verb without a line. */

@@ -83,6 +83,7 @@ const demo = (stepCount: number): DemoState => ({
   lastStep: null,
   maze: null,
   structure: null,
+  genStructure: null,
 });
 
 const CHECKS: TryItCheck[] = [
