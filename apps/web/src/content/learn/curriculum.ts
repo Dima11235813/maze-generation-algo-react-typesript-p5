@@ -16,7 +16,24 @@ export const CURRICULUM: Curriculum = [
       'Recognise a perfect maze as a spanning tree',
     ],
     prerequisites: [],
-    lessons: [],
+    lessons: [
+      {
+        id: 'm1-maze-is-graph',
+        title: 'A maze is a graph',
+        summary:
+          'Cells are vertices and passages are edges: read degree, loops and pieces off a maze you edit by hand.',
+        minutes: 10,
+        load: () => import('./m1/mazeIsGraph').then((m) => m.lesson),
+      },
+      {
+        id: 'm1-perfect-trees',
+        title: 'Perfect mazes are trees',
+        summary:
+          'A perfect maze is one piece with no loops: a spanning tree, with exactly one passage fewer than cells.',
+        minutes: 10,
+        load: () => import('./m1/perfectTrees').then((m) => m.lesson),
+      },
+    ],
   },
   {
     id: 'm2',

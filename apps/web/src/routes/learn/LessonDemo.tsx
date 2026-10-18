@@ -6,17 +6,14 @@
 import { SPEED_PRESETS } from '@maze/player';
 import { Slider } from '@maze/ui';
 import { RotateCcw } from 'lucide-react';
-import { useMemo } from 'react';
-import { useReducedMotion } from '../../app/documentPrefs';
 import { formatSpeed, indexToSpeed, speedToIndex } from '../../lib/speed';
 import type { useLessonDemo } from '../../learn/useLessonDemo';
-import { buildCamera, buildRenderOptions, buildTheme } from '../../maze/theme';
-import { usePrefs } from '../../state/prefs';
 import { MazeCanvas } from '../play/MazeCanvas';
 import { TimelineBar } from '../play/TimelineBar';
 import { playbackActions } from '../tools/actions';
 import { MazeTools, type ToolGroup } from '../tools/MazeTools';
 import { BreakpointBar } from './BreakpointBar';
+import { useDemoCanvas } from './useDemoCanvas';
 
 const noop = (): void => undefined;
 
@@ -29,30 +26,7 @@ export interface LessonDemoProps {
 
 export function LessonDemo({ demo, algorithmName, pageScroll }: LessonDemoProps) {
   const { session, snap, playerSnap, armed, generating, speed, setSpeed } = demo;
-  const prefs = usePrefs();
-  const reducedMotion = useReducedMotion();
-  const theme = useMemo(
-    () =>
-      buildTheme({
-        cellColor: prefs.cellColor,
-        wallColor: prefs.wallColor,
-        backgroundColor: prefs.backgroundColor,
-        invert: prefs.invert,
-      }),
-    [prefs.cellColor, prefs.wallColor, prefs.backgroundColor, prefs.invert],
-  );
-  const rows = snap.height || 1;
-  const options = useMemo(
-    () => ({
-      ...buildRenderOptions(prefs, rows, reducedMotion, snap.cellSize),
-      mode: '2d' as const,
-    }),
-    [prefs, rows, reducedMotion, snap.cellSize],
-  );
-  const camera = useMemo(
-    () => buildCamera({ cameraPreset: prefs.cameraPreset, followPointer: false }, 1),
-    [prefs.cameraPreset],
-  );
+  const { theme, options, camera } = useDemoCanvas(snap.height || 1, snap.cellSize);
 
   const status = playerSnap?.status ?? null;
   const groups: ToolGroup[] = [
