@@ -9,6 +9,9 @@ Proceed to the next work item.
    `proj-mgmt/16-human-actions.md`, tell the owner and take the next unblocked item instead.
 3. Restate the item's goal and acceptance criteria in two or three lines, then work through it on
    a `feat/<slug>` branch from `develop` without asking for confirmation on routine choices.
+   If it spans several modules or demo kinds, split it into slices and run steps 4-5 per slice,
+   noting each merged slice in the `project-state` memory before the next one (L-52). Probe
+   the real numbers before writing lesson thresholds or quiz answers (L-49).
 4. Meet the Definition of Done in `AGENTS.md` section 4, including the phone/tablet/desktop
    check (`pnpm --filter @maze/web check:viewports -- <routes>`, then look at the screenshots)
    against the always-on LAN dev server (http://127.0.0.1:41920; do not start another one).

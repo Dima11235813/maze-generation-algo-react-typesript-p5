@@ -1,11 +1,14 @@
 # 17 - Work Queue
 
-> Status: Live | Last updated: 2026-10-18 | Owner: Dmitri Larionov
+> Status: Live (paused 2026-10-23) | Last updated: 2026-10-23 | Owner: Dmitri Larionov
 > The ordered list of what to build next. "Proceed to the next work item" means: take the item
 > marked **NEXT**, follow `AGENTS.md` section 2, and update this file when it is done.
 > Status values: `NEXT`, `TODO`, `BLOCKED (H-x)`, `DONE yyyy-mm-dd (commit)`.
 
-## Where we are (2026-10-18, `develop` at a1464ef and pushed; `main` is promoted by the owner)
+## Where we are (2026-10-23, `develop` at 0b0e4ca and pushed; `main` is promoted by the owner)
+
+**Paused 2026-10-23** by the owner, who is exploring the codebase offline. Resume with WI-06e
+slice e.3 (M7).
 
 Shipped: monorepo foundation and legacy parity; 12 generators + braid; 12 solvers; race scheduler
 in core (no UI yet); Watch (pseudo-code, step log, stats); Explore catalogue + Compare; a11y grid
@@ -19,8 +22,9 @@ solvers and solver-relative stats (WI-04); quality debt paid (WI-05: every lint 
 knip and prettier clean, lazy-loaded pages, the Build editor source finally tracked in git);
 Learn opened (WI-06a: curriculum, lesson page, BFS queue view, pilot lesson M3.1); data-structure
 views for every frontier solver, also on Watch (WI-06b); run-until breakpoints, quizzes and
-try-it checks (WI-06c); modules M1-M3 complete with seven lessons (WI-06d).
-Gate: core 305, player 26, renderer 39, web 267 tests; lint 0 problems; e2e 30/30; initial JS
+try-it checks (WI-06c); modules M1-M3 complete with seven lessons (WI-06d); M4 and M5 (WI-06e,
+two of three slices).
+Gate: core 306, player 26, renderer 39, web 289 tests; lint 0 problems; e2e 30/30; initial JS
 158/250 kB gzip.
 
 ## Queue
@@ -331,6 +335,22 @@ d.3 M3 (a1464ef).
 
 Prim/Kruskal with disjoint sets; Aldous-Broder & Wilson with a dead-end histogram; A* and
 heuristics with Compare and the weight slider.
+
+Slices (each merged and phone-checked on its own):
+
+- e.1 M4 - DONE 2026-10-18 (58cfd0c): core `GenStep` `reject` (Kruskal's reports each wall it
+  keeps; mazes unchanged); Prim's frontier view (`FrontierSetModel`); union-find finds and
+  parent links followed; Prim/Kruskal pseudo-code; breakpoints frontier > N, next union, next
+  wall kept, N or fewer pieces. Lessons M4.1 Prim's grows one tree, M4.2 Kruskal's joins a
+  forest.
+- e.2 M5 - DONE 2026-10-18 (0b0e4ca): random-walk view (`WalkModel`: walk steps, cells in the
+  tree, longest wait, loops erased); Aldous-Broder and Wilson's pseudo-code; breakpoints next
+  loop erased, tree grows, N or fewer cells left; dead-end histogram over 50 seeds
+  (`learn/bias.ts`). Lessons M5.1 Aldous-Broder walks at random, M5.2 Wilson's erases loops.
+- e.3 M7 - NEXT: A* and heuristics with Compare (pair demo of `astar` vs `greedy-best-first`)
+  and the weight slider; "a cost is lowered" breakpoint if weighted runs relax.
+- Known gap: during Aldous-Broder/Wilson's the canvas draws cells the walk only crossed like
+  tree cells (renderer); the Random walk panel's counts are right.
 
 ### WI-06f Learn: stub modules and "Learn more" links - TODO
 

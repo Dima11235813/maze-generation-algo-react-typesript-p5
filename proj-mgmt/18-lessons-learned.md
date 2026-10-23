@@ -1,6 +1,6 @@
 # 18 - Lessons Learned
 
-> Status: Live | Last updated: 2026-10-18
+> Status: Live | Last updated: 2026-10-23
 > Append-only log. Each entry: what happened, why, and the rule we now follow. Rules that every
 > session needs are mirrored in `AGENTS.md` section 6; this file keeps the reasoning.
 
@@ -35,6 +35,10 @@ The one-line rules every session needs; the entries below keep the story behind 
 | Tests | Radio groups: tab in forwards; checks met together share one live message | L-46 |
 | Checks | Let CSS transitions settle before screenshots; read computed state before "fixing" | L-47 |
 | A11y | Wrap long text instead of scrolling sideways; scope text queries away from the announcer | L-48 |
+| Learn | Probe the real numbers before writing thresholds, messages or quiz answers | L-49 |
+| Code | New step verbs are cheap when maps are exhaustive; derive id unions from one list | L-50 |
+| Tests | jsdom: Radix Select needs pointer-capture stubs (in `src/test/setup.ts`) | L-51 |
+| Process | Split big items into merged slices; checkpoint the memory after each slice | L-52 |
 | Owner | Phone-first, small merged slices, protect the 3D views and the walkthrough | L-17 |
 
 ## Process and orchestration
@@ -311,3 +315,32 @@ announcer, which holds the same sentence. *Rule:* prefer wrapping to sideways sc
 locate messages by their test id or container, never by text alone when it is also announced.
 Also: a new demo kind added to a lesson union shows up in every test fixture of `DemoState`; give
 new fields a `null` default in each fixture in the same change.
+
+**L-49 Probe first, then write.** Every try-it threshold, success sentence and quiz answer in
+WI-06d/e came from a probe run on the real demo maze (stack peak 38, DFS 26 moves at tick 75,
+dead ends 12% vs 30%). Two probes still fooled us: a 0-based index printed as "step 74" was tick
+75, and Prim's frontier jumps by two, so "more than 10" stops at 12. *Rule:* write a throwaway
+test in `src/learn/zz-probe-*.tmp.test.ts` that writes numbers to the scratchpad, then move it
+(never delete it) to `apps/web/.local/`; print 1-based step counts; assert ranges, not exact
+values, where a step can add several cells; and make each lesson's claims a test against its
+algorithm (the bias test asserts Aldous-Broder and Wilson's agree within 3 points).
+
+**L-50 Adding a step verb is cheap when every consumer is exhaustive.** Kruskal's `reject` touched
+`steps.ts`, `describe.ts`, the generation tracker and the generator pseudo-code map; the
+`Record<GenStep['t'], ...>` map refused to compile until it placed the verb, and nothing else
+needed a change. Lists of ids that a type mirrors drift instead: the breakpoint union and its
+`ORDER` array had to be edited in two places until the type became `(typeof ORDER)[number]`.
+*Rule:* keep maps over step verbs exhaustive (`Record`, not `Partial`); derive id unions from the
+one ordered list.
+
+**L-51 Radix Select in jsdom.** Choosing an option in RTL failed with `target.hasPointerCapture
+is not a function`; Radix also calls `scrollIntoView`. *Rule:* the test setup stubs
+`hasPointerCapture`, `setPointerCapture`, `releasePointerCapture` and `scrollIntoView` on
+`Element.prototype`, so RTL tests can pick Select options like a user.
+
+**L-52 Big items ship as merged slices, with a checkpoint after each.** WI-06d and WI-06e were too
+big for one branch, so each was split into three slices (d.1-d.3, e.1-e.3), each merged into
+`develop`, pushed and phone-checked on its own. When a session limit cut WI-06e short after e.2,
+nothing was lost: both slices were on `develop` and the project-state memory said where to
+resume. *Rule:* split any item touching more than one module or demo kind into slices; after each
+merge, write a line to the project-state memory before starting the next slice.

@@ -18,6 +18,7 @@ also apply (never delete files on Google Drive, secrets only via environment var
 | Rendering             | `packages/renderer` - port + `canvas2d`, `three` (3D/first person), `dom` (a11y)         |
 | UI kit                | `packages/ui` (Radix + Tailwind v4)                                                      |
 | App                   | `apps/web` - `/play /watch /race /build /learn /explore /explore/compare`                |
+| Learn content         | `apps/web/src/content/learn` (curriculum, lessons), `apps/web/src/learn` (demo models)   |
 | Original app          | `apps/legacy` - frozen, read-only, not in the workspace                                  |
 | Original brief        | `next.md` (historical; the live queue is `proj-mgmt/17-work-queue.md`)                   |
 | Local ports           | block 41920-41939 in `D:\GDrive\proj-mgmt\inventory\local-ports.md` (see section 3)      |
@@ -30,7 +31,10 @@ When the owner says this (or runs `/next-item`):
    `proj-mgmt/18-lessons-learned.md`. Check the item's "Blocked by" against
    `proj-mgmt/16-human-actions.md`; if blocked, say so and take the next unblocked item.
 2. Branch `feat/<slug>` (or `fix/`, `chore/`) from `develop` - always `develop`, for every branch.
-3. Implement to the item's acceptance criteria. Keep the scope of the item.
+3. Implement to the item's acceptance criteria. Keep the scope of the item. An item that spans
+   several modules or demo kinds is split into slices (`d.1`, `d.2`, ...), each taken through
+   steps 4-5 on its own branch; after each merge, note the slice in the project-state memory
+   before starting the next (L-52).
 4. Pass the Definition of Done (section 4), including the phone-width check.
 5. Merge `--no-ff` into `develop` and push `develop` (`git push origin develop`). **Never touch
    `main`**: the owner promotes `develop` -> `main` (owner's rule, 2026-10-12).
@@ -171,5 +175,10 @@ powershell -ExecutionPolicy Bypass -File D:\GDrive\proj-mgmt\inventory\scripts\p
   scope RTL/Playwright queries to their container (`within(toolbar)`).
 - Interaction screenshots taken right after a tap catch CSS transitions mid-way: wait ~400 ms,
   and print the element's attributes and computed style before "fixing" a look (L-47).
+- Numbers in lessons (thresholds, messages, quiz answers) come from a probe on the real demo:
+  a temp `src/learn/zz-probe-*.tmp.test.ts` that writes to the scratchpad, then moved (never
+  deleted) to `apps/web/.local/`. Print 1-based step counts (L-49).
+- A new step verb: add it to `steps.ts` and let the exhaustive maps (`describe.ts`, trackers,
+  pseudo-code `Record`s) tell you where else it goes; derive id unions from one list (L-50).
 - `setTimeout` return types depend on which lib (DOM/Node) TypeScript sees first: never rely on
   them (`Number(setTimeout(...))` or `ReturnType<typeof setTimeout>`).
