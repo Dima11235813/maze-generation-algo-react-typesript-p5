@@ -1,5 +1,14 @@
 # Maze Lab - Agent Rules
 
+<!-- workspace-comms-pointer: see D:\GDrive\proj-mgmt\comms\README.md -->
+
+> **Workspace channel.** Anything that crosses a project boundary — a harness rule that does not
+> fit, a shared-machine or Google Drive problem, a git or storage finding other projects should
+> hear — goes to the workspace manager as one dated file in
+> [`D:\GDrive\proj-mgmt\comms\maze-generation-algo-react-typesript-p5\`](file:///D:/GDrive/proj-mgmt/comms/maze-generation-algo-react-typesript-p5/)
+> (format in the README; never edit a file the other side wrote). At the start of a session, read
+> what is addressed to you: `py -I D:\GDrive\proj-mgmt\comms\scripts\comms_index.py --for maze-generation-algo-react-typesript-p5`
+
 Read this first in every session. It is the working agreement for any coding agent (Claude Code,
 Codex, Antigravity, subagents) in this repo. The workspace-wide rules in `D:\GDrive\AGENTS.md`
 also apply (never delete files on Google Drive, secrets only via environment variables, give
@@ -148,6 +157,11 @@ powershell -ExecutionPolicy Bypass -File D:\GDrive\proj-mgmt\inventory\scripts\p
 - Push only `develop` (never `main`, `master` or tags). If the auto-mode classifier blocks a
   push, report it and leave it to the owner (L-03). Google Drive sometimes locks
   `.git/objects`: retry git writes after ~2 s.
+- The `.git` is ours to manage (owner's decision, 2026-10-24): keep `gc.auto 0`
+  (`git config --get gc.auto` prints `0`); commit before Google Drive for desktop restarts; the
+  replicas `backup-f` / `backup-h` (`F:` and `H:\git-remotes\<repo>.git`) are pushed daily by the
+  workspace task. `git gc` only while Drive is off or settled, plain (no `--aggressive`, no
+  `--prune=now`), after a robocopy of `.git`. Never `--mirror`, never `--force`.
 - Commit hook runs `eslint --fix` + `prettier --check` on staged files. If it fails or reports
   "conflict while merging unstaged changes": `pnpm exec prettier --write <staged files>`,
   `git add` them fully, commit again.
