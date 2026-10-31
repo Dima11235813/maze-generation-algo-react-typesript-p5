@@ -19,5 +19,8 @@
   `project-state` memory refreshed, `develop` pushed, and the report gives the LAN URL to try it.
 - Branches: all from `develop`; agents merge into `develop` and push it; `main` is the owner's
   (they promote `develop` -> `main`). Never merge into or push `main`.
+- Off Google Drive (AGENTS.md 3a): never pass `isolation: "worktree"` to the Agent tool and never
+  `EnterWorktree` in this repo (worktrees would land in `.claude/worktrees/` inside `D:\GDrive`);
+  no new `node_modules`, build output or caches under `D:\GDrive` without a comms note first.
 - When the owner names a feature idea, log it as a queue item first (with a design note when it
   is large) and ask where it goes in the order unless they say "build it now".

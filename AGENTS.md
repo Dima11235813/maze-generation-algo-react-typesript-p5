@@ -118,6 +118,24 @@ powershell -ExecutionPolicy Bypass -File D:\GDrive\proj-mgmt\inventory\scripts\p
   temp output go to the session scratchpad on `C:`, not `D:`. A timeout seen while another heavy
   job ran is load, not a regression (L-32).
 
+### What stays off Google Drive (workspace rule, 2026-10-31)
+
+`D:\GDrive` is the owner's mirrored My Drive; Drive for desktop cannot exclude a folder, and one
+project's agent worktrees (about 350,000 files) stalled every project's cloud backup for three
+weeks. Rule: [`D:\GDrive\proj-mgmt\docs\what-stays-off-google-drive.md`](file:///D:/GDrive/proj-mgmt/docs/what-stays-off-google-drive.md).
+
+- **No agent worktrees inside `D:\GDrive`.** Never start a subagent with `isolation: worktree`
+  in this repo and never `git worktree add` under it; subagents work in the main checkout on their
+  own branch, committing after every fix. If isolation is ever needed, the worktree goes on `C:` or
+  `F:\ai\`. The six old worktrees in `.claude/worktrees/` (2026-09/10) are the owner's to remove.
+- **No `node_modules`, build output, caches or virtual environments** (`dist`, `build`, `.turbo`,
+  `.cache`, `coverage`, `test-results`, `.venv`, `__pycache__`) created inside `D:\GDrive`. The
+  existing `pnpm` install is a known breach until the workspace decides the method
+  (`D:\GDrive\proj-mgmt\features\node-modules-off-drive.md`): do not run `pnpm install`, `build`,
+  `e2e` or `check:viewports` without saying so in comms first.
+- Before anything that would put more than ~1,000 new files under `D:\GDrive`, write to the
+  workspace channel first. `.git` stays where it is (packed, `gc.auto 0`).
+
 ## 4. Definition of Done for a work item
 
 - [ ] Typecheck clean; all package tests pass; new behaviour has tests (core: property tests for
