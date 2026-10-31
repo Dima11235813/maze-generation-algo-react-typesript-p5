@@ -9,7 +9,7 @@ import type { PlayerStatus } from '@maze/player';
 import type { ComponentType } from 'react';
 import type { GenStructureState } from '../../learn/genStructure';
 import type { GraphStats } from '../../learn/graphDemo';
-import type { PairLane } from '../../learn/pairDemo';
+import type { LaneParams, PairLane } from '../../learn/pairDemo';
 import type { SolveStructureState } from '../../learn/solveStructure';
 
 interface DemoMaze {
@@ -37,12 +37,16 @@ export interface GraphDemoSpec extends DemoMaze {
   readonly cut?: number;
 }
 
-/** Two solvers side by side on one braided maze, in lockstep (M3 "DFS or BFS?"). */
+/** Two solvers side by side on one braided maze, in lockstep (M3 "DFS or BFS?", M7). */
 export interface PairDemoSpec extends DemoMaze {
   readonly kind: 'pair';
   /** Percent of dead ends braided away, which adds loops. */
   readonly braid: number;
   readonly solverIds: readonly [string, string];
+  /** Solver parameters per lane (A*'s heuristic, weight, tie-break); defaults when left out. */
+  readonly solverParams?: readonly LaneParams[];
+  /** The lane whose parameters the learner can change; both searches restart on a change. */
+  readonly tuneLane?: 0 | 1;
 }
 
 type DemoSpec = SolveDemoSpec | GenerateDemoSpec | GraphDemoSpec | PairDemoSpec;

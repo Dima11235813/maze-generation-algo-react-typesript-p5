@@ -175,7 +175,24 @@ export const CURRICULUM: Curriculum = [
       'Explain tie-breaking',
     ],
     prerequisites: ['m6'],
-    lessons: [],
+    lessons: [
+      {
+        id: 'm7-astar-vs-greedy',
+        title: 'A* counts the cost so far',
+        summary:
+          'Greedy best-first chases the goal and can keep a long detour; A* adds the cost so far and stays optimal.',
+        minutes: 10,
+        load: () => import('./m7/astarVsGreedy').then((m) => m.lesson),
+      },
+      {
+        id: 'm7-tuning-heuristic',
+        title: 'Tuning the heuristic',
+        summary:
+          'Looser heuristics expand more cells; a weight above 1 expands fewer but may return a longer path.',
+        minutes: 12,
+        load: () => import('./m7/tuningHeuristic').then((m) => m.lesson),
+      },
+    ],
   },
   {
     id: 'm8',
