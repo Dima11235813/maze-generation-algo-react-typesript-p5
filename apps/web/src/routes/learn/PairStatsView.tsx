@@ -26,8 +26,8 @@ export function PairStatsView({ lanes, shortest }: PairStatsViewProps) {
           </tr>
         </thead>
         <tbody>
-          {lanes.map((lane) => (
-            <tr key={lane.solverId} className="border-t border-border">
+          {lanes.map((lane, i) => (
+            <tr key={i} className="border-t border-border">
               <th scope="row" className="py-1 font-medium">
                 {lane.name}
               </th>

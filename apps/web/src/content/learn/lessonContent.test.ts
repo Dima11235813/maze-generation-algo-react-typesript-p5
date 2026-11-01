@@ -515,4 +515,76 @@ describe('lesson content', () => {
       /^Done: \d+ walk steps, \d+ loops erased, a tree of 48 cells\.$/,
     );
   });
+
+  it('M7.1: greedy finds a longer path first; A* finds the shortest after more work', async () => {
+    const lesson = await load('m7-astar-vs-greedy');
+    const check = (id: string) => checkOf(lesson, id);
+    const { model, state } = pairRig(pairSpec(lesson));
+    for (const c of lesson.tryIt ?? []) expect(c.check(state()), c.id).toBe(false);
+    const catalogue = pairBreakpointCatalogue(model);
+    expect(catalogue.choices.map((c) => c.id)).toEqual(['path', 'relax']);
+
+    expect(model.player.runUntil(catalogue.make('path', 0).predicate)).not.toBeNull();
+    expect(check('first-path').check(state())).toBe(true);
+    expect(check('first-path').success(state())).toBe(
+      'Greedy Best-First Search found its path first, 29 moves long, after 99 steps.',
+    );
+    model.player.runToEnd();
+    expect(check('greedy-longer').check(state())).toBe(true);
+    expect(check('greedy-longer').success(state())).toBe(
+      "Greedy's path is 29 moves, 10 more than the shortest 19.",
+    );
+    expect(check('astar-optimal').check(state())).toBe(true);
+    expect(check('astar-optimal').success(state())).toBe(
+      'A* found the shortest path, 19 moves, after expanding 61 cells; greedy had expanded 41 when it finished.',
+    );
+  });
+
+  it('M7.2: a looser heuristic costs work, a weight saves it and can lengthen the path', async () => {
+    const lesson = await load('m7-tuning-heuristic');
+    const check = (id: string) => checkOf(lesson, id);
+    const spec = pairSpec(lesson);
+    expect(spec.tuneLane).toBe(1);
+    /** Both lanes run to the end with the right-hand lane tuned, as the Tune panel does. */
+    const tuned = (params: Record<string, unknown>) => {
+      const rig = pairRig({ ...spec, solverParams: [{}, params] });
+      rig.model.player.runToEnd();
+      return rig.state();
+    };
+
+    const plain = pairRig(spec);
+    for (const c of lesson.tryIt ?? []) expect(c.check(plain.state()), c.id).toBe(false);
+    // Plain A* lowers costs on this maze, so "a cost is lowered" has something to stop on.
+    const relax = pairBreakpointCatalogue(plain.model).make('relax', 0);
+    const hit = plain.model.player.runUntil(relax.predicate);
+    expect(hit).not.toBeNull();
+    expect(relax.describe(hit)).toMatch(
+      /^Stopped at step \d+: A\* Search found a cheaper way to row \d+, column \d+: its cost fell from \d+ to \d+(, and .+)?\.$/,
+    );
+    plain.model.player.runToEnd();
+    // Two untuned lanes agree: nothing to report yet.
+    for (const c of lesson.tryIt ?? []) expect(c.check(plain.state()), c.id).toBe(false);
+
+    for (const heuristic of ['euclidean', 'chebyshev']) {
+      const s = tuned({ heuristic });
+      expect(check('looser').check(s), heuristic).toBe(true);
+      expect(check('fewer').check(s), heuristic).toBe(false);
+    }
+    expect(check('looser').success(tuned({ heuristic: 'euclidean' }))).toBe(
+      "Both found a 21-move path; euclidean expanded 61 cells against Manhattan's 45.",
+    );
+
+    // Weight 1.5 already saves work and keeps the shortest path; weight 2 gives the path up.
+    const w15 = tuned({ weight: 1.5 });
+    expect(check('fewer').check(w15)).toBe(true);
+    expect(check('longer').check(w15)).toBe(false);
+    expect(check('fewer').success(w15)).toBe(
+      'With weight 1.5 it expanded 37 cells, against 45 for plain A*.',
+    );
+    const w2 = tuned({ weight: 2 });
+    expect(check('longer').check(w2)).toBe(true);
+    expect(check('longer').success(w2)).toBe(
+      'With weight 2 the path is 27 moves, 6 more than the shortest 21.',
+    );
+  });
 });

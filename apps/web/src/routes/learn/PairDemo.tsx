@@ -1,5 +1,5 @@
 /**
- * Two solvers side by side on one maze (M3 "DFS or BFS?"): a canvas per solver, then one
+ * Two solvers side by side on one maze (M3 "DFS or BFS?", M7): a canvas per solver, then one
  * playback row, the breakpoint row, the speed slider and the timeline below both (never on the
  * mazes). Both advance in lockstep, one step each per tick.
  */
@@ -77,7 +77,7 @@ export function PairDemo({ demo }: { demo: ReturnType<typeof usePairDemo> }) {
     <>
       <div className="grid min-h-0 flex-1 grid-cols-2 gap-px bg-border">
         {lanes.map((lane, i) => (
-          <figure key={lane.solverId} className="relative m-0 flex min-h-0 flex-col bg-panel">
+          <figure key={i} className="relative m-0 flex min-h-0 flex-col bg-panel">
             <figcaption className="flex flex-col px-2 py-1 text-xs">
               <span className="font-medium">{lane.name}</span>
               <span className="text-muted tabular-nums">{laneText(lane)}</span>

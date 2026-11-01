@@ -36,6 +36,7 @@ import { GraphStatsView } from './GraphStatsView';
 import { LessonDemo } from './LessonDemo';
 import { PairDemo } from './PairDemo';
 import { PairStatsView } from './PairStatsView';
+import { PairTune } from './PairTune';
 import { Quiz } from './Quiz';
 import { StructureView } from './StructureView';
 import { TryItList } from './TryItList';
@@ -440,6 +441,7 @@ function PairLessonView({
     [playerSnap, model, lanes],
   );
   const found = lanes.filter((l) => l.pathMoves !== null).length;
+  const tuned = spec.tuneLane;
   return (
     <LessonFrame
       location={location}
@@ -448,7 +450,21 @@ function PairLessonView({
       structure={{
         title: 'Side by side',
         summary: `${String(found)} of ${String(lanes.length)} paths found`,
-        node: <PairStatsView lanes={lanes} shortest={model.shortest} />,
+        node: (
+          <div className="flex flex-col gap-3">
+            <PairStatsView lanes={lanes} shortest={model.shortest} />
+            {tuned === undefined ? null : (
+              <PairTune
+                solverId={spec.solverIds[tuned]}
+                side={tuned === 0 ? 'left' : 'right'}
+                values={demo.params[tuned] ?? {}}
+                onChange={(key, value) => {
+                  demo.setLaneParam(tuned, key, value);
+                }}
+              />
+            )}
+          </div>
+        ),
       }}
       code={null}
       demoState={demoState}
