@@ -1,6 +1,6 @@
 # 18 - Lessons Learned
 
-> Status: Live | Last updated: 2026-10-23
+> Status: Live | Last updated: 2026-11-01
 > Append-only log. Each entry: what happened, why, and the rule we now follow. Rules that every
 > session needs are mirrored in `AGENTS.md` section 6; this file keeps the reasoning.
 
@@ -39,6 +39,8 @@ The one-line rules every session needs; the entries below keep the story behind 
 | Code | New step verbs are cheap when maps are exhaustive; derive id unions from one list | L-50 |
 | Tests | jsdom: Radix Select needs pointer-capture stubs (in `src/test/setup.ts`) | L-51 |
 | Process | Split big items into merged slices; checkpoint the memory after each slice | L-52 |
+| Learn | Choose demo seeds from the probe's filter, then let tests prove each try-it; no hedged branches | L-53 |
+| Drive | Build and e2e output go to C: (`MAZE_BUILD_DIR`, `MAZE_E2E_OUT`); a replica REJECTED is inspected first | L-54 |
 | Owner | Phone-first, small merged slices, protect the 3D views and the walkthrough | L-17 |
 
 ## Process and orchestration
@@ -344,3 +346,22 @@ big for one branch, so each was split into three slices (d.1-d.3, e.1-e.3), each
 nothing was lost: both slices were on `develop` and the project-state memory said where to
 resume. *Rule:* split any item touching more than one module or demo kind into slices; after each
 merge, write a line to the project-state memory before starting the next slice.
+
+**L-53 A probe only helps if its filter picks the seed.** The M7 slice saved before the pause used
+seed `m7-0` for "A* vs greedy", where both searches run identically (same 21 cells, same 19-move
+path), so "greedy's path is longer" could never be done; the probe had already listed better
+seeds, but the lesson was written before they were read. A test caught it at once, and a second
+test showed its own weakness: an `if (no relax) return` branch had passed on a maze that never
+lowers a cost. *Rule:* pick each demo seed from the probe's filter (every try-it achievable, the
+contrast large), write the lesson's numbers from that row, and prove every try-it in a test with
+exact numbers; a test never branches on whether the thing it checks happened.
+
+**L-54 Gates with no build output on Google Drive.** With Drive sync off and the rule that no build
+output lands under `D:\GDrive` (2026-11-01), `vite build` and Playwright wrote to `apps/web/dist`,
+`test-results` and `playwright-report`. *Rule:* run the gate with `MAZE_BUILD_DIR` and
+`MAZE_E2E_OUT` pointing at the session scratchpad on `C:` (the size gate and `vite preview` follow
+`MAZE_BUILD_DIR`); typecheck with `pnpm -r --workspace-concurrency=1 run typecheck` (no turbo
+cache); for viewport checks while 41920 is down, serve that build with `vite preview` on 41921,
+pass `--base` and `--out`, and stop it after. Also: one `git-push-replicas.ps1` run reported H:
+`REJECTED` ("replica has commits the source lacks") for a plain fast-forward; `git push --dry-run`
+showed `9f41ed8..7f988a4` and the rerun pushed. Inspect before assuming divergence; never force.

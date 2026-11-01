@@ -1,14 +1,15 @@
 # 17 - Work Queue
 
-> Status: Live (paused 2026-10-23) | Last updated: 2026-10-23 | Owner: Dmitri Larionov
+> Status: Live | Last updated: 2026-11-01 | Owner: Dmitri Larionov
 > The ordered list of what to build next. "Proceed to the next work item" means: take the item
 > marked **NEXT**, follow `AGENTS.md` section 2, and update this file when it is done.
 > Status values: `NEXT`, `TODO`, `BLOCKED (H-x)`, `DONE yyyy-mm-dd (commit)`.
 
-## Where we are (2026-10-23, `develop` at 0b0e4ca and pushed; `main` is promoted by the owner)
+## Where we are (2026-11-01, `develop` at 751e794 and pushed; `main` is promoted by the owner)
 
-**Paused 2026-10-23** by the owner, who is exploring the codebase offline. Resume with WI-06e
-slice e.3 (M7).
+Resumed 2026-11-01 after the pause (2026-10-23) and the Google Drive work. WI-06e is done; next
+is WI-06f. Google Drive sync is off for now, so git (F:/H: replicas, GitHub `develop`) is the
+backup; the latest handoff is [handoff.md](./handoff.md).
 
 Shipped: monorepo foundation and legacy parity; 12 generators + braid; 12 solvers; race scheduler
 in core (no UI yet); Watch (pseudo-code, step log, stats); Explore catalogue + Compare; a11y grid
@@ -22,9 +23,9 @@ solvers and solver-relative stats (WI-04); quality debt paid (WI-05: every lint 
 knip and prettier clean, lazy-loaded pages, the Build editor source finally tracked in git);
 Learn opened (WI-06a: curriculum, lesson page, BFS queue view, pilot lesson M3.1); data-structure
 views for every frontier solver, also on Watch (WI-06b); run-until breakpoints, quizzes and
-try-it checks (WI-06c); modules M1-M3 complete with seven lessons (WI-06d); M4 and M5 (WI-06e,
-two of three slices).
-Gate: core 306, player 26, renderer 39, web 289 tests; lint 0 problems; e2e 30/30; initial JS
+try-it checks (WI-06c); modules M1-M3 complete with seven lessons (WI-06d); M4, M5 and M7
+(WI-06e): thirteen lessons in all.
+Gate: core 306, player 26, renderer 39, web 297 tests; lint 0 problems; e2e 30/30; initial JS
 158/250 kB gzip.
 
 ## Queue
@@ -331,7 +332,7 @@ d.3 M3 (a1464ef).
   N cells" (needs goal editing in a solve demo); a separate isolated-region colour per piece
   (all cut-off pieces share one shade).
 
-### WI-06e Learn: modules M4, M5, M7 - NEXT
+### WI-06e Learn: modules M4, M5, M7 - DONE 2026-11-01 (751e794)
 
 Prim/Kruskal with disjoint sets; Aldous-Broder & Wilson with a dead-end histogram; A* and
 heuristics with Compare and the weight slider.
@@ -347,12 +348,18 @@ Slices (each merged and phone-checked on its own):
   tree, longest wait, loops erased); Aldous-Broder and Wilson's pseudo-code; breakpoints next
   loop erased, tree grows, N or fewer cells left; dead-end histogram over 50 seeds
   (`learn/bias.ts`). Lessons M5.1 Aldous-Broder walks at random, M5.2 Wilson's erases loops.
-- e.3 M7 - NEXT: A* and heuristics with Compare (pair demo of `astar` vs `greedy-best-first`)
-  and the weight slider; "a cost is lowered" breakpoint if weighted runs relax.
+- e.3 M7 - DONE 2026-11-01 (751e794): pair demos take solver parameters per lane
+  (`solverParams`) and one lane can be tuned by the learner (`tuneLane`: the solver's own
+  parameter form, `PairTune`; a change restarts both lanes and is announced); lane names say what
+  differs ("A* Search, heuristic weight 2"); relax counts per lane; breakpoint "a cost is
+  lowered" for pairs with A* or Dijkstra. Lessons M7.1 A* counts the cost so far (A* vs greedy:
+  greedy finds 29 moves first, A* the shortest 19) and M7.2 Tuning the heuristic (Euclidean
+  expands 61 vs 45 on the same path, weight 1.5 saves work and keeps it, weight 2 returns 27
+  moves vs 21). Every try-it is proven in its demo by a test.
 - Known gap: during Aldous-Broder/Wilson's the canvas draws cells the walk only crossed like
   tree cells (renderer); the Random walk panel's counts are right.
 
-### WI-06f Learn: stub modules and "Learn more" links - TODO
+### WI-06f Learn: stub modules and "Learn more" links - NEXT
 
 M6, M8-M11 short lessons with demos; "Learn more" links from Watch, Race and Explore via
 `docsSlug`; a test that every `docsSlug` resolves.
@@ -385,6 +392,7 @@ Tauri 2 builds; starts with the 2-day WKWebView WebGL spike (ADR-012).
 | WI-04 Algorithm parameters, pseudo-code, solver stats | 2026-10-10 | 8d2d10c |
 | Build editor source tracked (`.gitignore` fix) | 2026-10-11 | adc9a05 |
 | WI-05 Quality debt sweep | 2026-10-11 | a89409b |
+| WI-06e Learn modules M4, M5, M7 | 2026-11-01 | 58cfd0c, 0b0e4ca, 751e794 |
 | WI-06d Learn modules M1-M3 | 2026-10-18 | 1e74267, 20e66d4, a1464ef |
 | WI-06c Learn breakpoints, quizzes, try-it | 2026-10-18 | b1a61ea |
 | WI-06b Learn data-structure views | 2026-10-12 | 1c7f087 |
