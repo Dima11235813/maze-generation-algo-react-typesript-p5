@@ -4,6 +4,12 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 /**
+ * Where `vite build` writes (and `vite preview` serves). `MAZE_BUILD_DIR` puts it outside the
+ * Google-Drive-synced tree (AGENTS.md 3a: no build output under D:\GDrive); unset, it is `dist`.
+ */
+const buildDir = process.env['MAZE_BUILD_DIR'];
+
+/**
  * Chunking (Vite 8 / Rolldown `output.codeSplitting`, formerly `advancedChunks`): long-lived
  * vendor code is split from the app bundle so a deploy only invalidates what changed. three.js
  * is reached only through the dynamic `import('@maze/renderer/three')` and must stay out of the
@@ -88,9 +94,10 @@ export default defineConfig({
     }),
   ],
   build: {
+    ...(buildDir ? { outDir: buildDir, emptyOutDir: true } : {}),
     target: 'es2022',
     sourcemap: false,
-    // dist/.vite/manifest.json is read by scripts/check-bundle-size.mjs.
+    // <outDir>/.vite/manifest.json is read by scripts/check-bundle-size.mjs.
     manifest: true,
     chunkSizeWarningLimit: 600,
     rolldownOptions: {
