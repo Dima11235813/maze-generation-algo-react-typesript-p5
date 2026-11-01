@@ -4,7 +4,8 @@
  * initial route exceeds the gzip budget, or when a named lazy chunk (three.js) outgrows its
  * own budget. Reads Vite's build manifest (`build.manifest: true`).
  *
- * Runs automatically as `postbuild`; skips gracefully when there is no dist/ yet.
+ * Runs automatically as `postbuild`; skips gracefully when there is no dist/ yet. Reads
+ * `MAZE_BUILD_DIR` instead of `dist/` when it is set (as vite.config.ts does).
  */
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -13,12 +14,12 @@ import { gzipSync } from 'node:zlib';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const appDir = join(here, '..');
-const distDir = join(appDir, 'dist');
+const distDir = process.env.MAZE_BUILD_DIR ?? join(appDir, 'dist');
 const manifestPath = join(distDir, '.vite', 'manifest.json');
 const budgetPath = join(appDir, 'size-budget.json');
 
 if (!existsSync(manifestPath)) {
-  console.log('[size] no dist/.vite/manifest.json found; skipping bundle-size check');
+  console.log(`[size] no ${manifestPath} found; skipping bundle-size check`);
   process.exit(0);
 }
 

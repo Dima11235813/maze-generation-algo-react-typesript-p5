@@ -7,6 +7,15 @@ import { defineConfig, devices } from '@playwright/test';
 export const E2E_PORT = 41922;
 const baseURL = `http://127.0.0.1:${E2E_PORT}`;
 const isCI = Boolean(process.env['CI']);
+/**
+ * `MAZE_E2E_OUT` moves test results and the HTML report outside the Google-Drive-synced tree
+ * (AGENTS.md 3a); unset, they stay in `test-results/` and `playwright-report/`.
+ */
+const e2eOut = process.env['MAZE_E2E_OUT'];
+const html = [
+  'html',
+  { open: 'never', ...(e2eOut ? { outputFolder: `${e2eOut}/report` } : {}) },
+] as const;
 
 export default defineConfig({
   testDir: './e2e',
@@ -18,9 +27,8 @@ export default defineConfig({
   workers: 2,
   timeout: 45_000,
   expect: { timeout: 10_000 },
-  reporter: isCI
-    ? [['github'], ['html', { open: 'never' }]]
-    : [['list'], ['html', { open: 'never' }]],
+  ...(e2eOut ? { outputDir: `${e2eOut}/results` } : {}),
+  reporter: isCI ? [['github'], html] : [['list'], html],
   use: {
     baseURL,
     trace: 'retain-on-failure',
