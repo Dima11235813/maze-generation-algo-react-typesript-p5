@@ -70,6 +70,11 @@ pnpm --filter @maze/web build                  # includes the bundle-size gate
 pnpm --filter @maze/web e2e                    # Playwright + axe, builds and serves on :41922
 pnpm --filter @maze/web check:viewports -- play build   # phone/tablet/desktop/wide screenshots +
                                                # overflow + page errors (no leading slash in Git Bash)
+
+# Off Google Drive (3a): build, size gate, preview and e2e output in the scratchpad on C: (L-54)
+MAZE_BUILD_DIR=<scratch>/web-dist pnpm --filter @maze/web build
+MAZE_BUILD_DIR=<scratch>/web-dist MAZE_E2E_OUT=<scratch>/e2e pnpm --filter @maze/web e2e
+pnpm -r --workspace-concurrency=1 run typecheck  # no turbo cache under D:
 ```
 
 Ports: block **41920-41939** (registered in `D:\GDrive\proj-mgmt\inventory\local-ports.md`):
