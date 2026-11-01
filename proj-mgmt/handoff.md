@@ -28,6 +28,8 @@
 - `node_modules` on `D:` is still the known breach (no dev-store method for this repo yet); no
   install was run. `apps/web/dist`, `test-results`, `playwright-report` are old (2026-10-18).
 - The M7 probe is at `apps/web/.local/zz-probe-m7.tmp.test.ts` (ignored, kept).
+- `git-push-replicas.ps1` can report H: `REJECTED` on a fast-forward; the cause is an intermittent
+  `unpacker error` on H:, and a rerun pushes (L-54). Both replicas were 65/65 at the end.
 
 **Exact next step:** on "proceed", take WI-06f (`proj-mgmt/17-work-queue.md`): M6, M8-M11 short
 lessons with demos, "Learn more" links from Watch, Race and Explore via `docsSlug`, and a test that
