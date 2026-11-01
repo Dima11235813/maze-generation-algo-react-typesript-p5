@@ -362,6 +362,7 @@ output lands under `D:\GDrive` (2026-11-01), `vite build` and Playwright wrote t
 `MAZE_E2E_OUT` pointing at the session scratchpad on `C:` (the size gate and `vite preview` follow
 `MAZE_BUILD_DIR`); typecheck with `pnpm -r --workspace-concurrency=1 run typecheck` (no turbo
 cache); for viewport checks while 41920 is down, serve that build with `vite preview` on 41921,
-pass `--base` and `--out`, and stop it after. Also: one `git-push-replicas.ps1` run reported H:
-`REJECTED` ("replica has commits the source lacks") for a plain fast-forward; `git push --dry-run`
-showed `9f41ed8..7f988a4` and the rerun pushed. Inspect before assuming divergence; never force.
+pass `--base` and `--out`, and stop it after. Also: `git-push-replicas.ps1` twice reported H:
+`REJECTED` ("replica has commits the source lacks") for plain fast-forwards; `git push --porcelain
+backup-h` showed the real cause, `[remote rejected] (unpacker error)`, and a rerun pushed. Inspect
+with `git merge-base --is-ancestor` and a direct push before assuming divergence; never force.
