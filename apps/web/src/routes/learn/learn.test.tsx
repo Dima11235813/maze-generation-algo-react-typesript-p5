@@ -403,6 +403,52 @@ describe('Learn', () => {
     );
   });
 
+  it('tunes the right-hand A*: a looser heuristic restarts both and is recorded as a try-it', async () => {
+    const user = userEvent.setup();
+    renderAt('/learn/m7-tuning-heuristic');
+    expect(
+      await screen.findByRole(
+        'heading',
+        { level: 1, name: 'Tuning the heuristic' },
+        { timeout: 10_000 },
+      ),
+    ).toBeInTheDocument();
+    const tune = screen.getByRole('region', { name: 'Tune the right search' });
+    await user.click(within(tune).getByRole('combobox', { name: 'Heuristic' }));
+    await user.click(screen.getByRole('option', { name: 'Euclidean (straight line)' }));
+    expect(
+      await screen.findByRole('img', {
+        name: 'A* Search, heuristic euclidean: 12 by 9 cells, 0 expanded, no path yet',
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'A* Search: 12 by 9 cells, 0 expanded, no path yet' }),
+    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getAllByRole('status').map((s) => s.textContent)).toContain(
+        'Restarted both searches; the right one is now A* Search, heuristic euclidean.',
+      ),
+    );
+
+    const bar = screen.getByRole('group', { name: 'Breakpoint' });
+    screen.getByRole('slider', { name: 'Demo speed' }).focus();
+    await user.keyboard('{End}');
+    const run = within(bar).getByRole('button', { name: 'Run until the next path is found' });
+    for (const message of [
+      'Stopped at step 101: A* Search found a path of 21 moves.',
+      'Stopped at step 132: A* Search, heuristic euclidean found a path of 21 moves.',
+      'Ran to the end: no other path was found.',
+    ]) {
+      await user.click(run);
+      expect(await within(bar).findByTestId('breakpoint-message')).toHaveTextContent(message);
+    }
+    await waitFor(() =>
+      expect(useLearnProgress.getState().lessons['m7-tuning-heuristic']?.tryIts).toEqual([
+        'looser',
+      ]),
+    );
+  });
+
   it("plays Kruskal's until it keeps a wall, with union-find counts and the pseudo-code line", async () => {
     const user = userEvent.setup();
     renderAt('/learn/m4-kruskal-joins');

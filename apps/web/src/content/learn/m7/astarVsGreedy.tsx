@@ -37,7 +37,7 @@ export const lesson: LessonContent = {
   demo: {
     kind: 'pair',
     generatorId: 'prims',
-    seed: 'm7-0',
+    seed: 'm7-7',
     width: 12,
     height: 9,
     braid: 50,

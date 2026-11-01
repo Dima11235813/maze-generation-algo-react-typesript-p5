@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { graphStats } from './graphDemo';
 import {
   PairDemoModel,
+  laneName,
   pairBreakpointCatalogue,
   pairDemoMaze,
   pairRun,
@@ -93,6 +94,74 @@ describe('pair demo', () => {
     const third = catalogue.make('path', 0);
     expect(third.describe(model.player.runUntil(third.predicate))).toBe(
       'Ran to the end: no other path was found.',
+    );
+  });
+
+  it('names a tuned lane by what differs from the defaults', () => {
+    expect(laneName('astar')).toBe('A* Search');
+    expect(laneName('astar', { weight: 1 })).toBe('A* Search');
+    // In the order of the solver's parameter form, whatever order the values come in.
+    expect(laneName('astar', { weight: 2, heuristic: 'euclidean' })).toBe(
+      'A* Search, heuristic euclidean, heuristic weight 2',
+    );
+    expect(laneName('no-such-solver')).toBe('no-such-solver');
+  });
+
+  it('runs each lane with its own parameters and counts lowered costs', () => {
+    const setup: PairDemoSetup = {
+      ...SETUP,
+      braid: 100,
+      solverIds: ['astar', 'astar'],
+      solverParams: [{}, { weight: 3 }],
+    };
+    const model = new PairDemoModel(setup, paused);
+    model.player.runToEnd();
+    const [plain, heavy] = model.lanes();
+    for (const [i, lane] of [plain, heavy].entries()) {
+      const steps = collect(
+        solvers.require('astar').run(model.maze, setup.solverParams?.[i] ?? {}),
+      ).steps;
+      expect(lane?.expanded).toBe(steps.filter((s) => s.t === 'expand').length);
+      expect(lane?.relaxed).toBe(steps.filter((s) => s.t === 'relax').length);
+    }
+    expect(heavy?.name).toBe('A* Search, heuristic weight 3');
+    expect(heavy?.params).toEqual({ weight: 3 });
+    expect(plain?.pathMoves).toBe(model.shortest);
+    model.player.restart();
+    expect(model.lanes().every((l) => l.relaxed === 0)).toBe(true);
+  });
+
+  it('offers "a cost is lowered" only when a lane can relax, and stops on that tick', () => {
+    expect(
+      pairBreakpointCatalogue(new PairDemoModel(SETUP, paused)).choices.map((c) => c.id),
+    ).toEqual(['path']);
+    // The M7.2 maze: plain A* lowers three costs on it (probe, 2026-10-31).
+    const model = new PairDemoModel(
+      {
+        generatorId: 'recursive-backtracker',
+        seed: 'm7-3',
+        width: 12,
+        height: 9,
+        braid: 100,
+        solverIds: ['astar', 'bfs'],
+      },
+      paused,
+    );
+    const ticks = collect(pairRun(model.maze, model.solverIds)).steps;
+    const firstRelax = ticks.findIndex((t) => t.steps.some((s) => s?.t === 'relax')) + 1;
+    const catalogue = pairBreakpointCatalogue(model);
+    expect(catalogue.choices.map((c) => c.id)).toEqual(['path', 'relax']);
+    const bp = catalogue.make('relax', 0);
+    expect(firstRelax).toBeGreaterThan(0);
+    const hit = model.player.runUntil(bp.predicate);
+    expect(hit?.index).toBe(firstRelax);
+    expect(bp.describe(hit)).toMatch(
+      /^Stopped at step \d+: A\* Search found a cheaper way to row \d+, column \d+: its cost fell from \d+ to \d+\.$/,
+    );
+    model.player.runToEnd();
+    const after = catalogue.make('relax', 0);
+    expect(after.describe(model.player.runUntil(after.predicate))).toBe(
+      'Ran to the end: no cost was lowered.',
     );
   });
 });
